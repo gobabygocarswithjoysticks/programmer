@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>GBG Programmer</title>
+    <!-- <script src="https://github.com/dbuezas/arduino-web-uploader/releases/download/v1.1.2/main.js"></script> -->
     <script src="./arduino-web-uploader.js"></script>
+    <!-- https://github.com/dbuezas/arduino-web-uploader -->
+    <script type="text/javascript" src="./script.js"></script>
+
 </head>
 
 <body style="background-color:white;">
@@ -29,6 +33,23 @@
 
                 <label for="board-selector">Select your board:</label>
                 <select name="board-selector" id="board-selector" onchange="getCode();"></select>
+
+                <span id="upload-button-span">
+                </span>
+
+                <button arduino-uploader
+                    hex-href="https://raw.githubusercontent.com/dbuezas/arduino-web-uploader/master/test/Blink.ino.uno.hex"
+                    board="nano" verify="true">
+                    Upload Blink to nano old [<span class="upload-progress"></span>]
+                </button>
+
+                <button arduino-uploader
+                    hex-href="https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/main/hex/blink-fast-nanoOld/blink_fast.ino.hex"
+                    board="nanoOldBootloader" verify>
+                    Upload Blink to nano with old bootloader (most chinese clones) [<span
+                        class="upload-progress"></span>]
+                </button>
+
             </div>
 
 
@@ -63,8 +84,6 @@
 
 
     </main>
-
-    <script src="script.js"></script>
 </body>
 
 </html>

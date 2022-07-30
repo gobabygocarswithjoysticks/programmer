@@ -1,6 +1,6 @@
+
 var options = null;
 var configurations_info = null;
-
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -37,12 +37,35 @@ async function updateUpload() {
         document.getElementById("source-name-display").innerHTML = "source: " + configurations_info.slice(1, 2);
     }
 }
-function getCode() {
+
+async function getCode() {
     var program_selector = document.getElementById("program-selector");
     var program = program_selector.options[program_selector.selectedIndex].text;
     var board_selector = document.getElementById("board-selector");
     var board = board_selector.options[board_selector.selectedIndex].text;
+    console.log(options);
     console.log("get code", configurations_info[0], configurations_info[1], program, board);
+    var name = options.filter((v) => { return v[1] === program && v[2] === board })[0][0];
+    var code = null;
+    try {
+        if (configurations_info[0] === "release") {
+            code = ("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
+        } else {
+            code = ("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
+        }
+    } catch (e) { }
+    console.log(code);
+    var upload_button_span = document.getElementById("upload-button-span");
+    if (code == null) {
+        upload_button_span.innerHTML = "<mark>Error downloading code! Check internet, try again in 10 minutes, then please contact us.</mark>";
+    } else { // code received! 
+        const onProgress = (percentage) => {
+            console.log(percentage + '%')
+        }
+        console.log('starting')
+        // await upload(boards.nanoOldBootloader, code, onProgress, true, {});
+        console.log('done!')
+    }
 }
 function updateBoardOptionsSelector() {
     var program_selector = document.getElementById("program-selector");
