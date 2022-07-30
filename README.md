@@ -3,6 +3,9 @@
 https://github.com/gobabygocarswithjoysticks/programmer
 
 
+Tested on Google Chrome, Opera, and Edge (the only browsers that currently support Web Serial).
+
+
 ## Acknowledgements
 
 - This program uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas (generously shared under the MIT license) for sending the software to the car.

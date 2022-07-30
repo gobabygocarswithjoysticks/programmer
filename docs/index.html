@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>GBG Programmer</title>
+    <script src="./arduino-web-uploader.js"></script>
 </head>
+
 <body style="background-color:white;">
     <main>
         <h1> GBG joystick car programming and configuring website. </h1>
-        <p> For any questions about how to use this website, please post <a href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a> or email gobabygocarswithjoysticks@gmail.com </p>
-        <noscript> <mark> Your browser is not running a script that is required for this website to function. Try a different browser? </mark> </noscript> 
+        <p> For any questions about how to use this website, please post <a
+                href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a>
+            or email gobabygocarswithjoysticks@gmail.com </p>
 
-        <div id="upload-program">
         <hr>
-        <h2> Upload Program </h2>
-        <button id="b1"> Upload </button>
+        <noscript> <mark> Your browser is not running a script that is required for this website to function. Please
+                enable javascript or try a different browser. </mark> </noscript>
+        <mark id="serial-alert"> </mark>
+        <div id="upload-program">
+            <h2> Upload Program </h2>
+            <button arduino-uploader
+                hex-href="https://raw.githubusercontent.com/dbuezas/arduino-web-uploader/master/test/Blink.ino.uno.hex"
+                board="nanoOldBootloader" verify="true">
+                Upload blink to nano (old bootloader)
+                <span class="upload-progress"></span>
+            </button>
+            <hr>
         </div>
 
     </main>
-    <script src="../ts/assignment.js"></script>
-    </body>
+    <script src="script.js"></script>
+</body>
+
 </html>
