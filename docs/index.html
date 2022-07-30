@@ -21,10 +21,15 @@
         <div id="upload-program">
             <h2> Upload Program </h2>
 
-            <label for="program-selector">Select program to upload:</label>
-            <select name="program-selector" id="program-selector"></select>
-            <mark id="program-selector-alert"> </mark>
+            <mark id="no-config-alert"> </mark>
+            <div id="upload-controls-div">
+                <br>
+                <label for="program-selector">Select program to upload:</label>
+                <select name="program-selector" id="program-selector" onchange="updateBoardOptionsSelector();"></select>
 
+                <label for="board-selector">Select your board:</label>
+                <select name="board-selector" id="board-selector" onchange="getCode();"></select>
+            </div>
 
 
             <p>
