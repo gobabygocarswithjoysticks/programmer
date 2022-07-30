@@ -8,4 +8,4 @@ Tested on Google Chrome, Opera, and Edge (the only browsers that currently suppo
 
 ## Acknowledgements
 
-- This program uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas (generously shared under the MIT license) for sending the software to the car.
+- This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas (generously shared under the MIT license) for uploading code to the car.

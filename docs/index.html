@@ -20,16 +20,45 @@
         <mark id="serial-alert"> </mark>
         <div id="upload-program">
             <h2> Upload Program </h2>
-            <button arduino-uploader
-                hex-href="https://raw.githubusercontent.com/dbuezas/arduino-web-uploader/master/test/Blink.ino.uno.hex"
-                board="nanoOldBootloader" verify="true">
-                Upload blink to nano (old bootloader)
-                <span class="upload-progress"></span>
-            </button>
+
+            <label for="program-selector">Select program to upload:</label>
+            <select name="program-selector" id="program-selector"></select>
+            <mark id="program-selector-alert"> </mark>
+
+
+
+            <p>
+            <details>
+                <summary>
+                    Advanced settings (for testing only)
+                </summary>
+                <ul>
+                    <li id="source-name-display">
+                    </li>
+                    <li>
+                        Get car code from main branch instead of from most recent release:
+                        <input type="checkbox" id="upload-main-checkbox" onclick="updateUpload()"></input>
+                    </li>
+                </ul>
+            </details>
+            </p>
+
             <hr>
         </div>
 
+        <footer>
+            <hr>
+            The source code for this website is on Github <a
+                href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
+            <br>
+            This website uses <a href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
+            by David Buezas (generously shared under the MIT license) for
+            uploading code to the car.
+        </footer>
+
+
     </main>
+
     <script src="script.js"></script>
 </body>
 
