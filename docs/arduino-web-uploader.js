@@ -158,10 +158,8 @@
         };
         const noop = (callback) => callback();
         console.log("Arduino Web Uploader https://github.com/dbuezas/arduino-web-uploader");
-        async function upload(board, hexFileHref, onProgress, verify = false, portFilters = {}) {
+        async function upload(board, text, onProgress, verify = false, portFilters = {}) {
           try {
-            const text = await fetch(hexFileHref)
-              .then((response) => response.text());
             let { data: hex } = intel_hex.parse(text);
             const serialStream = await Serial_1.default.connect({ baudRate: board.baudRate }, portFilters);
             onProgress(0);
@@ -176,7 +174,7 @@
                 const percent = Math.round((100 * sent) / total);
                 onProgress(percent);
               }
-              console.log(what, sent, total, hex.length, board.pageSize);
+              // console.log(what, sent, total, hex.length, board.pageSize);
             };
             await async_1.default.series([
               // send two dummy syncs like avrdude does
@@ -14923,11 +14921,11 @@
           }
           catch (e) {
             progressEl.innerHTML = 'Error!';
-            // alert(e);
+            alert("Error Uploading! Check the board and port selections.");
             throw e;
           }
           progressEl.innerHTML = 'Done!';
-          console.log("Upload successful!\n Thanks to: https://github.com/dbuezas/arduino-web-uploader");
+          console.log("Upload successful!\nThanks to: https://github.com/dbuezas/arduino-web-uploader");
         });
       });
     });

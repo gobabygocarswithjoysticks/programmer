@@ -1,4 +1,3 @@
-
 var options = null;
 var configurations_info = null;
 document.addEventListener('DOMContentLoaded', async function () {
@@ -14,15 +13,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function updateUpload() {
     var checkBox = document.getElementById("upload-main-checkbox");
     configurations_info = await getConfigInfo(checkBox.checked);
-    configurations_info = configurations_info.split("\n");
 
     if (configurations_info == null) {
-        document.getElementById("no-config-alert").innerHTML = "The list of programs available to upload can not be retrieved. Please check your internet connection, try again in 10 minutes and if the problem persists please contact us.";
+        document.getElementById("no-config-alert").innerHTML = "The list of programs available to upload can not be found. Please check your internet connection, try again in 10 minutes, then please contact us if the problem continues.";
         document.getElementById("upload-controls-div").hidden = true;
 
         document.getElementById("source-name-display").innerHTML = "Error: configurations info is null!";
 
     } else { //there are options for programs to upload
+
+        configurations_info = configurations_info.split("\n");
         document.getElementById("no-config-alert").innerHTML = "";
         document.getElementById("upload-controls-div").hidden = false;
 
@@ -43,29 +43,38 @@ async function getCode() {
     var program = program_selector.options[program_selector.selectedIndex].text;
     var board_selector = document.getElementById("board-selector");
     var board = board_selector.options[board_selector.selectedIndex].text;
-    console.log(options);
-    console.log("get code", configurations_info[0], configurations_info[1], program, board);
     var name = options.filter((v) => { return v[1] === program && v[2] === board })[0][0];
     var code = null;
     try {
         if (configurations_info[0] === "release") {
-            code = ("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
+            code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
         } else {
-            code = ("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
+            code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
         }
     } catch (e) { }
-    console.log(code);
-    var upload_button_span = document.getElementById("upload-button-span");
+
+    var upload_warning_span = document.getElementById("upload-warning-span");
+    var upload_button = document.getElementById("upload-button");
+
     if (code == null) {
-        upload_button_span.innerHTML = "<mark>Error downloading code! Check internet, try again in 10 minutes, then please contact us.</mark>";
+        upload_warning_span.innerHTML = "<mark>The code for the car can not be found. Please check your internet connection, try again in 10 minutes, then please contact us if the problem continues.</mark>";
+        upload_button.hidden = true;
     } else { // code received! 
-        const onProgress = (percentage) => {
-            console.log(percentage + '%')
-        }
-        console.log('starting')
-        // await upload(boards.nanoOldBootloader, code, onProgress, true, {});
-        console.log('done!')
+        upload_warning_span.innerHTML = "";
+        var upload_progress_span = document.getElementById("upload-progress");
+        upload_progress_span.innerHTML = "Ready";
+        upload_button.hidden = false;
+        /* 
+        I edited arduino-web-uploader so hex-href should be the actual hex code instead of a url where it can be downloaded. 
+        This way the hex code can be downloaded by this script instead of by the uploader code where I wouldn't have control of it. 
+        The code is stored inside the html of the page.
+        */
+        upload_button.setAttribute("hex-href", code);
+        upload_button.setAttribute("board", board);
     }
+}
+function uploadErrorCallback() {
+    console.out("$#$%!#$%!#$% error uploading");
 }
 function updateBoardOptionsSelector() {
     var program_selector = document.getElementById("program-selector");
