@@ -34,7 +34,6 @@ async function updateUpload() {
 
         updateProgramOptionsSelector();
 
-        document.getElementById("source-name-display").innerHTML = "source: " + configurations_info.slice(1, 2);
     }
 }
 
@@ -72,6 +71,15 @@ async function getCode() {
         upload_button.setAttribute("hex-href", code);
         upload_button.setAttribute("board", board);
     }
+
+
+    if (configurations_info[0] === "release") {
+        codeURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/" + program;
+    } else {
+        codeURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/" + program;
+    }
+    document.getElementById("source-name-display").innerHTML = 'source: <a target="_blank" rel="noopener noreferrer" href= "' + codeURLForHumans + '">' + codeURLForHumans + '</a>';
+
 }
 function uploadErrorCallback() {
     console.out("$#$%!#$%!#$% error uploading");
