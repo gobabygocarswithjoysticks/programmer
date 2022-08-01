@@ -1,36 +1,55 @@
 var options = null;
 var configurations_info = null;
 var port = null;
+var reader = null;
+var serialConnectionRunning = false;
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
     if (!("serial" in navigator)) {
         document.getElementById("serial-alert").innerHTML = "Web Serial is not available, so this site won't be able to communicate with your car. Please use Google Chrome, Opera, or Edge, and make sure Web Serial is enabled.";
     }
+    document.getElementById("serial-disconnect-button").hidden = true;
 
     updateUpload();
 });
 
+async function closeSerial() {
+    try {
+        await reader.cancel();
+    } catch (e) { serialConnectionRunning = false; }
+    document.getElementById("serial-disconnect-button").hidden = true;
+    document.getElementById("serial-connect-button").hidden = false;
+
+}
+
 async function connectToSerial() {
-    if (port != null) await port.close();
+    if (serialConnectionRunning) return;
+    serialConnectionRunning = true;
+
+    document.getElementById("serial-connect-button").hidden = true;
+    document.getElementById("serial-disconnect-button").hidden = false;
+
     port = await navigator.serial.requestPort();
-    // Wait for the serial port to open.
+
     await port.open({ baudRate: 115200 });
 
-    //https://makeabilitylab.github.io/physcomp/communication/web-serial.html#requesting-permission-to-communicate-with-a-serial-device
     const textDecoder = new TextDecoderStream();
     const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-    const reader = textDecoder.readable.getReader();
+    reader = textDecoder.readable.getReader();
+
+    const writer = port.writable.getWriter();
+    const data = new Uint8Array([104, 101, 108, 108, 111]); // hello
+    // await writer.write(data);
+    writer.releaseLock();
 
     let string = "";
-    // Listen to data coming from the serial device.
 
+    // Listen to data coming from the serial device.
     while (true) {
         const { value, done } = await reader.read();
         if (done) {
-            // Allow the serial port to be closed later.
             reader.releaseLock();
-            console.log("########################################################33");
             break;
         }
         // value is a string.
@@ -51,6 +70,17 @@ async function connectToSerial() {
             string = "";
         }
     }
+
+    // const textEncoder = new TextEncoderStream();
+    // const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+
+    await readableStreamClosed.catch(() => { /* Ignore the error */ });
+
+    // writer.close();
+    // await writableStreamClosed;
+
+    await port.close();
+    serialConnectionRunning = false;
 }
 
 function gotNewSerial(data) {
@@ -145,9 +175,6 @@ async function getCode() {
     }
     document.getElementById("source-name-display").innerHTML = 'source: <a target="_blank" rel="noopener noreferrer" href= "' + codeURLForHumans + '">' + codeURLForHumans + '</a>';
 
-}
-function uploadErrorCallback() {
-    console.out("$#$%!#$%!#$% error uploading");
 }
 function updateBoardOptionsSelector() {
     var program_selector = document.getElementById("program-selector");

@@ -39,7 +39,7 @@
                 <span id="upload-warning-span">
                 </span>
 
-                <button id="upload-button" arduino-uploader board="" verify="true" hex-href="">
+                <button id="upload-button" arduino-uploader onclick="closeSerial()" board="" verify="true" hex-href="">
                     Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
                 </button>
 
@@ -66,7 +66,8 @@
             <hr>
         </div>
         <div>
-            <button onclick="connectToSerial()">connect</button>
+            <button id="serial-connect-button" onclick="connectToSerial()">connect</button>
+            <button id="serial-disconnect-button" onclick="closeSerial()">disconnect</button>
         </div>
 
         <footer>
