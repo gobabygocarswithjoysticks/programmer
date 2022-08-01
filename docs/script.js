@@ -35,8 +35,10 @@ async function connectToSerial() {
         }
         // value is a string.
         string += value;
-        // console.log(value);
-        if (value.includes("}")) {
+        if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent
+            string = "";
+        }
+        if (value.includes("\n")) {
             let json = null;
             try {
                 json = JSON.parse(string);
