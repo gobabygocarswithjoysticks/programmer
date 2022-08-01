@@ -1,5 +1,6 @@
 var options = null;
 var configurations_info = null;
+var port = null;
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -9,6 +10,68 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     updateUpload();
 });
+
+async function connectToSerial() {
+    if (port != null) await port.close();
+    port = await navigator.serial.requestPort();
+    // Wait for the serial port to open.
+    await port.open({ baudRate: 115200 });
+
+    //https://makeabilitylab.github.io/physcomp/communication/web-serial.html#requesting-permission-to-communicate-with-a-serial-device
+    const textDecoder = new TextDecoderStream();
+    const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+    const reader = textDecoder.readable.getReader();
+
+    let string = "";
+    // Listen to data coming from the serial device.
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+            // Allow the serial port to be closed later.
+            reader.releaseLock();
+            console.log("########################################################33");
+            break;
+        }
+        // value is a string.
+        string += value;
+        // console.log(value);
+        if (value.includes("}")) {
+            let json = null;
+            try {
+                json = JSON.parse(string);
+            } catch (e) {
+                string = "";
+                // had an error with parsing the data
+                console.log("error parsing json");
+            }
+            if (json != null) gotNewSerial(json);
+            string = "";
+        }
+    }
+}
+
+function gotNewSerial(data) {
+    if (data["current values, millis:"] != null) {
+        gotNewData(data);
+    } else if (data["current settings, version:"] != null) {
+        gotNewSettings(data);
+    } else if (data["result"] != null) {
+        gotNewResult(data["result"] === "success");
+    } else {
+        // not an expected message
+    }
+}
+function gotNewData(data) {
+    console.log(data);
+
+}
+function gotNewSettings(settings) {
+    console.log(settings);
+}
+function gotNewResult(success) {
+    console.log(success);
+}
 
 async function updateUpload() {
     var checkBox = document.getElementById("upload-main-checkbox");
