@@ -50,7 +50,7 @@
             <p>
             <details>
                 <summary>
-                    Advanced settings (for testing only)
+                    Advanced settings
                 </summary>
                 <ul>
                     <li id="source-name-display">
@@ -68,6 +68,8 @@
         <div>
             <button id="serial-connect-button" onclick="connectToSerial()">connect</button>
             <button id="serial-disconnect-button" onclick="closeSerial()">disconnect</button>
+            <span id="serial-connected-indicator"></span>
+            <!-- <button id="get-settings-button" onclick='sendStringSerial("SETTINGS,")'>get settings</button> -->
         </div>
 
         <footer>
