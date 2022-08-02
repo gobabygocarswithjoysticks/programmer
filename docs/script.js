@@ -3,6 +3,7 @@ var configurations_info = null;
 var port = null;
 var reader = null;
 var serialConnectionRunning = false;
+var car_settings = null;
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -17,58 +18,92 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function closeSerial() {
     try {
         await reader.cancel();
-    } catch (e) { serialConnectionRunning = false; }
+    } catch (e) {
+        serialConnectionRunning = false;
+        // if reader.cancel succeeded, connectToSerial sets serialConnectionRunning to false after the loop in that function exits.
+    }
     document.getElementById("serial-disconnect-button").hidden = true;
     document.getElementById("serial-connect-button").hidden = false;
+    document.getElementById('serial-connected-indicator').innerHTML = "";
 
+}
+
+async function sendStringSerial(string) {
+    if (!serialConnectionRunning) return;
+    const writer = port.writable.getWriter();
+    try {
+        var enc = new TextEncoder(); // always utf-8
+        await writer.write(enc.encode(string));
+    } catch (e) {
+
+    } finally {
+        writer.releaseLock();
+    }
 }
 
 async function connectToSerial() {
     if (serialConnectionRunning) return;
     serialConnectionRunning = true;
+    document.getElementById('serial-connected-indicator').innerHTML = "trying to connect...";
 
     document.getElementById("serial-connect-button").hidden = true;
     document.getElementById("serial-disconnect-button").hidden = false;
 
-    port = await navigator.serial.requestPort();
+    try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+    } catch (e) { // port selection canceled
+        serialConnectionRunning = false;
+        document.getElementById('serial-connected-indicator').innerHTML = "";
 
-    await port.open({ baudRate: 115200 });
+        document.getElementById("serial-connect-button").hidden = false;
+        document.getElementById("serial-disconnect-button").hidden = true;
+        return;
+    }
 
     const textDecoder = new TextDecoderStream();
     const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
     reader = textDecoder.readable.getReader();
 
-    const writer = port.writable.getWriter();
-    const data = new Uint8Array([104, 101, 108, 108, 111]); // hello
-    // await writer.write(data);
-    writer.releaseLock();
-
     let string = "";
 
-    // Listen to data coming from the serial device.
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
-            reader.releaseLock();
-            break;
-        }
-        // value is a string.
-        string += value;
-        if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent
-            string = "";
-        }
-        if (value.includes("\n")) {
-            let json = null;
-            try {
-                json = JSON.parse(string);
-            } catch (e) {
-                string = "";
-                // had an error with parsing the data
-                console.log("error parsing json");
+    try {
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+                reader.releaseLock();
+                break;
             }
-            if (json != null) gotNewSerial(json);
-            string = "";
+            // value is a string.
+            string += value;
+            if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent
+                string = "";
+            }
+            if (value.includes("\n")) {
+                let json = null;
+                try {
+                    string = string.substring(
+                        string.indexOf("{"),
+                        string.indexOf("}") + 1
+                    );
+                    json = JSON.parse(string);
+                } catch (e) {
+                    // had an error with parsing the data
+                    string = "";
+                }
+                if (json != null) gotNewSerial(json);
+                string = "";
+            }
         }
+    } catch (e) {
+        // this happens if the arduino is unplugged from the computer
+        console.log(e);
+        serialConnectionRunning = false;
+        document.getElementById('serial-connected-indicator').innerHTML = "";
+
+        document.getElementById("serial-connect-button").hidden = false;
+        document.getElementById("serial-disconnect-button").hidden = true;
+
     }
 
     // const textEncoder = new TextEncoderStream();
@@ -81,6 +116,8 @@ async function connectToSerial() {
 
     await port.close();
     serialConnectionRunning = false;
+    document.getElementById('serial-connected-indicator').innerHTML = "";
+
 }
 
 function gotNewSerial(data) {
@@ -89,7 +126,7 @@ function gotNewSerial(data) {
     } else if (data["current settings, version:"] != null) {
         gotNewSettings(data);
     } else if (data["result"] != null) {
-        gotNewResult(data["result"] === "success");
+        gotNewResult(data);
     } else {
         // not an expected message
     }
@@ -99,10 +136,26 @@ function gotNewData(data) {
 
 }
 function gotNewSettings(settings) {
-    console.log(settings);
+    car_settings = settings;
+    document.getElementById('serial-connected-indicator').innerHTML = "connected";
+
+    document.getElementById('car-settings').innerHTML = "";
+    var version = settings["current settings, version:"];
+    var len = Object.keys(settings).length;
+    if (version === 1) {
+        if (len === 36) { // correct data
+            var list = document.getElementById("car-settings");
+            for (const setting in settings) {
+                var entry = document.createElement("li");
+                entry.innerHTML = settings[setting];
+                list.appendChild(entry);
+            }
+        }
+    }
 }
 function gotNewResult(success) {
-    console.log(success);
+    console.log(success["result"] === "success");
+    console.log(success["result"] === "saved");
 }
 
 async function updateUpload() {
@@ -250,7 +303,7 @@ async function getConfigInfo(fromMain) {
 
     } else {
         try {
-            var json = JSON.parse(await getRequest("https://api.github.com/repos/gobabygocarswithjoysticks/car-code/releases"));
+            var json = JSON.parse(await getRequest("https://api.github.com/repos/gobabygocarswithjoysticks/carcode/releases"));
             var most_recent_release_tag = json[0].tag_name;
 
             var configUrl = "https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + most_recent_release_tag + "/hex/configurations-info.txt";
