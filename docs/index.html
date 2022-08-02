@@ -12,17 +12,23 @@
 
 </head>
 
-<body style="background-color:white;">
+<body style="background-color:lightgrey;">
+
     <main>
         <h1> GBG joystick car programming and configuring website. </h1>
         <p> For any questions about how to use this website, please post <a
                 href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a>
-            or email gobabygocarswithjoysticks@gmail.com </p>
+            or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.</p>
 
         <noscript> <mark> Your browser is not running a script that is required for this website to function. Please
                 enable javascript or try a different browser. </mark> </noscript>
         <mark id="serial-alert"> </mark>
 
+        <br>
+        <button id="first-time-program-button" onclick="showFirstTime()">I want to program a car for the first
+            time.</button>
+        <button id="config-button" onclick="showConfigButton()">I want to change the settings of my car.</button>
+        <button id="everything-button" onclick="showEverythingButton()">Show me all the options at once.</button>
         <hr>
         <div id="upload-program">
             <h2> Upload Program </h2>
@@ -79,10 +85,10 @@
 
             </table>
             <button id="serial-connect-button" onclick='sendStringSerial("SAVE,")'>Save</button>
+            <hr>
         </div>
 
         <footer>
-            <hr>
             The source code for this website is on Github <a
                 href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
             <br>

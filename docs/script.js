@@ -13,8 +13,64 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById("serial-disconnect-button").hidden = true;
 
     updateUpload();
-});
+    document.getElementById("upload-program").hidden = true;
+    document.getElementById("connect-to-car").hidden = true;
+    document.getElementById("configure-car").hidden = true;
 
+    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+    document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
+    document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+
+
+    // watch the upload-progress span to get information about the program upload progress
+    const observer = new MutationObserver(mutationRecords => {
+        console.log(mutationRecords); // console.log(the changes)
+        console.log(mutationRecords[0].addedNodes[0].data);
+        if (mutationRecords[0].addedNodes[0].data === "Done!") {
+            document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+            document.getElementById("connect-to-car").style.backgroundColor = "white";
+            document.getElementById("connect-to-car").hidden = false;
+        }
+    });
+
+    observer.observe(document.getElementById("upload-progress"), {
+        childList: true
+    });
+
+
+});
+function showFirstTime() {
+    // displayMode="showFirstTime";
+    document.getElementById("upload-program").style.backgroundColor = "white";
+    document.getElementById("upload-program").hidden = false;
+
+    document.getElementById("connect-to-car").hidden = true;
+    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+
+    document.getElementById("configure-car").hidden = true;
+    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+}
+function showConfigButton() {
+    // displayMode="showConfigButton";
+    document.getElementById("upload-program").hidden = true;
+    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+
+    document.getElementById("connect-to-car").style.backgroundColor = "white";
+    document.getElementById("connect-to-car").hidden = false;
+
+    document.getElementById("configure-car").hidden = true;
+    document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+}
+function showEverythingButton() {
+    // displayMode="showEverything";
+    document.getElementById("upload-program").style.backgroundColor = "white";
+    document.getElementById("connect-to-car").style.backgroundColor = "white";
+    document.getElementById("configure-car").style.backgroundColor = "white";
+
+    document.getElementById("upload-program").hidden = false;
+    document.getElementById("connect-to-car").hidden = false;
+    document.getElementById("configure-car").hidden = false;
+}
 async function closeSerial() {
     try {
         await reader.cancel();
@@ -308,7 +364,7 @@ async function getConfigInfo(fromMain) {
 
     } else {
         try {
-            var json = JSON.parse(await getRequest("https://api.github.com/repos/gobabygocarswithjoysticks/carcode/releases"));
+            var json = JSON.parse(await getRequest("https://api.github.com/repos/gobabygocarswithjoysticks/car-code/releases"));
             var most_recent_release_tag = json[0].tag_name;
 
             var configUrl = "https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + most_recent_release_tag + "/hex/configurations-info.txt";
