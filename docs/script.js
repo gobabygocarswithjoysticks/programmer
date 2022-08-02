@@ -99,7 +99,7 @@ async function connectToSerial() {
         // this happens if the arduino is unplugged from the computer
         console.log(e);
         serialConnectionRunning = false;
-        document.getElementById('serial-connected-indicator').innerHTML = "";
+        document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED!";
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
@@ -116,7 +116,9 @@ async function connectToSerial() {
 
     await port.close();
     serialConnectionRunning = false;
-    document.getElementById('serial-connected-indicator').innerHTML = "";
+    if (document.getElementById('serial-connected-indicator').innerHTML != "DISCONNECTED!") {
+        document.getElementById('serial-connected-indicator').innerHTML = "";
+    }
 
 }
 
@@ -146,8 +148,11 @@ function gotNewSettings(settings) {
         if (len === 36) { // correct data
             var list = document.getElementById("car-settings");
             for (const setting in settings) {
-                var entry = document.createElement("li");
-                entry.innerHTML = settings[setting];
+                if (setting === "current settings, version:") continue;
+                var entry = document.createElement("tr");
+                entry.innerHTML += "<td>" + setting + "</td>";
+                entry.innerHTML += "<td>" + settings[setting] + "</td>";
+
                 list.appendChild(entry);
             }
         }
