@@ -2,14 +2,18 @@ var options = null;
 var configurations_info = null;
 var port = null;
 var reader = null;
+var serial_connected_indicator_warning_timeout;
 var serialConnectionRunning = false;
+var sendStringSerialLock = false;
 var car_settings = null;
+var live_data = null;
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
     if (!("serial" in navigator)) {
         document.getElementById("serial-alert").innerHTML = "Web Serial is not available, so this site won't be able to communicate with your car. Please use Google Chrome, Opera, or Edge, and make sure Web Serial is enabled.";
     }
+    document.getElementById("options-buttons").style.backgroundColor = "white";
     document.getElementById("serial-disconnect-button").hidden = true;
 
     updateUpload();
@@ -24,13 +28,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // watch the upload-progress span to get information about the program upload progress
     const observer = new MutationObserver(mutationRecords => {
-        console.log(mutationRecords); // console.log(the changes)
-        console.log(mutationRecords[0].addedNodes[0].data);
         if (mutationRecords[0].addedNodes[0].data === "Done!") {
             document.getElementById("upload-program").style.backgroundColor = "lightgrey";
             document.getElementById("connect-to-car").style.backgroundColor = "white";
             document.getElementById("connect-to-car").hidden = false;
         }
+        if (mutationRecords[0].addedNodes[0].data === "0%") {
+            document.getElementById("upload-program").style.backgroundColor = "white";
+            document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
+        }
+
     });
 
     observer.observe(document.getElementById("upload-progress"), {
@@ -45,10 +52,12 @@ function showFirstTime() {
     document.getElementById("upload-program").hidden = false;
 
     document.getElementById("connect-to-car").hidden = true;
-    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+    document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
     document.getElementById("configure-car").hidden = true;
-    document.getElementById("upload-program").style.backgroundColor = "lightgrey";
+    document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+    document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
+
 }
 function showConfigButton() {
     // displayMode="showConfigButton";
@@ -60,16 +69,19 @@ function showConfigButton() {
 
     document.getElementById("configure-car").hidden = true;
     document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+    document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
 }
 function showEverythingButton() {
     // displayMode="showEverything";
     document.getElementById("upload-program").style.backgroundColor = "white";
     document.getElementById("connect-to-car").style.backgroundColor = "white";
     document.getElementById("configure-car").style.backgroundColor = "white";
+    document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
 
     document.getElementById("upload-program").hidden = false;
     document.getElementById("connect-to-car").hidden = false;
     document.getElementById("configure-car").hidden = false;
+
 }
 async function closeSerial() {
     try {
@@ -81,11 +93,15 @@ async function closeSerial() {
     document.getElementById("serial-disconnect-button").hidden = true;
     document.getElementById("serial-connect-button").hidden = false;
     document.getElementById('serial-connected-indicator').innerHTML = "";
+    document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+    document.getElementById("connect-to-car").style.backgroundColor = "white";
 
 }
 
 async function sendStringSerial(string) {
     if (!serialConnectionRunning) return;
+    if (sendStringSerialLock) return;
+    sendStringSerialLock = true;
     const writer = port.writable.getWriter();
     try {
         var enc = new TextEncoder(); // always utf-8
@@ -95,6 +111,7 @@ async function sendStringSerial(string) {
     } finally {
         writer.releaseLock();
     }
+    sendStringSerialLock = false;
 }
 
 async function connectToSerial() {
@@ -107,13 +124,20 @@ async function connectToSerial() {
 
     try {
         port = await navigator.serial.requestPort();
+        serial_connected_indicator_warning_timeout = setTimeout(() => { document.getElementById('serial-connected-indicator').innerHTML = "trying to connect... It's taking a long time, try disconnecting and checking the port."; }, 3000);
         await port.open({ baudRate: 115200 });
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
-        document.getElementById('serial-connected-indicator').innerHTML = "";
+        clearInterval(serial_connected_indicator_warning_timeout);
+        document.getElementById('serial-connected-indicator').innerHTML = "not connected";
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
+
+        document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+        document.getElementById("connect-to-car").style.backgroundColor = "white";
+
+
         return;
     }
 
@@ -160,6 +184,10 @@ async function connectToSerial() {
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
 
+        document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+        document.getElementById("connect-to-car").style.backgroundColor = "white";
+
+
     }
 
     // const textEncoder = new TextEncoderStream();
@@ -186,18 +214,47 @@ function gotNewSerial(data) {
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
+        console.log("unexpected message: " + data);
         // not an expected message
     }
 }
 function gotNewData(data) {
-    console.log(data);
-
+    live_data = data;
+    var elements = document.getElementsByClassName("liveVal-joyX")
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = data["joyXVal"];
+    }
+    var elements = document.getElementsByClassName("liveVal-joyY")
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = data["joyYVal"];
+    }
 }
+
+async function onSettingChangeFunction(setting) { // something was entered into a box
+    document.getElementById("save-settings-button-label").innerHTML = "You have unsaved changes.";
+    if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
+        sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
+    } else {
+        sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",");
+    }
+
+    document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
+    document.getElementById('setting---' + setting).children[4].hidden = true; //blank
+    document.getElementById('setting---' + setting).children[3].hidden = false; // show error
+}
+
 function gotNewSettings(settings) {
     car_settings = settings;
+
+    clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
 
+    document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
+
     document.getElementById('car-settings').innerHTML = "";
+
+    document.getElementById('cal-con-first-look-message').hidden = true;
+
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
     if (version === 1) {
@@ -206,17 +263,62 @@ function gotNewSettings(settings) {
             for (const setting in settings) {
                 if (setting === "current settings, version:") continue;
                 var entry = document.createElement("tr");
+                entry.setAttribute("id", "setting---" + setting);
                 entry.innerHTML += "<td>" + setting + "</td>";
-                entry.innerHTML += "<td>" + settings[setting] + "</td>";
 
+                if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
+                    entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
+                } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
+                    entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+                } else {//integer
+                    entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+                }
+
+                entry.innerHTML += '<td class="setting-indicator" hidden>\u2714</td>'; // checkmark
+                entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
+                entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
+
+
+                var setting_helper = document.createElement("span");
+                if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
+                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">is print interval slow or off?</span></button> (check the settings for the pin if you do not see a change)';
+                } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
+                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">is print interval slow or off?</span></button> (check the settings for the pin if you do not see a change)';
+                }
+
+                entry.appendChild(setting_helper);
                 list.appendChild(entry);
             }
         }
     }
+
+    document.getElementById("configure-car").style.backgroundColor = "white";
+    document.getElementById("configure-car").hidden = false;
 }
-function gotNewResult(success) {
-    console.log(success["result"] === "success");
-    console.log(success["result"] === "saved");
+function helper(type, data) {
+    if (type === "joyX") {
+        document.getElementById('setting---' + data).children[1].firstChild.value = live_data["joyXVal"];
+        onSettingChangeFunction(data)
+    }
+    if (type === "joyY") {
+        document.getElementById('setting---' + data).children[1].firstChild.value = live_data["joyYVal"];
+        onSettingChangeFunction(data)
+    }
+}
+function gotNewResult(result) {
+    if (result["result"] === "change") {
+        document.getElementById('setting---' + result["setting"]).children[3].hidden = true; // hide error
+        document.getElementById('setting---' + result["setting"]).children[4].hidden = true; // hide blank
+        document.getElementById('setting---' + result["setting"]).children[2].hidden = false; // show checkmark
+        document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
+    }
+    if (result["result"] === "saved") { // saved settings to EEPROM
+        var elements = document.getElementsByClassName("setting-indicator")
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].hidden = true;
+        }
+        document.getElementById('save-settings-button-label').innerHTML = "Saved!";
+    }
 }
 
 async function updateUpload() {
@@ -383,7 +485,7 @@ async function getRequest(url) {
             if (response.status == 200) {
                 return response.text();
             } else {
-                throw new Error(`HTTP error in getRequest() Status: ${response.status}`);
+                throw new Error(`HTTP error in getRequest() Status: ${response.status} `);
             }
         })
         .then((responseText) => {

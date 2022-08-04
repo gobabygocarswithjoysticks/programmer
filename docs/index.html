@@ -24,11 +24,15 @@
                 enable javascript or try a different browser. </mark> </noscript>
         <mark id="serial-alert"> </mark>
 
-        <br>
-        <button id="first-time-program-button" onclick="showFirstTime()">I want to program a car for the first
-            time.</button>
-        <button id="config-button" onclick="showConfigButton()">I want to change the settings of my car.</button>
-        <button id="everything-button" onclick="showEverythingButton()">Show me all the options at once.</button>
+        <div id="options-buttons">
+            <br>
+            <button id="first-time-program-button" onclick="showFirstTime()">I want to program a car for the first
+                time.</button>
+            <button id="config-button" onclick="showConfigButton()">I want to change the settings of my car.</button>
+            <button id="everything-button" onclick="showEverythingButton()">Show me all the options at once.</button>
+            <br>
+            <br>
+        </div>
         <hr>
         <div id="upload-program">
             <h2> Upload Program </h2>
@@ -72,7 +76,7 @@
             <hr>
         </div>
         <div id="connect-to-car">
-            <h2>Connect to Car</h2>
+            <h2>Connect to Car (to change settings)</h2>
             <button id="serial-connect-button" onclick="connectToSerial()">connect</button>
             <button id="serial-disconnect-button" onclick="closeSerial()">disconnect</button>
             <span id="serial-connected-indicator"></span>
@@ -81,20 +85,35 @@
         </div>
         <div id="configure-car">
             <h2>Calibrate and Configure Your Car</h2>
+            <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
+            <button id="save-settings-button" onclick='sendStringSerial("SAVE,")'>Save Changes</button>
+            <span id="save-settings-button-label"></span>
+            <br><br>
             <table id="car-settings">
-
             </table>
-            <button id="serial-connect-button" onclick='sendStringSerial("SAVE,")'>Save</button>
+            <p>
+            <details>
+                <summary>
+                    Advanced settings
+                </summary>
+                <button id="read-back-settings-button" onclick='sendStringSerial("SETTINGS,")'>read back
+                    settings</button>
+                <button id="revert-settings-button" onclick='sendStringSerial("REVERT,")'>revert to default</button>
+                <button id="reboot-arduino-button" onclick='sendStringSerial("REBOOT,")'>reboot arduino</button>
+            </details>
+            </p>
             <hr>
-        </div>
 
-        <footer>
+        </div>
+        <br>
+        <br>
+        <footer style="text-align:center">
             The source code for this website is on Github <a
                 href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
-            <br>
+            <br><br>
             This website uses <a href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
-            by David Buezas (generously shared under the MIT license) for
-            uploading code to the car.
+            (generously shared under the MIT license)
+            by David Buezas for uploading code to the car.
         </footer>
 
 
