@@ -1,12 +1,12 @@
-var options = null;
-var configurations_info = null;
-var port = null;
-var reader = null;
-var serial_connected_indicator_warning_timeout;
-var serialConnectionRunning = false;
-var sendStringSerialLock = false;
-var car_settings = null;
-var live_data = null;
+var configurations_info = null; // the configuration file pulled from https://github.com/gobabygocarswithjoysticks/car-code/blob/main/hex/configurations-info.txt which has info about what programs are available to upload
+var options = null; // configurations_info, but just the lines with program info
+var port = null; // serial port for connection to car
+var reader = null; // reads from the serial port
+var serial_connected_indicator_warning_timeout; // the result of a setInterval() used to display a warning message if the car is taking a long time to send a valid message
+var serialConnectionRunning = false; // boolean, is a car connected?
+var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
+var car_settings = null; // the settings that the car reports (Json)
+var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -16,17 +16,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById("options-buttons").style.backgroundColor = "white";
     document.getElementById("serial-disconnect-button").hidden = true;
 
-    updateUpload();
+    updateUpload(); // get the compiled code from github
+
+    // hide sections of the website and change the background color to help guide users.
     document.getElementById("upload-program").hidden = true;
     document.getElementById("connect-to-car").hidden = true;
     document.getElementById("configure-car").hidden = true;
-
     document.getElementById("upload-program").style.backgroundColor = "lightgrey";
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
     document.getElementById("configure-car").style.backgroundColor = "lightgrey";
 
 
-    // watch the upload-progress span to get information about the program upload progress
+    // watch the upload-progress span to get information about the program upload progress (I wish I could more directly get information from arduino-web-uploader but this works)
     const observer = new MutationObserver(mutationRecords => {
         if (mutationRecords[0].addedNodes[0].data === "Done!") {
             document.getElementById("upload-program").style.backgroundColor = "lightgrey";
@@ -39,15 +40,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
     });
-
     observer.observe(document.getElementById("upload-progress"), {
         childList: true
     });
 
 
 });
+// the "I want to program a car" button was pressed, show the relevant section
 function showFirstTime() {
-    // displayMode="showFirstTime";
     document.getElementById("upload-program").style.backgroundColor = "white";
     document.getElementById("upload-program").hidden = false;
 
@@ -59,20 +59,29 @@ function showFirstTime() {
     document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
 
 }
+// the "I want to change the settings of a car" button was pressed, show the relevant section
 function showConfigButton() {
-    // displayMode="showConfigButton";
     document.getElementById("upload-program").hidden = true;
     document.getElementById("upload-program").style.backgroundColor = "lightgrey";
 
-    document.getElementById("connect-to-car").style.backgroundColor = "white";
-    document.getElementById("connect-to-car").hidden = false;
+    if (!serialConnectionRunning) {
+        document.getElementById("connect-to-car").style.backgroundColor = "white";
+        document.getElementById("connect-to-car").hidden = false;
 
-    document.getElementById("configure-car").hidden = true;
-    document.getElementById("configure-car").style.backgroundColor = "lightgrey";
-    document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
+        document.getElementById("configure-car").hidden = true;
+        document.getElementById("configure-car").style.backgroundColor = "lightgrey";
+        document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
+    } else {
+        document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
+        document.getElementById("connect-to-car").hidden = false;
+
+        document.getElementById("configure-car").hidden = false;
+        document.getElementById("configure-car").style.backgroundColor = "white";
+        document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
+    }
 }
+// the "I want to see everything at once" button was pressed
 function showEverythingButton() {
-    // displayMode="showEverything";
     document.getElementById("upload-program").style.backgroundColor = "white";
     document.getElementById("connect-to-car").style.backgroundColor = "white";
     document.getElementById("configure-car").style.backgroundColor = "white";
@@ -83,6 +92,7 @@ function showEverythingButton() {
     document.getElementById("configure-car").hidden = false;
 
 }
+// disconnects the serial connection
 async function closeSerial() {
     try {
         await reader.cancel();
@@ -97,7 +107,7 @@ async function closeSerial() {
     document.getElementById("connect-to-car").style.backgroundColor = "white";
 
 }
-
+// sends the given string over serial, if connected and if nothing else is in the process of being sent. 
 async function sendStringSerial(string) {
     if (!serialConnectionRunning) return;
     if (sendStringSerialLock) return;
@@ -114,7 +124,7 @@ async function sendStringSerial(string) {
     }
     sendStringSerialLock = false;
 }
-
+// connect to serial connection (makes a popup asking what port to use)
 async function connectToSerial() {
     if (serialConnectionRunning) return;
     serialConnectionRunning = true;
@@ -149,15 +159,15 @@ async function connectToSerial() {
     let string = "";
 
     try {
-        while (true) {
-            const { value, done } = await reader.read();
+        while (true) { // this (async) function loops for as long as it is connected in order to continuously get data from the car
+            const { value, done } = await reader.read(); // https://web.dev/serial/
             if (done) {
                 reader.releaseLock();
                 break;
             }
-            // value is a string.
+            // value is a string with the characters that were just read from the serial port (usually a fragment of a full message)
             string += value;
-            if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent
+            if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent (a car sending valid messages sends terminating characters, so it's fine to just toss the data)
                 string = "";
             }
             if (value.includes("\n")) {
@@ -191,13 +201,7 @@ async function connectToSerial() {
 
     }
 
-    // const textEncoder = new TextEncoderStream();
-    // const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
-
     await readableStreamClosed.catch(() => { /* Ignore the error */ });
-
-    // writer.close();
-    // await writableStreamClosed;
 
     await port.close();
     serialConnectionRunning = false;
@@ -206,7 +210,7 @@ async function connectToSerial() {
     }
 
 }
-
+// data is the data just received from the Arduino, in JSON form. Handle all the types of messages here:
 function gotNewSerial(data) {
     if (data["current values, millis:"] != null) {
         gotNewData(data);
@@ -219,9 +223,10 @@ function gotNewSerial(data) {
         // not an expected message
     }
 }
+// handle the message from the Arduino where it prints current readings and values.
 function gotNewData(data) {
     live_data = data;
-    var elements = document.getElementsByClassName("liveVal-joyX")
+    var elements = document.getElementsByClassName("liveVal-joyX") // adding a span with class=liveVal-joyX to the html displays the most recently received 
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyXVal"];
     }
@@ -230,8 +235,8 @@ function gotNewData(data) {
         elements[i].innerHTML = data["joyYVal"];
     }
 }
-
-async function onSettingChangeFunction(setting) { // something was entered into a box
+// something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
+async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
@@ -243,7 +248,7 @@ async function onSettingChangeFunction(setting) { // something was entered into 
     document.getElementById('setting---' + setting).children[4].hidden = true; //blank
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
 }
-
+// handle message from the Arduino where it prints current readings and values
 function gotNewSettings(settings) {
     car_settings = settings;
 
@@ -254,48 +259,58 @@ function gotNewSettings(settings) {
 
     document.getElementById('car-settings').innerHTML = "";
 
+    document.getElementById("save-settings-button-label").innerHTML = ""; // clear "you have unsaved changes" warning since the unsaved changes were just lost since the car sent new settings
+
     document.getElementById('cal-con-first-look-message').hidden = true;
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (version === 1) {
-        if (len === 36) { // correct data
-            var list = document.getElementById("car-settings");
-            for (const setting in settings) {
-                if (setting === "current settings, version:") continue;
-                var entry = document.createElement("tr");
-                entry.setAttribute("id", "setting---" + setting);
-                entry.innerHTML += "<td>" + setting + "</td>";
+    if (version === 1 && len === 36) {
+        document.getElementById("settings-advanced-settings-info").innerHTML = "(car reports version: " + version + ")";
+        var list = document.getElementById("car-settings");
+        for (const setting in settings) {
+            if (setting === "current settings, version:") continue; // not a setting (though important), just skip it.
+            var entry = document.createElement("tr"); // each setting gets a row.
+            entry.setAttribute("id", "setting---" + setting);
+            entry.innerHTML += "<td>" + setting + "</td>";
 
-                if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
-                    entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
-                } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
-                    entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
-                } else {//integer
-                    entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
-                }
-
-                entry.innerHTML += '<td class="setting-indicator" hidden>\u2714</td>'; // checkmark
-                entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
-                entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
-
-
-                var setting_helper = document.createElement("span");
-                if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
-                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">is print interval slow or off?</span></button> (check the setting for JOY_X_PIN if you do not see a clear signal)';
-                } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
-                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">is print interval slow or off?</span></button> (check the settings for JOY_Y_PIN if you do not see a clear signal)';
-                } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
-                    setting_helper.innerHTML = "";
-                    for (var Ai = 0; Ai <= 5; Ai++) {
-                        setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
-                    }
-                }
-
-                entry.appendChild(setting_helper);
-                list.appendChild(entry);
+            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
+                entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
+            } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
+                entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+            } else {//integer
+                entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
+
+            entry.innerHTML += '<td class="setting-indicator" hidden>\u2714</td>'; // checkmark
+            entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
+            entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
+
+
+            var setting_helper = document.createElement("span");
+            if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">Not receiving data, is print interval slow or off?</span></button> (check the setting for JOY_X_PIN if you do not see a clear signal)';
+            } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">Not receiving data, is print interval slow or off?</span></button> (check the settings for JOY_Y_PIN if you do not see a clear signal)';
+            } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
+                setting_helper.innerHTML = "";
+                for (var Ai = 0; Ai <= 5; Ai++) {
+                    setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
+                }
+            }
+
+            entry.appendChild(setting_helper);
+            list.appendChild(entry);
         }
+
+    } else { // not a valid version and amount of data
+        var list = document.getElementById("car-settings");
+        list.innerHTML = "ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version?";
+        document.getElementById("settings-advanced-settings-info").innerHTML = JSON.stringify(settings);
+
+        console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ")");
+        console.log(settings);
+
     }
 
     document.getElementById("configure-car").style.backgroundColor = "white";
