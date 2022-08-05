@@ -18,7 +18,12 @@
         <h1> GBG joystick car programming and configuring website. </h1>
         <p> For any questions about how to use this website, please post <a
                 href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a>
-            or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.</p>
+            or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
+        </p>
+        <p>
+            This website can only change the settings of cars with the new code that this site uploads, it won't work
+            with the original go baby go code.
+        </p>
 
         <noscript> <mark> Your browser is not running a script that is required for this website to function. Please
                 enable javascript or try a different browser. </mark> </noscript>
@@ -26,8 +31,7 @@
 
         <div id="options-buttons">
             <br>
-            <button id="first-time-program-button" onclick="showFirstTime()">I want to program a car for the first
-                time.</button>
+            <button id="first-time-program-button" onclick="showFirstTime()">I want to program a car.</button>
             <button id="config-button" onclick="showConfigButton()">I want to change the settings of my car.</button>
             <button id="everything-button" onclick="showEverythingButton()">Show me all the options at once.</button>
             <br>
@@ -99,7 +103,9 @@
                 <button id="read-back-settings-button" onclick='sendStringSerial("SETTINGS,")'>read back
                     settings</button>
                 <button id="revert-settings-button" onclick='sendStringSerial("REVERT,")'>revert to default</button>
-                <button id="reboot-arduino-button" onclick='sendStringSerial("REBOOT,")'>reboot arduino</button>
+                <button id="reboot-arduino-button"
+                    onclick='sendStringSerial("REBOOT,");    document.getElementById("save-settings-button-label").innerHTML = "";'>reboot
+                    arduino, revert to saved settings</button>
             </details>
             </p>
             <hr>

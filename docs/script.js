@@ -101,6 +101,7 @@ async function closeSerial() {
 async function sendStringSerial(string) {
     if (!serialConnectionRunning) return;
     if (sendStringSerialLock) return;
+    if (port == null) return;
     sendStringSerialLock = true;
     const writer = port.writable.getWriter();
     try {
@@ -231,11 +232,11 @@ function gotNewData(data) {
 }
 
 async function onSettingChangeFunction(setting) { // something was entered into a box
-    document.getElementById("save-settings-button-label").innerHTML = "You have unsaved changes.";
+    document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
-        sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
+        await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
     } else {
-        sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",");
+        await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",");
     }
 
     document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
@@ -281,9 +282,14 @@ function gotNewSettings(settings) {
 
                 var setting_helper = document.createElement("span");
                 if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
-                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">is print interval slow or off?</span></button> (check the settings for the pin if you do not see a change)';
+                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">is print interval slow or off?</span></button> (check the setting for JOY_X_PIN if you do not see a clear signal)';
                 } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
-                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">is print interval slow or off?</span></button> (check the settings for the pin if you do not see a change)';
+                    setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">is print interval slow or off?</span></button> (check the settings for JOY_Y_PIN if you do not see a clear signal)';
+                } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
+                    setting_helper.innerHTML = "";
+                    for (var Ai = 0; Ai <= 5; Ai++) {
+                        setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
+                    }
                 }
 
                 entry.appendChild(setting_helper);
@@ -295,13 +301,18 @@ function gotNewSettings(settings) {
     document.getElementById("configure-car").style.backgroundColor = "white";
     document.getElementById("configure-car").hidden = false;
 }
-function helper(type, data) {
+// used for giving actions to "helper" buttons to the right of the input boxes when changing car settings
+function helper(type, data, data2) {
     if (type === "joyX") {
         document.getElementById('setting---' + data).children[1].firstChild.value = live_data["joyXVal"];
         onSettingChangeFunction(data)
     }
     if (type === "joyY") {
         document.getElementById('setting---' + data).children[1].firstChild.value = live_data["joyYVal"];
+        onSettingChangeFunction(data)
+    }
+    if (type === "joyPin") {
+        document.getElementById('setting---' + data).children[1].firstChild.value = 14 + parseInt(data2);
         onSettingChangeFunction(data)
     }
 }
