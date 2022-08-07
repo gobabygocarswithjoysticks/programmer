@@ -15,8 +15,9 @@
 <body style="background-color:lightgrey;">
 
     <main>
-        <h1> GBG joystick car programming and configuring website. </h1>
-        <p> For any questions about how to use this website, please post <a
+        <h1> <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/index">GBG
+                joystick car</a> programming and configuring website. </h1>
+        <p> For any questions about how to use this website, please post <a target="_blank" rel="noopener noreferrer"
                 href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a>
             or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
         </p>
@@ -60,7 +61,6 @@
 
             </div>
 
-
             <p>
             <details>
                 <summary>
@@ -74,6 +74,7 @@
                         <input type="checkbox" id="upload-main-checkbox" onclick="updateUpload()"></input>
                     </li>
                 </ol>
+                <p>The "nano" (not "nanoOldBootloader") option works for the Arduino Uno too.</p>
             </details>
             </p>
 
@@ -89,12 +90,56 @@
         </div>
         <div id="configure-car">
             <h2>Calibrate and Configure Your Car</h2>
-            <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
-            <button id="save-settings-button" onclick='sendStringSerial("SAVE,")'>Save Changes</button>
+            <div id="cal-con-first-look-message">Connect to your car to see settings here.<br></div>
+            <table>
+                <tr style="text-align: center">
+                    <td>
+                        Joystick Input
+                    </td>
+                    <td>
+                        Scaled Input
+                    </td>
+                    <td>
+                        Smoothed Input
+                    </td>
+                    <td>
+                        Motor Signals
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <canvas id="joystick-input-canvas" width="220" height="220">
+                            Error displaying canvas! Try a different browser?
+                        </canvas>
+                    </td>
+                    <td>
+                        <canvas id="scaled-input-canvas" width="220" height="220">
+                            Error displaying canvas! Try a different browser?
+                        </canvas>
+                    </td>
+                    <td>
+                        <canvas id="smoothed-input-canvas" width="220" height="220">
+                            Error displaying canvas! Try a different browser?
+                        </canvas>
+                    </td>
+                    <td>
+                        <canvas id="motor-signal-canvas" width="220" height="220">
+                            Error displaying canvas! Try a different browser?
+                        </canvas>
+                    </td>
+                </tr>
+            </table>
+
+            <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>Save
+                Changes</button>
             <span id="save-settings-button-label"></span>
             <br><br>
+
             <table id="car-settings">
+                <!-- settings received from the car will show up here -->
             </table>
+
+            <br>
             <p>
             <details>
                 <summary>
@@ -110,15 +155,17 @@
             </details>
             </p>
             <hr>
-
         </div>
         <br>
         <br>
         <footer style="text-align:center">
-            The source code for this website is on Github <a
+            The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
                 href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
-            <br><br>
-            This website uses <a href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
+            <br>
+
+            <br>
+            This website uses <a target="_blank" rel="noopener noreferrer"
+                href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
             (generously shared under the MIT license)
             by David Buezas for uploading code to the car.
         </footer>

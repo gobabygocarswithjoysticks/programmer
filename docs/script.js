@@ -226,13 +226,121 @@ function gotNewSerial(data) {
 // handle the message from the Arduino where it prints current readings and values.
 function gotNewData(data) {
     live_data = data;
+    // console.log(data);
     var elements = document.getElementsByClassName("liveVal-joyX") // adding a span with class=liveVal-joyX to the html displays the most recently received 
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyXVal"];
+        elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0'); // \xa0 is a non breaking space
     }
     var elements = document.getElementsByClassName("liveVal-joyY")
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyYVal"];
+        elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0');
+    }
+
+    drawJoystickCanvas("joystick-input-canvas", data["turnInput"], data["speedInput"]);
+    drawJoystickCanvas("scaled-input-canvas", data["turnProcessed"], data["speedProcessed"]);
+    drawJoystickCanvas("smoothed-input-canvas", data["turnToDrive"], data["speedToDrive"]);
+
+    drawMotorSignal(true, "motor-signal-canvas", 60, data, "left");
+    drawMotorSignal(false, "motor-signal-canvas", 120, data, "right");
+
+}
+function drawMotorSignal(clear, canvasID, xpos, data, side) {
+    // motor-signal-canvas
+    let canvas = document.getElementById(canvasID);
+    let ctx = canvas.getContext("2d");
+    if (clear) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.beginPath();
+    ctx.lineWidth = "2";
+    ctx.strokeStyle = "grey";
+    ctx.rect(xpos, 10, 40, 200);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.lineWidth = "2";
+    ctx.strokeStyle = "grey";
+    ctx.moveTo(xpos, canvas.height / 2);
+    ctx.lineTo(xpos + 40, canvas.height / 2);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = "green";
+
+    var grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grd.addColorStop(0, "orange");
+    grd.addColorStop(.5, "green");
+    grd.addColorStop(1, "orange");
+    ctx.fillStyle = grd;
+    let centerSignal = document.getElementById('setting---' + side.toUpperCase() + "_MOTOR_CENTER").children[1].firstChild.value;
+    let fastSignal = document.getElementById('setting---' + side.toUpperCase() + "_MOTOR_FAST".toUpperCase()).children[1].firstChild.value;
+    let h = (data[side + "MotorWriteVal"] - centerSignal) * -100 / fastSignal;
+    ctx.fillRect(xpos, canvas.height / 2, 40, h);
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = "black";
+    ctx.font = "20px Arial";
+    ctx.fillText(data[side + "MotorWriteVal"], xpos + (side === "left" ? -51 : 45), canvas.height / 2 + h + 10);
+    ctx.closePath();
+}
+function drawJoystickCanvas(canvasID, vx, vy) {
+    // draw to joystick input display canvas
+    let canvas = document.getElementById(canvasID);
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.lineWidth = "2";
+    ctx.strokeStyle = "grey";
+    ctx.rect(10, 10, 200, 200);
+    ctx.stroke();
+    ctx.closePath();
+    let x = vx * 100 + 110;
+    let y = vy * -100 + 110;
+    ctx.beginPath();
+    ctx.lineWidth = "1";
+    ctx.strokeStyle = "grey";
+    ctx.moveTo(canvas.width / 2, canvas.height / 2);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.lineWidth = "5";
+    if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+        ctx.strokeStyle = "Green";
+    } else {
+        ctx.strokeStyle = "MediumBlue";
+    }
+    ctx.moveTo(x - 9, y);
+    ctx.lineTo(x + 9, y);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    if (Math.abs(vx) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+        ctx.strokeStyle = "Green";
+    } else {
+        ctx.strokeStyle = "MediumBlue";
+    }
+    ctx.moveTo(x, y - 9);
+    ctx.lineTo(x, y + 9);
+    ctx.stroke();
+    ctx.closePath();
+
+    if (Math.abs(vx) < 0.01) { // so if only one axis is off zero, the off axis one is always displayed on top
+        ctx.beginPath();
+        if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+            ctx.strokeStyle = "Green";
+        } else {
+            ctx.strokeStyle = "MediumBlue";
+        }
+        ctx.moveTo(x - 9, y);
+        ctx.lineTo(x + 9, y);
+        ctx.stroke();
+        ctx.closePath();
     }
 }
 // something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
@@ -286,12 +394,11 @@ function gotNewSettings(settings) {
             entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
             entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
 
-
             var setting_helper = document.createElement("span");
             if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
-                setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX">Not receiving data, is print interval slow or off?</span></button> (check the setting for JOY_X_PIN if you do not see a clear signal)';
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_X_PIN if not a clear signal)';
             } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
-                setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY">Not receiving data, is print interval slow or off?</span></button> (check the settings for JOY_Y_PIN if you do not see a clear signal)';
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_Y_PIN if not a clear signal)';
             } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
                 setting_helper.innerHTML = "";
                 for (var Ai = 0; Ai <= 5; Ai++) {
