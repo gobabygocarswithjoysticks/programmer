@@ -136,6 +136,15 @@
             <span id="save-settings-button-label"></span>
             <br><br>
 
+            <button id="show-pins-settings-button" onclick="showPinSettings()">choose pins</button>
+            <button id="show-joystick-settings-button" onclick="showJoystickSettings()">calibrate joystick</button>
+            <button id="show-drive-settings-button" onclick="showSpeedSettings()">change acceleration, speed, and other
+                drive settings</button>
+            <button id="show-all-settings-button" onclick="showAllSettings()">show all</button>
+            <br>
+
+            <p id="config-help-paragraph"></p>
+
             <table id="car-settings">
                 <!-- settings received from the car will show up here -->
             </table>

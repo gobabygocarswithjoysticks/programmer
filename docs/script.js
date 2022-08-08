@@ -7,6 +7,7 @@ var serialConnectionRunning = false; // boolean, is a car connected?
 var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
 var car_settings = null; // the settings that the car reports (Json)
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
+var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 // the "I want to program a car" button was pressed, show the relevant section
 function showFirstTime() {
+    showEverything = false;
     document.getElementById("upload-program").style.backgroundColor = "white";
     document.getElementById("upload-program").hidden = false;
 
@@ -61,6 +63,7 @@ function showFirstTime() {
 }
 // the "I want to change the settings of a car" button was pressed, show the relevant section
 function showConfigButton() {
+    showEverything = false;
     document.getElementById("upload-program").hidden = true;
     document.getElementById("upload-program").style.backgroundColor = "lightgrey";
 
@@ -82,6 +85,7 @@ function showConfigButton() {
 }
 // the "I want to see everything at once" button was pressed
 function showEverythingButton() {
+    showEverything = true;
     document.getElementById("upload-program").style.backgroundColor = "white";
     document.getElementById("connect-to-car").style.backgroundColor = "white";
     document.getElementById("configure-car").style.backgroundColor = "white";
@@ -91,6 +95,7 @@ function showEverythingButton() {
     document.getElementById("connect-to-car").hidden = false;
     document.getElementById("configure-car").hidden = false;
 
+    showAllSettings();
 }
 // disconnects the serial connection
 async function closeSerial() {
@@ -140,7 +145,7 @@ async function connectToSerial() {
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
-        document.getElementById('serial-connected-indicator').innerHTML = "not connected";
+        document.getElementById('serial-connected-indicator').innerHTML = "did not connect";
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
@@ -227,12 +232,12 @@ function gotNewSerial(data) {
 function gotNewData(data) {
     live_data = data;
     // console.log(data);
-    var elements = document.getElementsByClassName("liveVal-joyX") // adding a span with class=liveVal-joyX to the html displays the most recently received 
+    var elements = document.getElementsByClassName("liveVal-joyX"); // adding a span with class=liveVal-joyX to the html displays the most recently received 
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyXVal"];
         elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0'); // \xa0 is a non breaking space
     }
-    var elements = document.getElementsByClassName("liveVal-joyY")
+    var elements = document.getElementsByClassName("liveVal-joyY");
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyYVal"];
         elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0');
@@ -377,9 +382,11 @@ function gotNewSettings(settings) {
         document.getElementById("settings-advanced-settings-info").innerHTML = "(car reports version: " + version + ")";
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
-            if (setting === "current settings, version:") continue; // not a setting (though important), just skip it.
+            if (setting === "current settings, version:") continue; // not a setting, skip it so it doesn't get a row in the settings table
             var entry = document.createElement("tr"); // each setting gets a row.
             entry.setAttribute("id", "setting---" + setting);
+            entry.setAttribute("hidden", "true");
+            entry.setAttribute("class", "car-setting-row");
             entry.innerHTML += "<td>" + setting + "</td>";
 
             if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
@@ -410,6 +417,10 @@ function gotNewSettings(settings) {
             list.appendChild(entry);
         }
 
+        if (showEverything) {
+            showAllSettings();
+        }
+
     } else { // not a valid version and amount of data
         var list = document.getElementById("car-settings");
         list.innerHTML = "ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version?";
@@ -438,6 +449,76 @@ function helper(type, data, data2) {
         onSettingChangeFunction(data)
     }
 }
+
+////functions (called by buttons) for showing and hiding parts of the settings table to make the website look simpler
+function showPinSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        if (Array(
+            "setting---JOY_X_PIN",
+            "setting---JOY_Y_PIN",
+            "setting---LEFT_MOTOR_CONTROLLER_PIN",
+            "setting---RIGHT_MOTOR_CONTROLLER_PIN"
+        ).indexOf(elements[i].id) > -1) { //joystick calibration helping
+            elements[i].hidden = false;
+        } else {
+            elements[i].hidden = true;
+        }
+    }
+    document.getElementById("config-help-paragraph").innerHTML = "you can look at the wiring in the car to see what pins are used";
+}
+function showJoystickSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        if (Array(
+            "setting---CONTROL_RIGHT",
+            "setting---CONTROL_CENTER_X",
+            "setting---CONTROL_LEFT",
+            "setting---X_DEADZONE",
+            "setting---CONTROL_UP",
+            "setting---CONTROL_CENTER_Y",
+            "setting---CONTROL_DOWN",
+            "setting---Y_DEADZONE"
+        ).indexOf(elements[i].id) > -1) { //joystick calibration helping
+            elements[i].hidden = false;
+        } else {
+            elements[i].hidden = true;
+        }
+    }
+    document.getElementById("config-help-paragraph").innerHTML = "move the joystick and press the buttons";
+}
+function showSpeedSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        if (Array(
+            "setting---ACCELERATION_FORWARD"
+            , "setting---DECELERATION_FORWARD"
+            , "setting---ACCELERATION_BACKWARD"
+            , "setting---DECELERATION_BACKWARD"
+            , "setting---ACCELERATION_TURNING"
+            , "setting---DECELERATION_TURNING"
+            , "setting---FASTEST_FORWARD"
+            , "setting---FASTEST_BACKWARD"
+            , "setting---TURN_SPEED"
+            , "setting---SCALE_TURNING_WHEN_MOVING"
+            , "setting---REVERSE_TURN_IN_REVERSE"
+        ).indexOf(elements[i].id) > -1) { //joystick calibration helping
+            elements[i].hidden = false;
+        } else {
+            elements[i].hidden = true;
+        }
+    }
+    document.getElementById("config-help-paragraph").innerHTML = "change speed and acceleration of the car";
+}
+function showAllSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].hidden = false;
+    }
+    document.getElementById("config-help-paragraph").innerHTML = "";
+}
+
+// the car replied with a "result" as a response to being told to change a setting
 function gotNewResult(result) {
     if (result["result"] === "change") {
         document.getElementById('setting---' + result["setting"]).children[3].hidden = true; // hide error
