@@ -453,7 +453,7 @@ function gotNewSettings(settings) {
 
     } else { // not a valid version and amount of data
         var list = document.getElementById("car-settings");
-        list.innerHTML = "ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version?";
+        list.innerHTML = "<mark> ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version? </mark>";
         document.getElementById("settings-advanced-settings-info").innerHTML = JSON.stringify(settings);
 
         console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ")");
