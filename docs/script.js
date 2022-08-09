@@ -311,18 +311,19 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     ctx.stroke();
     ctx.closePath();
 
-    ctx.beginPath();
-    ctx.lineWidth = "5";
-    if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
-        ctx.strokeStyle = "Green";
-    } else {
-        ctx.strokeStyle = "MediumBlue";
+    if (Math.abs(vx) > 0.01) { // if only one axis is off zero, the off axis one is always displayed on top
+        ctx.beginPath();
+        ctx.lineWidth = "5";
+        if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+            ctx.strokeStyle = "Green";
+        } else {
+            ctx.strokeStyle = "MediumBlue";
+        }
+        ctx.moveTo(x - 9, y);
+        ctx.lineTo(x + 9, y);
+        ctx.stroke();
+        ctx.closePath();
     }
-    ctx.moveTo(x - 9, y);
-    ctx.lineTo(x + 9, y);
-    ctx.stroke();
-    ctx.closePath();
-
     ctx.beginPath();
     if (Math.abs(vx) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
         ctx.strokeStyle = "Green";
@@ -334,9 +335,9 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     ctx.stroke();
     ctx.closePath();
 
-    if (Math.abs(vx) < 0.01) { // so if only one axis is off zero, the off axis one is always displayed on top
+    if (Math.abs(vx) < 0.01) { // if only one axis is off zero, the off axis one is always displayed on top
         ctx.beginPath();
-        if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+        if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
             ctx.strokeStyle = "Green";
         } else {
             ctx.strokeStyle = "MediumBlue";
@@ -471,11 +472,9 @@ function showJoystickSettings() {
             "setting---CONTROL_RIGHT",
             "setting---CONTROL_CENTER_X",
             "setting---CONTROL_LEFT",
-            "setting---X_DEADZONE",
             "setting---CONTROL_UP",
             "setting---CONTROL_CENTER_Y",
             "setting---CONTROL_DOWN",
-            "setting---Y_DEADZONE"
         ).indexOf(elements[i].id) > -1) { //joystick calibration helping
             elements[i].hidden = false;
         } else {
