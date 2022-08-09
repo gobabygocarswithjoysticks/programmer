@@ -42,7 +42,9 @@
         <hr>
         <div id="upload-program">
             <h2> Upload Program </h2>
-
+            <p> Leave the program to upload on the default selection. For cheap Arduino Nano like boards, select
+                "nanoOldBootloader". For official Arduino Nano boards, and for Arduino Uno boards, select "nano" for the
+                board. If there is an error uploading, try selecting the other board type.</p>
             <mark id="no-config-alert"> </mark>
             <div id="upload-controls-div">
                 <br>
@@ -75,7 +77,6 @@
                         <input type="checkbox" id="upload-main-checkbox" onclick="updateUpload()"></input>
                     </li>
                 </ol>
-                <p>The "nano" (not "nanoOldBootloader") option works for the Arduino Uno too.</p>
             </details>
             </p>
 

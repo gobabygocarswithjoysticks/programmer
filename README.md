@@ -10,4 +10,4 @@ For any questions about how to use this website, please post [here](https://gith
 
 ## Acknowledgements
 
-- This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas (generously shared under the MIT license) for uploading code to the car.
+- This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) (generously shared under the MIT license) by David Buezas for uploading code to the car.

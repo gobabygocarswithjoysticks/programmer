@@ -113,9 +113,9 @@ async function closeSerial() {
 }
 // sends the given string over serial, if connected and if nothing else is in the process of being sent. 
 async function sendStringSerial(string) {
-    if (!serialConnectionRunning) return;
-    if (sendStringSerialLock) return;
-    if (port == null) return;
+    if (!serialConnectionRunning) { return; }
+    if (sendStringSerialLock) { return; }
+    if (port == null) { return; }
     sendStringSerialLock = true;
     const writer = port.writable.getWriter();
     try {
@@ -139,7 +139,7 @@ async function connectToSerial() {
 
     try {
         port = await navigator.serial.requestPort();
-        serial_connected_indicator_warning_timeout = setTimeout(() => { document.getElementById('serial-connected-indicator').innerHTML = "trying to connect... It's taking a long time, try disconnecting and checking the port."; }, 3000);
+        serial_connected_indicator_warning_timeout = setTimeout(() => { document.getElementById('serial-connected-indicator').innerHTML = "trying to connect... It's taking a long time, try disconnecting and checking the port, and try closing other tabs or Arduino windows that might be connected to the car."; }, 3000);
         await port.open({ baudRate: 115200 });
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
@@ -409,10 +409,22 @@ function gotNewSettings(settings) {
             } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
                 setting_helper.innerHTML = "";
                 for (var Ai = 0; Ai <= 5; Ai++) {
-                    setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
+                    setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '</button>';
                 }
             } else if (Array("SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>This setting changes how tightly the car turns when the joystick is pushed to a corner, try 0.5 to start.</span>";
+            } else if (Array("SCALE_ACCEL_WITH_SPEED").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>If checked: (1/accel)=time to reach max speed setting. If unchecked: (1/accel)=time to reach speed of 1.0.</span>";
+            } else if (Array("REVERSE_TURN_IN_REVERSE").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
+            } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with.</span>";
+            } else if (Array("LEFT_MOTOR_SLOW", "RIGHT_MOTOR_SLOW").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor start to turn? Can be negative if the motor is wired backwards. try 25</span>";
+            } else if (Array("LEFT_MOTOR_FAST", "RIGHT_MOTOR_FAST").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor run at full speed? Can be negative if the motor is wired backwards. try 500</span>";
+            } else if (Array("LEFT_MOTOR_CENTER", "RIGHT_MOTOR_CENTER").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>what ESC signal makes the motor stop? usually 1500</span>";
             } else {
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
                     setting,
