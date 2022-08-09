@@ -5,7 +5,6 @@ var reader = null; // reads from the serial port
 var serial_connected_indicator_warning_timeout; // the result of a setInterval() used to display a warning message if the car is taking a long time to send a valid message
 var serialConnectionRunning = false; // boolean, is a car connected?
 var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
-var car_settings = null; // the settings that the car reports (Json)
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
 var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
 document.addEventListener('DOMContentLoaded', async function () {
@@ -363,8 +362,6 @@ async function onSettingChangeFunction(setting) {
 }
 // handle message from the Arduino where it prints current readings and values
 function gotNewSettings(settings) {
-    car_settings = settings;
-
     clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
 
@@ -379,7 +376,7 @@ function gotNewSettings(settings) {
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
     if (version === 1 && len === 36) {
-        document.getElementById("settings-advanced-settings-info").innerHTML = "(car reports version: " + version + ")";
+        document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
             if (setting === "current settings, version:") continue; // not a setting, skip it so it doesn't get a row in the settings table
@@ -527,9 +524,11 @@ function gotNewResult(result) {
         document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
     }
     if (result["result"] === "saved") { // saved settings to EEPROM
-        var elements = document.getElementsByClassName("setting-indicator")
+        var elements = document.getElementsByClassName("car-setting-row");
         for (var i = 0; i < elements.length; i++) {
-            elements[i].hidden = true;
+            elements[i].children[3].hidden = true; // hide error
+            elements[i].children[2].hidden = true; // hide checkmark    
+            elements[i].children[4].hidden = false; // show blank
         }
         document.getElementById('save-settings-button-label').innerHTML = "Saved!";
     }
