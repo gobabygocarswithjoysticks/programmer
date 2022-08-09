@@ -325,6 +325,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.closePath();
     }
     ctx.beginPath();
+    ctx.lineWidth = "5";
     if (Math.abs(vx) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
         ctx.strokeStyle = "Green";
     } else {
@@ -337,6 +338,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
 
     if (Math.abs(vx) < 0.01) { // if only one axis is off zero, the off axis one is always displayed on top
         ctx.beginPath();
+        ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
             ctx.strokeStyle = "Green";
         } else {
@@ -481,7 +483,14 @@ function showJoystickSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = "move the joystick and press the buttons";
+    document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
+}
+async function swapxandypins() {
+    let tempX = document.getElementById('setting---JOY_X_PIN').children[1].firstChild.value;
+    document.getElementById('setting---JOY_X_PIN').children[1].firstChild.value = document.getElementById('setting---JOY_Y_PIN').children[1].firstChild.value;
+    document.getElementById('setting---JOY_Y_PIN').children[1].firstChild.value = tempX;
+    await onSettingChangeFunction("JOY_X_PIN");
+    await onSettingChangeFunction("JOY_Y_PIN");
 }
 function showSpeedSettings() {
     var elements = document.getElementsByClassName("car-setting-row");
