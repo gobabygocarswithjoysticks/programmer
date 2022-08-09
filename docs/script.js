@@ -411,6 +411,22 @@ function gotNewSettings(settings) {
                 for (var Ai = 0; Ai <= 5; Ai++) {
                     setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
                 }
+            } else {
+                setting_helper.innerHTML = presetButtonGenerator( //PRESETS (suggested settings to give an idea of the range)
+                    setting,
+                    Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED"),
+                    Array("slow", "medium", "fast"),
+                    Array(
+                        Array(0.33, .75, 2), //ACCELERATION_FORWARD
+                        Array(0.5, 1, 2), //DECELERATION_FORWARD
+                        Array(0.25, .5, 1), //ACCELERATION_BACKWARD
+                        Array(0.75, 1.5, 3), //DECELERATION_BACKWARD
+                        Array(0.5, 1, 2), //ACCELERATION_TURNING
+                        Array(0.75, 1.5, 3), //DECELERATION_TURNING
+                        Array(0.4, 0.6, 1), //FASTEST_FORWARD
+                        Array(0.3, 0.5, 0.8), //FASTEST_BACKWARD
+                        Array(0.3, 0.5, 0.8)) //TURN_SPEED
+                );
             }
 
             entry.appendChild(setting_helper);
@@ -445,9 +461,25 @@ function helper(type, data, data2) {
         onSettingChangeFunction(data)
     }
     if (type === "joyPin") {
-        document.getElementById('setting---' + data).children[1].firstChild.value = 14 + parseInt(data2);
+        document.getElementById('setting---' + data).children[1].firstChild.value = 14 + parseInt(data2); // helper buttons for Analog inputs
         onSettingChangeFunction(data)
     }
+    if (type === "presetSettingChange") { //sets setting with name of data to value of data2
+        document.getElementById('setting---' + data).children[1].firstChild.value = data2;
+        onSettingChangeFunction(data)
+    }
+}
+// generates row of buttons that change settings to preset values
+function presetButtonGenerator(setting, settings, labels, values) {
+    if (settings.indexOf(setting) === -1) {
+        return ""; // not a settings that gets presets
+    }
+    let index = settings.indexOf(setting);
+    let html = "";
+    for (let i = 0; i < values[index].length; i++) {
+        html += `<button onclick="helper(&quot;presetSettingChange&quot;,&quot;` + setting + `&quot;,` + values[index][i] + `)">` + labels[i] + `</button>`;
+    }
+    return html;
 }
 
 ////functions (called by buttons) for showing and hiding parts of the settings table to make the website look simpler
