@@ -416,7 +416,7 @@ function gotNewSettings(settings) {
             } else if (Array("SCALE_ACCEL_WITH_SPEED").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>If checked: (1/accel)=time to reach max speed setting. If unchecked: (1/accel)=time to reach speed of 1.0.</span>";
             } else if (Array("REVERSE_TURN_IN_REVERSE").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
+                setting_helper.innerHTML = "<span>Changes how the car drives in reverse. If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
             } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with.</span>";
             } else if (Array("LEFT_MOTOR_SLOW", "RIGHT_MOTOR_SLOW").indexOf(setting) > -1) {
