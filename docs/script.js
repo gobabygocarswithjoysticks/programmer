@@ -411,8 +411,10 @@ function gotNewSettings(settings) {
                 for (var Ai = 0; Ai <= 5; Ai++) {
                     setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '=' + (Ai + 14) + '</button>';
                 }
+            } else if (Array("SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) {
+                setting_helper.innerHTML = "<span>This setting changes how tightly the car turns when the joystick is pushed to a corner, try 0.5 to start.</span>";
             } else {
-                setting_helper.innerHTML = presetButtonGenerator( //PRESETS (suggested settings to give an idea of the range)
+                setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
                     setting,
                     Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED"),
                     Array("slow", "medium", "fast"),
