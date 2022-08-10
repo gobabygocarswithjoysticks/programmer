@@ -47,7 +47,6 @@
                 board. If there is an error uploading, try selecting the other board type.</p>
             <mark id="no-config-alert"> </mark>
             <div id="upload-controls-div">
-                <br>
                 <label for="program-selector">Select program to upload:</label>
                 <select name="program-selector" id="program-selector" onchange="updateBoardOptionsSelector();"></select>
                 <br>
@@ -56,14 +55,14 @@
                 <br>
                 <span id="upload-warning-span">
                 </span>
-
+                <p id="upload-connect-comment">After pressing upload, a box will pop up. Choose the car's
+                    serial port in the box that pops up (unplug and replug the car and whichever option goes away
+                    and comes back is the car).
+                </p>
                 <button id="upload-button" arduino-uploader onclick="closeSerial()" board="" verify="true" hex-href="">
                     Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
                 </button>
-
-
             </div>
-
             <p>
             <details>
                 <summary>
@@ -85,8 +84,8 @@
         <div id="connect-to-car">
             <h2>Connect to Car (to change settings)</h2>
             <p id="serial-connected-indicator">After pressing connect, a box will pop up. Choose the car's serial
-                port in the box that pops up (unplug and replug the car and whichever option goes away and comes back is
-                the car).</p>
+                port in the box that pops up (unplug and replug the car and whichever option goes away and comes
+                back is the car).</p>
             <button id="serial-connect-button" onclick="connectToSerial()">connect</button>
             <button id="serial-disconnect-button" onclick="closeSerial()">disconnect</button>
             <hr>

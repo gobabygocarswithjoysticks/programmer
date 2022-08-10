@@ -30,9 +30,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     // watch the upload-progress span to get information about the program upload progress (I wish I could more directly get information from arduino-web-uploader but this works)
     const observer = new MutationObserver(mutationRecords => {
         if (mutationRecords[0].addedNodes[0].data === "Done!") {
+            document.getElementById("upload-connect-comment").hidden = true;
             document.getElementById("upload-program").style.backgroundColor = "lightgrey";
             document.getElementById("connect-to-car").style.backgroundColor = "white";
             document.getElementById("connect-to-car").hidden = false;
+            document.getElementById("connect-to-car").scrollIntoView();
         }
         if (mutationRecords[0].addedNodes[0].data === "0%") {
             document.getElementById("upload-program").style.backgroundColor = "white";
@@ -463,6 +465,7 @@ function gotNewSettings(settings) {
 
     document.getElementById("configure-car").style.backgroundColor = "white";
     document.getElementById("configure-car").hidden = false;
+    document.getElementById("configure-car").scrollIntoView();
 }
 // used for giving actions to "helper" buttons to the right of the input boxes when changing car settings
 function helper(type, data, data2) {
@@ -512,6 +515,8 @@ function showPinSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = "you can look at the wiring in the car to see what pins are used";
+    document.getElementById("configure-car").scrollIntoView();
+
 }
 function showJoystickSettings() {
     var elements = document.getElementsByClassName("car-setting-row");
@@ -530,6 +535,8 @@ function showJoystickSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
+    document.getElementById("configure-car").scrollIntoView();
+
 }
 async function swapxandypins() {
     let tempX = document.getElementById('setting---JOY_X_PIN').children[1].firstChild.value;
@@ -560,6 +567,8 @@ function showSpeedSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = "change speed and acceleration of the car";
+    document.getElementById("configure-car").scrollIntoView();
+
 }
 function showAllSettings() {
     var elements = document.getElementsByClassName("car-setting-row");
@@ -567,6 +576,7 @@ function showAllSettings() {
         elements[i].hidden = false;
     }
     document.getElementById("config-help-paragraph").innerHTML = "";
+    document.getElementById("configure-car").scrollIntoView();
 }
 
 // the car replied with a "result" as a response to being told to change a setting
