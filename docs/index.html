@@ -83,6 +83,8 @@
         </div>
         <div id="connect-to-car">
             <h2>Connect to Car (to change settings)</h2>
+            <mark id="post-upload-connect-message" hidden>The code has been uploaded. Next, connect and configure your
+                car.</mark>
             <p id="serial-connected-indicator">After pressing connect, a box will pop up. Choose the car's serial
                 port in the box that pops up (unplug and replug the car and whichever option goes away and comes
                 back is the car).</p>
@@ -141,7 +143,7 @@
             <button id="show-joystick-settings-button" onclick="showJoystickSettings()">calibrate joystick</button>
             <button id="show-drive-settings-button" onclick="showSpeedSettings()">change acceleration, speed, and other
                 drive settings</button>
-            <button id="show-all-settings-button" onclick="showAllSettings()">show all</button>
+            <button id="show-all-settings-button" onclick="showAllSettings(true)">show all</button>
             <br>
 
             <p id="config-help-paragraph"></p>

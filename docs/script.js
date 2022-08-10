@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById("connect-to-car").style.backgroundColor = "white";
             document.getElementById("connect-to-car").hidden = false;
             document.getElementById("connect-to-car").scrollIntoView();
+            document.getElementById("post-upload-connect-message").hidden = false;
         }
         if (mutationRecords[0].addedNodes[0].data === "0%") {
             document.getElementById("upload-program").style.backgroundColor = "white";
@@ -61,6 +62,8 @@ function showFirstTime() {
     document.getElementById("configure-car").style.backgroundColor = "lightgrey";
     document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
 
+    document.getElementById("upload-program").scrollIntoView();
+
 }
 // the "I want to change the settings of a car" button was pressed, show the relevant section
 function showConfigButton() {
@@ -83,6 +86,8 @@ function showConfigButton() {
         document.getElementById("configure-car").style.backgroundColor = "white";
         document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
     }
+
+    document.getElementById("connect-to-car").scrollIntoView();
 }
 // the "I want to see everything at once" button was pressed
 function showEverythingButton() {
@@ -96,7 +101,7 @@ function showEverythingButton() {
     document.getElementById("connect-to-car").hidden = false;
     document.getElementById("configure-car").hidden = false;
 
-    showAllSettings();
+    showAllSettings(false);
 }
 // disconnects the serial connection
 async function closeSerial() {
@@ -369,6 +374,7 @@ async function onSettingChangeFunction(setting) {
 function gotNewSettings(settings) {
     clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
+    document.getElementById("post-upload-connect-message").hidden = true;
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
@@ -450,7 +456,7 @@ function gotNewSettings(settings) {
         }
 
         if (showEverything) {
-            showAllSettings();
+            showAllSettings(false);
         }
 
     } else { // not a valid version and amount of data
@@ -570,13 +576,15 @@ function showSpeedSettings() {
     document.getElementById("configure-car").scrollIntoView();
 
 }
-function showAllSettings() {
+function showAllSettings(scroll) {
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         elements[i].hidden = false;
     }
     document.getElementById("config-help-paragraph").innerHTML = "";
-    document.getElementById("configure-car").scrollIntoView();
+    if (scroll) {
+        document.getElementById("configure-car").scrollIntoView();
+    }
 }
 
 // the car replied with a "result" as a response to being told to change a setting
