@@ -461,7 +461,7 @@ function gotNewSettings(settings) {
             } else if (Array("LEFT_MOTOR_CENTER", "RIGHT_MOTOR_CENTER").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>what ESC signal makes the motor stop? usually 1500</span>";
             } else if ("USE_SPEED_KNOB" === setting) {
-                setting_helper.innerHTML = "<span>An optional knob for reducing max speed has been added.</span>";
+                setting_helper.innerHTML = "<span>Has an optional knob for reducing max speed been added?</span>";
             } else if ("SPEED_KNOB_SLOW_VAL" === setting) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards slow setting. (check SPEED_KNOB_PIN if not a clear signal)';
             } else if ("SPEED_KNOB_FAST_VAL" === setting) {
