@@ -249,6 +249,12 @@ function gotNewData(data) {
         elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0');
     }
 
+    var elements = document.getElementsByClassName("liveVal-speedKnobVal");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = data["speedKnobVal"];
+        elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0');
+    }
+
     drawJoystickCanvas("joystick-input-canvas", data["turnInput"], data["speedInput"]);
     drawJoystickCanvas("scaled-input-canvas", data["turnProcessed"], data["speedProcessed"]);
     drawJoystickCanvas("smoothed-input-canvas", data["turnToDrive"], data["speedToDrive"]);
@@ -362,6 +368,19 @@ async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
     document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button above, or your changes will be lost when the car is turned off.";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
+        if (setting === "USE_SPEED_KNOB") {
+            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
+                document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = false;
+                document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = false;
+                document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = false;
+                document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = false;
+            } else {
+                document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = true;
+                document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = true;
+                document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = true;
+                document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
+            }
+        }
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
     } else {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",");
@@ -427,11 +446,11 @@ function gotNewSettings(settings) {
                 for (var Ai = 0; Ai <= 5; Ai++) {
                     setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '</button>';
                 }
-            } else if (Array("SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) {
+            } else if ("SCALE_TURNING_WHEN_MOVING" === setting) {
                 setting_helper.innerHTML = "<span>This setting changes how tightly the car turns when the joystick is pushed to a corner, try 0.5 to start.</span>";
-            } else if (Array("SCALE_ACCEL_WITH_SPEED").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>If checked: (1/accel)=time to reach max speed setting. If unchecked: (1/accel)=time to reach speed of 1.0.</span>";
-            } else if (Array("REVERSE_TURN_IN_REVERSE").indexOf(setting) > -1) {
+            } else if ("SCALE_ACCEL_WITH_SPEED" === setting) {
+                setting_helper.innerHTML = "<span> Check box if using a speed knob and you want to keep time to max speed constant instead of acceleration being constant If checked: (1/accel)=time to reach max speed setting. If unchecked: (1/accel)=time to reach speed of 1.0.</span>";
+            } else if ("REVERSE_TURN_IN_REVERSE" === setting) {
                 setting_helper.innerHTML = "<span>Changes how the car drives in reverse. If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
             } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with.</span>";
@@ -441,6 +460,12 @@ function gotNewSettings(settings) {
                 setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor run at full speed? Can be negative if the motor is wired backwards. try 500</span>";
             } else if (Array("LEFT_MOTOR_CENTER", "RIGHT_MOTOR_CENTER").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>what ESC signal makes the motor stop? usually 1500</span>";
+            } else if ("USE_SPEED_KNOB" === setting) {
+                setting_helper.innerHTML = "<span>An optional knob for reducing max speed has been added.</span>";
+            } else if ("SPEED_KNOB_SLOW_VAL" === setting) {
+                setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards slow setting. (check SPEED_KNOB_PIN if not a clear signal)';
+            } else if ("SPEED_KNOB_FAST_VAL" === setting) {
+                setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards fast setting. (check SPEED_KNOB_PIN if not a clear signal)';
             } else {
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
                     setting,
@@ -489,6 +514,10 @@ function helper(type, data, data2) {
     }
     if (type === "joyY") {
         document.getElementById('setting---' + data).children[1].firstChild.value = live_data["joyYVal"];
+        onSettingChangeFunction(data)
+    }
+    if (type === "speedKnobVal") {
+        document.getElementById('setting---' + data).children[1].firstChild.value = live_data["speedKnobVal"];
         onSettingChangeFunction(data)
     }
     if (type === "joyPin") {
@@ -588,6 +617,21 @@ function showAllSettings(scroll) {
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         elements[i].hidden = false;
+    }
+    try {
+        if (document.getElementById('setting---' + "USE_SPEED_KNOB").children[1].firstChild.checked) {
+            document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = false;
+            document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = false;
+            document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = false;
+            document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = false;
+        } else {
+            document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = true;
+            document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = true;
+            document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = true;
+            document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
+        }
+    } catch (e) {
+        // sometimes the checkbox hasn't loaded when this function is called, but showAllSettings is called again when settings are received.
     }
     document.getElementById("config-help-paragraph").innerHTML = "";
     if (scroll) {
