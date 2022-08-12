@@ -151,7 +151,7 @@ async function connectToSerial() {
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
-        document.getElementById('serial-connected-indicator').innerHTML = "did not connect";
+        document.getElementById('serial-connected-indicator').innerHTML = "did not connect. If you didn't cancel the connection, try closing other tabs or Arduino windows that might be connected to the car.";
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
