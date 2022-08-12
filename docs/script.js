@@ -327,7 +327,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     if (Math.abs(vx) > 0.01) { // if only one axis is off zero, the off axis one is always displayed on top
         ctx.beginPath();
         ctx.lineWidth = "5";
-        if (Math.abs(vy) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+        if (Math.abs(vy) < 0.001) { //within 0.1 percent of centered, turn green (0.1% is arbitrarily chosen)
             ctx.strokeStyle = "Green";
         } else {
             ctx.strokeStyle = "MediumBlue";
@@ -339,7 +339,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     }
     ctx.beginPath();
     ctx.lineWidth = "5";
-    if (Math.abs(vx) < 0.01) { //within one percent of centered, turn green (1% is arbitrarily chosen)
+    if (Math.abs(vx) < 0.001) {
         ctx.strokeStyle = "Green";
     } else {
         ctx.strokeStyle = "MediumBlue";
@@ -349,7 +349,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     ctx.stroke();
     ctx.closePath();
 
-    if (Math.abs(vx) < 0.01) { // if only one axis is off zero, the off axis one is always displayed on top
+    if (Math.abs(vx) < 0.001) {
         ctx.beginPath();
         ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
