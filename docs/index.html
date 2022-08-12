@@ -153,6 +153,7 @@
             </table>
 
             <br>
+            <span id="save-settings-button-label-2"></span>
             <p>
             <details>
                 <summary>
@@ -162,7 +163,7 @@
                     settings</button>
                 <button id="revert-settings-button" onclick='sendStringSerial("REVERT,")'>revert to default</button>
                 <button id="reboot-arduino-button"
-                    onclick='sendStringSerial("REBOOT,");    document.getElementById("save-settings-button-label").innerHTML = "";'>reboot
+                    onclick='sendStringSerial("REBOOT,");  document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                     arduino, revert to saved settings</button>
                 <div id="settings-advanced-settings-info">no extra info loaded yet</div>
             </details>

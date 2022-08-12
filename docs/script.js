@@ -360,6 +360,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
 // something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
 async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
+    document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button above, or your changes will be lost when the car is turned off.";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
     } else {
@@ -381,6 +382,7 @@ function gotNewSettings(settings) {
     document.getElementById('car-settings').innerHTML = "";
 
     document.getElementById("save-settings-button-label").innerHTML = ""; // clear "you have unsaved changes" warning since the unsaved changes were just lost since the car sent new settings
+    document.getElementById("save-settings-button-label-2").innerHTML = ""; // clear "you have unsaved changes" warning since the unsaved changes were just lost since the car sent new settings
 
     document.getElementById('cal-con-first-look-message').hidden = true;
 
@@ -603,6 +605,7 @@ function gotNewResult(result) {
             elements[i].children[4].hidden = false; // show blank
         }
         document.getElementById('save-settings-button-label').innerHTML = "Saved!";
+        document.getElementById('save-settings-button-label-2').innerHTML = "";
     }
 }
 
