@@ -418,6 +418,12 @@ function gotNewSettings(settings) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_Y_PIN if not a clear signal)';
             } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
                 setting_helper.innerHTML = "";
+                if (setting === "JOY_X_PIN") {
+                    setting_helper.innerHTML += '<span> read=<span class="liveVal-joyX" style="font-family: monospace"></span> </span>'
+                }
+                if (setting === "JOY_Y_PIN") {
+                    setting_helper.innerHTML += '<span> read=<span class="liveVal-joyY" style="font-family: monospace"></span> </span>'
+                }
                 for (var Ai = 0; Ai <= 5; Ai++) {
                     setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '</button>';
                 }
