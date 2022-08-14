@@ -209,6 +209,7 @@ async function connectToSerial() {
         document.getElementById("configure-car").style.backgroundColor = "lightgrey";
         document.getElementById("connect-to-car").style.backgroundColor = "white";
 
+        document.getElementById("connect-to-car").scrollIntoView();
 
     }
 
