@@ -454,7 +454,7 @@ function gotNewSettings(settings) {
             } else if ("REVERSE_TURN_IN_REVERSE" === setting) {
                 setting_helper.innerHTML = "<span>Changes how the car drives in reverse. If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
             } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with.</span>";
+                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 10 to start with.</span>";
             } else if (Array("LEFT_MOTOR_SLOW", "RIGHT_MOTOR_SLOW").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor start to turn? Can be negative if the motor is wired backwards. try 25</span>";
             } else if (Array("LEFT_MOTOR_FAST", "RIGHT_MOTOR_FAST").indexOf(setting) > -1) {
