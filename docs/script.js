@@ -196,7 +196,9 @@ async function connectToSerial() {
                     // had an error with parsing the data
                     string = "";
                 }
-                if (json != null) gotNewSerial(json);
+                if (json != null) {
+                    gotNewSerial(json);
+                }
                 string = "";
             }
         }
@@ -204,6 +206,7 @@ async function connectToSerial() {
         // this happens if the arduino is unplugged from the computer
         console.log(e);
         serialConnectionRunning = false;
+        reader.releaseLock();
         document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED!";
 
         document.getElementById("serial-connect-button").hidden = false;
