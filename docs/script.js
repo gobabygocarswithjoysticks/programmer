@@ -190,7 +190,8 @@ async function connectToSerial() {
                         string.indexOf("{"),
                         string.indexOf("}") + 1
                     );
-                    json = JSON.parse(string);
+                    if (string != null)
+                        json = JSON.parse(string);
                 } catch (e) {
                     // had an error with parsing the data
                     string = "";
