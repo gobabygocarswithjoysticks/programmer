@@ -262,6 +262,13 @@ function gotNewData(data) {
         elements[i].innerHTML = elements[i].innerHTML.padEnd(4, '\xa0');
     }
 
+    var elements = document.getElementsByClassName("liveVal-movementAllowed");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = data["movementAllowed"] ? "on" : "off";
+        document.getElementById("motors-on-off-button").innerHTML = (data["movementAllowed"] ? "turn motors off" : "turn motors on");
+        document.getElementById("motors-on-off-button").setAttribute("onclick", `sendStringSerial("` + (data["movementAllowed"] ? "S," : "G,") + `")`);
+    }
+
     drawJoystickCanvas("joystick-input-canvas", data["turnInput"], data["speedInput"]);
     drawJoystickCanvas("scaled-input-canvas", data["turnProcessed"], data["speedProcessed"]);
     drawJoystickCanvas("smoothed-input-canvas", data["turnToDrive"], data["speedToDrive"]);
