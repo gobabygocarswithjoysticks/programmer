@@ -144,6 +144,7 @@ async function connectToSerial() {
     document.getElementById("serial-connect-button").hidden = true;
     document.getElementById("serial-disconnect-button").hidden = false;
 
+
     try {
         port = await navigator.serial.requestPort();
         serial_connected_indicator_warning_timeout = setTimeout(() => { document.getElementById('serial-connected-indicator').innerHTML = "trying to connect... It's taking a long time, try disconnecting and checking the port, and try closing other tabs or Arduino windows that might be connected to the car."; }, 3000);
@@ -159,6 +160,7 @@ async function connectToSerial() {
         document.getElementById("configure-car").style.backgroundColor = "lightgrey";
         document.getElementById("connect-to-car").style.backgroundColor = "white";
 
+        document.getElementById('telemetry-loading-message').hidden = true;
 
         return;
     }
@@ -209,6 +211,8 @@ async function connectToSerial() {
         document.getElementById("configure-car").style.backgroundColor = "lightgrey";
         document.getElementById("connect-to-car").style.backgroundColor = "white";
 
+        document.getElementById('telemetry-loading-message').hidden = true;
+
         document.getElementById("connect-to-car").scrollIntoView();
 
     }
@@ -220,7 +224,6 @@ async function connectToSerial() {
     if (document.getElementById('serial-connected-indicator').innerHTML != "DISCONNECTED!") {
         document.getElementById('serial-connected-indicator').innerHTML = "";
     }
-
 }
 // data is the data just received from the Arduino, in JSON form. Handle all the types of messages here:
 function gotNewSerial(data) {
@@ -231,7 +234,8 @@ function gotNewSerial(data) {
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
-        console.log("unexpected message: " + data);
+        console.log("unexpected message: ");
+        console.log(data);
         // not an expected message
     }
 }
@@ -239,6 +243,8 @@ function gotNewSerial(data) {
 function gotNewData(data) {
     live_data = data;
     // console.log(data);
+    document.getElementById('telemetry-loading-message').hidden = true;
+
     var elements = document.getElementsByClassName("liveVal-joyX"); // adding a span with class=liveVal-joyX to the html displays the most recently received 
     for (var i = 0; i < elements.length; i++) {
         elements[i].innerHTML = data["joyXVal"];
@@ -396,6 +402,8 @@ function gotNewSettings(settings) {
     clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
     document.getElementById("post-upload-connect-message").hidden = true;
+
+    document.getElementById('telemetry-loading-message').hidden = false;
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
