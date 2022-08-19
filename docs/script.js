@@ -245,9 +245,10 @@ function gotNewSerial(data) {
                  The button below will revert to default settings, and then you need to calibrate and configure every setting again as if the car had just been programmed.
                  If you have seen this warning before, or to prevent it happening again since this error is a symptom of an Arduino having problems,
                   the recommended action is to replace the Arduino board.`
-                    + `<button id="revert-settings-button" onclick="sendStringSerial(&quot;RESCUE-BROKEN-EEPROM,&quot;)">Leave failsafe and revert settings to default (click once, wait 5 seconds, then try again if no response).</button>`;
+                    + `<br><button id="revert-settings-button" onclick="sendStringSerial(&quot;RESCUE-BROKEN-EEPROM,&quot;)">Leave failsafe and revert settings to default (click once, wait 5 seconds, then try again if no response).</button>`
+                    + `<br>Alternatively, you could try the <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/classic">classic car code </a> which doesn't use the EEPROM.`;
                 document.getElementById("eepromFailureMessageSpace").hidden = false;
-                alert('Unrecoverable error detected! You are probably wondering why your car is not moving. The memory that holds the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
+                alert('Unrecoverable error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
             }
         }
         console.log("unexpected message: ");
