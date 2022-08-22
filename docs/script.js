@@ -590,7 +590,7 @@ function showPinSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = "you can look at the wiring in the car to see what pins are used";
+    document.getElementById("config-help-paragraph").innerHTML = "You can look at the wiring in the car to see what pins were used.";
     document.getElementById("configure-car").scrollIntoView();
 
 }
@@ -610,7 +610,7 @@ function showJoystickSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
+    document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br><br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
     document.getElementById("configure-car").scrollIntoView();
 
 }
@@ -642,7 +642,7 @@ function showSpeedSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = "change speed and acceleration of the car";
+    document.getElementById("config-help-paragraph").innerHTML = "Customize the speed and acceleration of the car. <br> <br> For acceleration and deceleration, 1/(value) = seconds to reach max speed. Larger number means faster acceleration. <br> <br> FASTEST_FORWARD and FASTEST_BACKWARD can be values between 0 and 1, where 1 is fastest and 0 means no movement.";
     document.getElementById("configure-car").scrollIntoView();
 
 }
