@@ -160,8 +160,6 @@ async function connectToSerial() {
         document.getElementById("configure-car").style.backgroundColor = "lightgrey";
         document.getElementById("connect-to-car").style.backgroundColor = "white";
 
-        document.getElementById('telemetry-loading-message').hidden = true;
-
         return;
     }
 
@@ -215,8 +213,6 @@ async function connectToSerial() {
         document.getElementById("configure-car").style.backgroundColor = "lightgrey";
         document.getElementById("connect-to-car").style.backgroundColor = "white";
 
-        document.getElementById('telemetry-loading-message').hidden = true;
-
         document.getElementById("connect-to-car").scrollIntoView();
 
     }
@@ -241,13 +237,19 @@ function gotNewSerial(data) {
         if (data["error"] != null) {
             if (data["error"] === "eeprom failure") {
                 document.getElementById("eepromFailureMessageSpace").innerHTML = `The memory that stores the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode.
-                 If you have not seen this warning before, you can press the "Leave failsafe and revert settings to default" button below and hope this problem does not return. 
-                 The button below will revert to default settings, and then you need to calibrate and configure every setting again as if the car had just been programmed.
-                 If you have seen this warning before, or to prevent it happening again since this error is a symptom of an Arduino having problems,
+                 <br>If you have seen this warning before, or to prevent it happening again since this error is a symptom of an Arduino having problems,
                   the recommended action is to replace the Arduino board.`
-                    + `<br><button id="revert-settings-button" onclick="sendStringSerial(&quot;RESCUE-BROKEN-EEPROM,&quot;)">Leave failsafe and revert settings to default (click once, wait 5 seconds, then try again if no response).</button>`
-                    + `<br>Alternatively, you could try the <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/classic">classic car code </a> which doesn't use the EEPROM.`;
+                    + `<br>You can use the following steps to exit the failsafe mode:`
+                    + `<br> 1. Press the "I want to upload code to a new car" button above`
+                    + `<br> 2. Select the "clear_eeprom" program`
+                    + `<br> 3. Press the Upload! button`
+                    + `<br> 4. After the upload finishes, wait a few seconds for the builtin LED on the Arduino to turn off.`
+                    + `<br> 5. Re-upload the gbg_program code as if it were a new car.`
+                    + `<br> 6. All the settings are back to the defaults. Change all the settings for your car again.`
+                    + `<br>Alternatively, you could try the <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/classic">classic car code </a> which doesn't use the EEPROM.`
+                    + `<br>Please email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a> with any questions.`;
                 document.getElementById("eepromFailureMessageSpace").hidden = false;
+                document.getElementById("eepromFailureMessageSpace").scrollIntoView();
                 alert('Unrecoverable error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
             }
         }
@@ -260,7 +262,11 @@ function gotNewSerial(data) {
 function gotNewData(data) {
     live_data = data;
     // console.log(data);
-    document.getElementById('telemetry-loading-message').hidden = true;
+    if (data["joyOK"] != null) {
+        if (data["current values, millis:"] > 3000) {
+            document.getElementById(`joystick-not-centered-message`).hidden = data["joyOK"];
+        }
+    }
 
     var elements = document.getElementsByClassName("liveVal-joyX"); // adding a span with class=liveVal-joyX to the html displays the most recently received 
     for (var i = 0; i < elements.length; i++) {
@@ -359,7 +365,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.beginPath();
         ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.001) { //within 0.1 percent of centered, turn green (0.1% is arbitrarily chosen)
-            ctx.strokeStyle = "Green";
+            ctx.strokeStyle = "Lime";
         } else {
             ctx.strokeStyle = "MediumBlue";
         }
@@ -371,7 +377,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     ctx.beginPath();
     ctx.lineWidth = "5";
     if (Math.abs(vx) <= 0.001) {
-        ctx.strokeStyle = "Green";
+        ctx.strokeStyle = "Lime";
     } else {
         ctx.strokeStyle = "MediumBlue";
     }
@@ -384,7 +390,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.beginPath();
         ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
-            ctx.strokeStyle = "Green";
+            ctx.strokeStyle = "Lime";
         } else {
             ctx.strokeStyle = "MediumBlue";
         }
@@ -426,8 +432,6 @@ function gotNewSettings(settings) {
     clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
     document.getElementById("post-upload-connect-message").hidden = true;
-
-    document.getElementById('telemetry-loading-message').hidden = false;
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
@@ -486,7 +490,7 @@ function gotNewSettings(settings) {
             } else if ("REVERSE_TURN_IN_REVERSE" === setting) {
                 setting_helper.innerHTML = "<span>Changes how the car drives in reverse. If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
             } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 10 to start with.</span>";
+                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with. The car won't start if the joystick isn't in the deadzone.</span>";
             } else if (Array("LEFT_MOTOR_SLOW", "RIGHT_MOTOR_SLOW").indexOf(setting) > -1) {
                 setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor start to turn? Can be negative if the motor is wired backwards. try 25</span>";
             } else if (Array("LEFT_MOTOR_FAST", "RIGHT_MOTOR_FAST").indexOf(setting) > -1) {
