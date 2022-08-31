@@ -113,13 +113,14 @@
                         Smoothed Speed to Drive
                     </td>
                     <td>
-                        Motor Signals
+                        Motor Signals<br>
+                        motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
                     </td>
                 </tr>
                 <tr>
                     <td>
                         test settings without the car moving
-                        <br>
+                        <br><br>
                         motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
                         <br><br>
                         <button id="motors-on-off-button"></button>
@@ -178,8 +179,6 @@
                 <button id="reboot-arduino-button"
                     onclick='sendStringSerial("REBOOT,");  document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                     arduino, revert to saved settings</button>
-                <button id="bork-button" onclick='sendStringSerial("C1,")'>bork</button> //TODO: remove
-                <button id="moreBork-button" onclick='sendStringSerial("C2,")'>more bork</button> //TODO: remove
                 <div id="settings-advanced-settings-info">no extra info loaded yet</div>
             </details>
             </p>

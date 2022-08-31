@@ -287,7 +287,7 @@ function gotNewData(data) {
 
     var elements = document.getElementsByClassName("liveVal-movementAllowed");
     for (var i = 0; i < elements.length; i++) {
-        elements[i].innerHTML = data["movementAllowed"] ? "on" : "off";
+        elements[i].innerHTML = data["movementAllowed"] ? "on" : "<mark>off<mark>";
         document.getElementById("motors-on-off-button").innerHTML = (data["movementAllowed"] ? "turn motors off" : "turn motors on");
         document.getElementById("motors-on-off-button").setAttribute("onclick", `sendStringSerial("` + (data["movementAllowed"] ? "S," : "G,") + `")`);
     }
@@ -538,6 +538,8 @@ function gotNewSettings(settings) {
         console.log(settings);
 
     }
+
+    sendStringSerial("S,"); // so that the car doesn't drive by default
 
     document.getElementById("configure-car").style.backgroundColor = "white";
     document.getElementById("configure-car").hidden = false;
