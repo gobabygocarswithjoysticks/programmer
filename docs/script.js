@@ -377,7 +377,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     ctx.beginPath();
     ctx.lineWidth = "5";
     if (Math.abs(vx) <= 0.001) {
-        ctx.strokeStyle = "Lime";
+        ctx.strokeStyle = "Green";
     } else {
         ctx.strokeStyle = "MediumBlue";
     }
@@ -390,7 +390,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.beginPath();
         ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
-            ctx.strokeStyle = "Lime";
+            ctx.strokeStyle = "Green";
         } else {
             ctx.strokeStyle = "MediumBlue";
         }
