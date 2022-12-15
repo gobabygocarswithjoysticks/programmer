@@ -365,9 +365,9 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.beginPath();
         ctx.lineWidth = "5";
         if (Math.abs(vy) < 0.001) { //within 0.1 percent of centered, turn green (0.1% is arbitrarily chosen)
-            ctx.strokeStyle = "Lime";
+            ctx.strokeStyle = "Green";
         } else {
-            ctx.strokeStyle = "MediumBlue";
+            ctx.strokeStyle = "Black";
         }
         ctx.moveTo(x - 9, y);
         ctx.lineTo(x + 9, y);
@@ -379,7 +379,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     if (Math.abs(vx) <= 0.001) {
         ctx.strokeStyle = "Green";
     } else {
-        ctx.strokeStyle = "MediumBlue";
+        ctx.strokeStyle = "Black";
     }
     ctx.moveTo(x, y - 9);
     ctx.lineTo(x, y + 9);
@@ -392,7 +392,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         if (Math.abs(vy) < 0.01) { // within one percent of centered, turn green (1% is arbitrarily chosen)
             ctx.strokeStyle = "Green";
         } else {
-            ctx.strokeStyle = "MediumBlue";
+            ctx.strokeStyle = "Black";
         }
         ctx.moveTo(x - 9, y);
         ctx.lineTo(x + 9, y);
