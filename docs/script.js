@@ -515,9 +515,9 @@ function gotNewSettings(settings) {
                         Array(0.75, 1.5, 3), //DECELERATION_BACKWARD
                         Array(0.5, 1, 2), //ACCELERATION_TURNING
                         Array(0.75, 1.5, 3), //DECELERATION_TURNING
-                        Array(0.4, 0.6, 1), //FASTEST_FORWARD
-                        Array(0.3, 0.5, 0.8), //FASTEST_BACKWARD
-                        Array(0.3, 0.5, 0.8)) //TURN_SPEED
+                        Array(0.25, 0.6, 1), //FASTEST_FORWARD
+                        Array(0.2, 0.5, 0.8), //FASTEST_BACKWARD
+                        Array(0.2, 0.5, 0.8)) //TURN_SPEED
                 );
             }
 
