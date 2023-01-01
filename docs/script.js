@@ -11,7 +11,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
     if (!("serial" in navigator)) {
-        document.getElementById("serial-alert").innerHTML = "Web Serial is not available, so this site won't be able to communicate with your car. Please use Google Chrome, Opera, or Edge, and make sure Web Serial is enabled.";
+        var x = document.getElementsByClassName("serial-alert");
+        for (var i = 0; i < x.length; i++) {
+            x[i].innerHTML = "Web Serial is not available, so this site won't be able to communicate with your car. Please use Google Chrome, Opera, or Edge, and make sure Web Serial is enabled.";
+        }
     }
     document.getElementById("options-buttons").style.backgroundColor = "white";
     document.getElementById("serial-disconnect-button").hidden = true;
@@ -30,16 +33,52 @@ document.addEventListener('DOMContentLoaded', async function () {
     // watch the upload-progress span to get information about the program upload progress (I wish I could more directly get information from arduino-web-uploader but this works)
     const observer = new MutationObserver(mutationRecords => {
         if (mutationRecords[0].addedNodes[0].data === "Done!") {
-            document.getElementById("upload-connect-comment").hidden = true;
             document.getElementById("upload-program").style.backgroundColor = "lightgrey";
             document.getElementById("connect-to-car").style.backgroundColor = "white";
             document.getElementById("connect-to-car").hidden = false;
             document.getElementById("connect-to-car").scrollIntoView();
-            document.getElementById("post-upload-connect-message").hidden = false;
-        }
-        if (mutationRecords[0].addedNodes[0].data === "0%") {
+
+            var x = document.getElementsByClassName("upload-info");
+            for (var i = 0; i < x.length; i++) {
+                x[i].innerHTML = "Upload complete!"
+            }
+            document.getElementById("upload-button").style.outline = "0px";
+
+            cbdone("hcbp-uploading", "hcbp-upload-done");
+
+        } else if (mutationRecords[0].addedNodes[0].data === "Error!") {
+            var x = document.getElementsByClassName("upload-info");
+            for (var i = 0; i < x.length; i++) {
+                x[i].innerHTML = 'Error Uploading! Check the USB cable, board, and port selections, then press the upload button to the left to try again.';
+            }
+            document.getElementById("hcbp-upload-info").innerHTML = 'Error Uploading! Check the board and port selections, then press the <span style="border:3px solid red;">upload button</span> to the left to try again.';
+            document.getElementById("hcbp-uploading").scrollIntoView({ block: "end" });
+
+
+            document.getElementById("upload-button").style.outline = "3px solid red";
+        } else if (mutationRecords[0].addedNodes[0].data === "0%") {
+            document.getElementById("upload-connect-comment").hidden = true;
             document.getElementById("upload-program").style.backgroundColor = "white";
             document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
+
+            var x = document.getElementsByClassName("upload-info");
+            for (var i = 0; i < x.length; i++) {
+                x[i].innerHTML = "Upload starting..."
+            }
+            document.getElementById("hcbp-uploading").scrollIntoView({ block: "end" });
+        } else if (mutationRecords[0].addedNodes[0].data === "Ready") {
+        } else {
+            var x = document.getElementsByClassName("upload-info");
+            for (var i = 0; i < x.length; i++) {
+                // draw progress bar
+                x[i].innerHTML = 'Uploading ' + mutationRecords[0].addedNodes[0].data + '\xa0complete. <br>'
+                    + '</div> <div style="width:100%; background-color:#ddd;"> <div style="width:'
+                    + mutationRecords[0].addedNodes[0].data
+                    + '; background-color: #04AA6D; height: 30px;"></div></div>';
+            }
+            if (mutationRecords[0].addedNodes[0].data === "1%") {
+                document.getElementById("hcbp-uploading").scrollIntoView({ block: "end" });
+            }
         }
 
     });
@@ -47,6 +86,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         childList: true
     });
 
+
+    var url_tail = window.location.href.substring(window.location.href.lastIndexOf('#') + 1);
+    if (url_tail === "new") {
+        document.getElementById("first-time-program-button").click();
+    }
 
 });
 // the "I want to program a car" button was pressed, show the relevant section
@@ -64,6 +108,8 @@ function showFirstTime() {
 
     document.getElementById("upload-program").scrollIntoView();
 
+    document.getElementById("help-upload").scrollIntoView();
+    document.getElementById("hcbs-plug").style.outline = "";
 }
 // the "I want to change the settings of a car" button was pressed, show the relevant section
 function showConfigButton() {
@@ -88,6 +134,8 @@ function showConfigButton() {
     }
 
     document.getElementById("connect-to-car").scrollIntoView();
+    document.getElementById("help-settings").scrollIntoView();
+    document.getElementById("hcbp-start").style.outline = "";
 }
 // the "I want to see everything at once" button was pressed
 function showEverythingButton() {
@@ -113,7 +161,6 @@ async function closeSerial() {
     }
     document.getElementById("serial-disconnect-button").hidden = true;
     document.getElementById("serial-connect-button").hidden = false;
-    document.getElementById('serial-connected-indicator').innerHTML = "";
     document.getElementById("configure-car").style.backgroundColor = "lightgrey";
     document.getElementById("connect-to-car").style.backgroundColor = "white";
 
@@ -147,12 +194,23 @@ async function connectToSerial() {
 
     try {
         port = await navigator.serial.requestPort();
-        serial_connected_indicator_warning_timeout = setTimeout(() => { document.getElementById('serial-connected-indicator').innerHTML = "trying to connect... It's taking a long time, try disconnecting and checking the port, and try closing other tabs or Arduino windows that might be connected to the car."; }, 3000);
+        serial_connected_indicator_warning_timeout = setTimeout(() => {
+            document.getElementById('serial-connected-indicator').innerHTML = 'trying to connect... It is taking a long time, try pressing the <span id="serial-con-msg-time-disbut">disconnect button to the left</span> then reconnect by pressing the <span id="serial-con-msg-time-conbut">connect button to the left</span> after checking the port. Also try closing other tabs or Arduino windows that might be connected to the car.';
+            document.getElementById('serial-disconnect-button').style.border = "3px solid red";
+            document.getElementById('serial-con-msg-time-disbut').style.border = "3px solid red";
+            document.getElementById('serial-connect-button').style.border = "3px solid Blue";
+            document.getElementById('serial-con-msg-time-conbut').style.border = "3px solid Blue";
+            document.getElementById("serial-connected-indicator").scrollIntoView({ block: "end" });
+        }, 3000);
         await port.open({ baudRate: 115200 });
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
-        document.getElementById('serial-connected-indicator').innerHTML = "did not connect. If you didn't cancel the connection, try closing other tabs or Arduino windows that might be connected to the car.";
+        document.getElementById('serial-connected-indicator').innerHTML = 'Did not connect. If you did not cancel the connection, try closing other tabs or Arduino windows that might be connected to the car. Then, try to connect again by pressing <span id="ser-con-canceled">the connect button to the left</span>.';
+
+        document.getElementById('serial-connect-button').style.border = "3px solid LimeGreen";
+        document.getElementById('ser-con-canceled').style.border = "3px solid LimeGreen";
+        document.getElementById("hcbs-connect").scrollIntoView({ block: "end" });
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
@@ -205,7 +263,7 @@ async function connectToSerial() {
         console.log(e);
         serialConnectionRunning = false;
         reader.releaseLock();
-        document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED!";
+        document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED! you can connect again using the button to the left if you want.";
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
@@ -221,9 +279,6 @@ async function connectToSerial() {
 
     await port.close();
     serialConnectionRunning = false;
-    if (document.getElementById('serial-connected-indicator').innerHTML != "DISCONNECTED!") {
-        document.getElementById('serial-connected-indicator').innerHTML = "";
-    }
 }
 // data is the data just received from the Arduino, in JSON form. Handle all the types of messages here:
 function gotNewSerial(data) {
@@ -431,7 +486,7 @@ async function onSettingChangeFunction(setting) {
 function gotNewSettings(settings) {
     clearInterval(serial_connected_indicator_warning_timeout);
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
-    document.getElementById("post-upload-connect-message").hidden = true;
+    cbdone("hcbs-connect", "hcbs-setting-index");
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
@@ -448,7 +503,7 @@ function gotNewSettings(settings) {
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
-            if (setting === "current settings, version:") continue; // not a setting, skip it so it doesn't get a row in the settings table
+            if (setting === "current settings, version:" || setting == "PRINT_VARIABLES_INTERVAL_MILLIS") continue; // not a setting, skip it so it doesn't get a row in the settings table (also, I don't want people to change the print interval since setting it too low will overload the website).
             var entry = document.createElement("tr"); // each setting gets a row.
             entry.setAttribute("id", "setting---" + setting);
             entry.setAttribute("hidden", "true");
@@ -869,4 +924,37 @@ async function getRequest(url) {
             result = responseText;
         });
     return result;
+}
+// checks, locks, and unhighlights current checkbox
+// if a second id is provided, it is unlocked and highlighted
+function cbdone(id, next) {
+    cbchk(id);
+    cbdis(id);
+
+    cblightoff(id);
+
+    if (next) {
+        cben(next);
+
+        cbhighlight(next);
+
+        document.getElementById(next).scrollIntoView({ block: "end" });
+    }
+}
+function cbhighlight(next) {
+    document.getElementById(next).style.outline = "4px solid magenta";
+}
+function cblightoff(next) {
+    document.getElementById(next).style.outline = "0px";
+}
+function cbchk(id) {
+    document.getElementById(id).checked = true;
+
+}
+function cbdis(id) {
+    document.getElementById(id).disabled = true;
+}
+
+function cben(id) {
+    document.getElementById(id).disabled = false;
 }
