@@ -6,6 +6,7 @@ var serial_connected_indicator_warning_timeout; // the result of a setInterval()
 var serialConnectionRunning = false; // boolean, is a car connected?
 var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
+var settings_received = false; // have valid settings been received yet?
 var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
@@ -187,6 +188,8 @@ async function connectToSerial() {
     if (serialConnectionRunning) return;
     serialConnectionRunning = true;
     document.getElementById('serial-connected-indicator').innerHTML = "trying to connect...";
+    document.getElementById('serial-connected-short').innerHTML = 'trying to connect...';
+
 
     document.getElementById("serial-connect-button").hidden = true;
     document.getElementById("serial-disconnect-button").hidden = false;
@@ -196,6 +199,8 @@ async function connectToSerial() {
         port = await navigator.serial.requestPort();
         serial_connected_indicator_warning_timeout = setTimeout(() => {
             document.getElementById('serial-connected-indicator').innerHTML = 'trying to connect... It is taking a long time, try pressing the <span id="serial-con-msg-time-disbut">disconnect button to the left</span> then reconnect by pressing the <span id="serial-con-msg-time-conbut">connect button to the left</span> after checking the port. Also try closing other tabs or Arduino windows that might be connected to the car.';
+            document.getElementById('serial-connected-short').innerHTML = 'trying to connect... It is taking a long time, try disconnecting and reconnecting.';
+
             document.getElementById('serial-disconnect-button').style.border = "3px solid red";
             document.getElementById('serial-con-msg-time-disbut').style.border = "3px solid red";
             document.getElementById('serial-connect-button').style.border = "3px solid Blue";
@@ -207,6 +212,7 @@ async function connectToSerial() {
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
         document.getElementById('serial-connected-indicator').innerHTML = 'Did not connect. If you did not cancel the connection, try closing other tabs or Arduino windows that might be connected to the car. Then, try to connect again by pressing <span id="ser-con-canceled">the connect button to the left</span>.';
+        document.getElementById('serial-connected-short').innerHTML = 'Did not connect. Try again';
 
         document.getElementById('serial-connect-button').style.border = "3px solid LimeGreen";
         document.getElementById('ser-con-canceled').style.border = "3px solid LimeGreen";
@@ -226,6 +232,7 @@ async function connectToSerial() {
     reader = textDecoder.readable.getReader();
 
     let string = "";
+    settings_received = false;
 
     try {
         while (true) { // this (async) function loops for as long as it is connected in order to continuously get data from the car
@@ -241,6 +248,7 @@ async function connectToSerial() {
             }
             if (value.includes("\n")) {
                 let json = null;
+                let serialStringLength = 0;
                 try {
                     string = string.substring(
                         string.indexOf("{"),
@@ -248,12 +256,17 @@ async function connectToSerial() {
                     );
                     if (string != null)
                         json = JSON.parse(string);
+                    serialStringLength = string.length;
                 } catch (e) {
                     // had an error with parsing the data
                     string = "";
                 }
                 if (json != null) {
-                    gotNewSerial(json);
+                    try {
+                        gotNewSerial(json, serialStringLength);
+                    } catch (e) {
+                        console.log(e);
+                    }
                 }
                 string = "";
             }
@@ -264,6 +277,7 @@ async function connectToSerial() {
         serialConnectionRunning = false;
         reader.releaseLock();
         document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED! you can connect again using the button to the left if you want.";
+        document.getElementById('serial-connected-short').innerHTML = 'Disconnected!';
 
         document.getElementById("serial-connect-button").hidden = false;
         document.getElementById("serial-disconnect-button").hidden = true;
@@ -281,17 +295,17 @@ async function connectToSerial() {
     serialConnectionRunning = false;
 }
 // data is the data just received from the Arduino, in JSON form. Handle all the types of messages here:
-function gotNewSerial(data) {
-    if (data["current values, millis:"] != null) {
-        gotNewData(data);
+function gotNewSerial(data, length) {
+    if (data["current values, millis:"] != null && settings_received) {
+        gotNewData(data, length);
     } else if (data["current settings, version:"] != null) {
-        gotNewSettings(data);
+        gotNewSettings(data, length);
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
         if (data["error"] != null) {
             if (data["error"] === "eeprom failure") {
-                document.getElementById("eepromFailureMessageSpace").innerHTML = `The memory that stores the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode.
+                document.getElementById("eepromFailureMessageSpace").innerHTML = `The memory that stores the settings for the car has been corrupted and the settings could not be recalled, so the car is now in failsafe mode.
                  <br>If you have seen this warning before, or to prevent it happening again since this error is a symptom of an Arduino having problems,
                   the recommended action is to replace the Arduino board.`
                     + `<br>You can use the following steps to exit the failsafe mode:`
@@ -300,12 +314,12 @@ function gotNewSerial(data) {
                     + `<br> 3. Press the Upload! button`
                     + `<br> 4. After the upload finishes, wait a few seconds for the builtin LED on the Arduino to turn off.`
                     + `<br> 5. Re-upload the gbg_program code as if it were a new car.`
-                    + `<br> 6. All the settings are back to the defaults. Change all the settings for your car again.`
+                    + `<br> 6. All the settings are back to the defaults. Change all the settings for your car again. Sorry.`
                     + `<br>Alternatively, you could try the <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/classic">classic car code </a> which doesn't use the EEPROM.`
                     + `<br>Please email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a> with any questions.`;
                 document.getElementById("eepromFailureMessageSpace").hidden = false;
                 document.getElementById("eepromFailureMessageSpace").scrollIntoView();
-                alert('Unrecoverable error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be restored, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
+                alert('Error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be recalled, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
             }
         }
         console.log("unexpected message: ");
@@ -314,9 +328,13 @@ function gotNewSerial(data) {
     }
 }
 // handle the message from the Arduino where it prints current readings and values.
-function gotNewData(data) {
+function gotNewData(data, slength) {
+    if (data["CHECKSUM"] != slength) {
+        console.log("live data checksum fail. Actual: " + slength + " reported: " + data["CHECKSUM"]);
+        console.log(data);
+        return;
+    }
     live_data = data;
-    // console.log(data);
     if (data["joyOK"] != null) {
         if (data["current values, millis:"] > 3000) {
             document.getElementById(`joystick-not-centered-message`).hidden = data["joyOK"];
@@ -458,7 +476,7 @@ function drawJoystickCanvas(canvasID, vx, vy) {
 // something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
 async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
-    document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button above, or your changes will be lost when the car is turned off.";
+    document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button, or your changes will be lost when the car is turned off.";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
         if (setting === "USE_SPEED_KNOB") {
             if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
@@ -483,9 +501,9 @@ async function onSettingChangeFunction(setting) {
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
 }
 // handle message from the Arduino where it prints current readings and values
-function gotNewSettings(settings) {
-    clearInterval(serial_connected_indicator_warning_timeout);
+function gotNewSettings(settings, slength) {
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
+    document.getElementById('serial-connected-short').innerHTML = 'connected';
     cbdone("hcbs-connect", "hcbs-setting-index");
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
@@ -499,23 +517,25 @@ function gotNewSettings(settings) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (version === 1 && len === 36) {
+    if (version === 2 && len === 36 && slength === settings["CHECKSUM"]) {
+        settings_received = true;
+        clearInterval(serial_connected_indicator_warning_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
-            if (setting === "current settings, version:" || setting == "PRINT_VARIABLES_INTERVAL_MILLIS") continue; // not a setting, skip it so it doesn't get a row in the settings table (also, I don't want people to change the print interval since setting it too low will overload the website).
+            if (setting === "current settings, version:" || setting == "CHECKSUM") continue; // not a setting, skip it so it doesn't get a row in the settings table (also, I don't want people to change the print interval since setting it too low will overload the website).
             var entry = document.createElement("tr"); // each setting gets a row.
             entry.setAttribute("id", "setting---" + setting);
             entry.setAttribute("hidden", "true");
             entry.setAttribute("class", "car-setting-row");
-            entry.innerHTML += "<td>" + setting + "</td>";
+            entry.innerHTML += '<td><span style="display: inline-block; max-width: 25vw;">' + setting.replaceAll('_', ' ').toLowerCase() + "</span></td>";
 
             if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
-                entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+                entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             } else {//integer
-                entry.innerHTML += '<td><input type="text" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+                entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
 
             entry.innerHTML += '<td class="setting-indicator" hidden>\u2714</td>'; // checkmark
@@ -523,6 +543,8 @@ function gotNewSettings(settings) {
             entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
 
             var setting_helper = document.createElement("span");
+            setting_helper.style.display = "inline-block";
+            setting_helper.setAttribute("overflow-wrap", "anywhere");
             if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_X_PIN if not a clear signal)';
             } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
@@ -580,6 +602,8 @@ function gotNewSettings(settings) {
             list.appendChild(entry);
         }
 
+        document.getElementById("car-telem-container").style.display = "flex";
+
         if (showEverything) {
             showAllSettings(false);
         }
@@ -589,9 +613,10 @@ function gotNewSettings(settings) {
         list.innerHTML = "<mark> ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version? </mark>";
         document.getElementById("settings-advanced-settings-info").innerHTML = JSON.stringify(settings);
 
-        console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ")");
+        console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ", checksum-actual: " + slength + ", checksum-reported: " + settings["CHECKSUM"] + ")");
         console.log(settings);
 
+        document.getElementById("car-telem-container").style.display = "none";
     }
 
     sendStringSerial("S,"); // so that the car doesn't drive by default
@@ -749,7 +774,7 @@ function gotNewResult(result) {
             elements[i].children[4].hidden = false; // show blank
         }
         document.getElementById('save-settings-button-label').innerHTML = "Saved!";
-        document.getElementById('save-settings-button-label-2').innerHTML = "";
+        document.getElementById('save-settings-button-label-2').innerHTML = "Saved!";
     }
 }
 

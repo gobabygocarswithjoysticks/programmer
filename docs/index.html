@@ -99,7 +99,9 @@
                 <button id="serial-connect-button" onclick='document.getElementById("serial-connect-button").style.border = "";
                 connectToSerial();'>connect</button>
                 <button id="serial-disconnect-button"
-                    onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect</button>
+                    onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
+                </button>
+                <div id="serial-connected-short"></div>
                 <hr>
             </div>
             <div id="configure-car">
@@ -109,55 +111,51 @@
                         Please center the joystick, and if this message doesn't go away, please calibrate the joystick.
                         <br> As a safety measure, the car won't drive until the joystick is centered.</mark><br></div>
                 <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
-                <table>
-                    <tr style="text-align: center">
-                        <td>
-
-                        </td>
-                        <td>
-                            Joystick Input
-                        </td>
-                        <td>
-                            Scaled Speed Target
-                        </td>
-                        <td>
-                            Smoothed Speed to Drive
-                        </td>
-                        <td>
-                            Motor Signals<br>
-                            motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            test settings without the car moving
-                            <br><br>
-                            motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
-                            <br><br>
-                            <button id="motors-on-off-button"></button>
-                        </td>
-                        <td>
-                            <canvas id="joystick-input-canvas" width="220" height="220">
-                                <div>Error displaying canvas! Try a different browser?</div>
-                            </canvas>
-                        </td>
-                        <td>
-                            <canvas id="scaled-input-canvas" width="220" height="220">
-                                <div>Error displaying canvas! Try a different browser?</div>
-                            </canvas>
-                        </td>
-                        <td>
-                            <canvas id="smoothed-input-canvas" width="220" height="220">
-                                <div>Error displaying canvas! Try a different browser?</div>
-                            </canvas>
-                        </td>
-                        <td>
-                            <canvas id="motor-signal-canvas" width="220" height="220">
-                                <div>Error displaying canvas! Try a different browser?</div>
-                            </canvas>
-                        </td>
-                    </tr>
-                </table>
+                <div id="car-telem-container" style="width:100%; display: flex; flex-wrap: wrap;">
+                    <span>
+                        test settings without the car moving
+                        <br><br>
+                        motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
+                        <br><br>
+                        <button id="motors-on-off-button"></button>
+                        <br>
+                    </span>
+                    <div style="text-align: center">
+                        <br>
+                        Joystick Input
+                        <br>
+                        <canvas id="joystick-input-canvas" width="220" height="220">
+                            <div>Error displaying canvas! Try a different browser?</div>
+                        </canvas>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        Scaled Speed Target
+                        <br>
+                        <canvas id="scaled-input-canvas" width="220" height="220">
+                            <div>Error displaying canvas! Try a different browser?</div>
+                        </canvas>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        Smoothed Speed to Drive
+                        <br>
+                        <canvas id="smoothed-input-canvas" width="220" height="220">
+                            <div>Error displaying canvas! Try a different browser?</div>
+                        </canvas>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        Motor Signals
+                        <br>
+                        motors:
+                        <b><span class="liveVal-movementAllowed">status loading</span></b>
+                        <br>
+                        <canvas id="motor-signal-canvas" width="220" height="220">
+                            <div>Error displaying canvas! Try a different browser?</div>
+                        </canvas>
+                    </div>
+                </div>
 
                 <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>Save
                     Changes</button>
@@ -173,13 +171,13 @@
                 <br>
 
                 <p id="config-help-paragraph"></p>
-
-                <table id="car-settings">
+                <table id="car-settings" style="width:99%;">
                     <!-- settings received from the car will show up here -->
                 </table>
 
                 <br>
                 <span id="save-settings-button-label-2"></span>
+                <button id="save-settings-button" onclick='sendStringSerial("SAVE,")'>Save Changes</button>
                 <p>
                 <details>
                     <summary>
@@ -213,8 +211,6 @@
         </div> <!-- // end of main div -->
         <div id="help-header"
             style="width:40%; height:10vh; position:fixed; right:0; top:0vh; background-color:grey; padding-left:1%; padding-right:1%; box-sizing:border-box;">
-            <button onclick='document.getElementById("help-index").scrollIntoView();'>
-                to top</button>
             <button
                 onclick='document.getElementById("help").hidden=true; document.getElementById("help-header").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
                 style="float: right;">
@@ -238,7 +234,22 @@
         <div id="help" style="width:40%; height:90vh; position:fixed; right:0; top:10vh; background-color:whitesmoke;
              overflow-y:auto; padding-left:1%; padding-right:1%; box-sizing:border-box">
             <p id="help-index">
-                index
+                <br>
+                <button onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
+                showConfigButton();'>I want to change the speed of my car.
+                </button>
+                <br><br>
+                <button onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
+                    showConfigButton();'>I want to change the settings of my car.
+                </button>
+                <br>
+                <br>
+                <br>
+                <button onclick='
+                document.getElementsByC("hcbp-start").style.outline = "4px solid magenta";
+                showFirstTime();'>I want to upload code to a new car.
+                </button>
+
             </p>
             <div id="help-upload-container">
                 <style>
@@ -261,9 +272,9 @@
                             of your car!
                             <br><br>
                             <b>
-                                Please check the box below every step (or click the text in the step) as you complete it
+                                Please check the box below every step as you complete it
                                 so that the website can you guide you through the process of programming the Arduino in
-                                your car.
+                                your car. (Clicking the text of the step is another way to check the the box).
                             </b>
                             <br>
                         </label>
@@ -324,7 +335,8 @@
                             </span>
                             <br>
                             <br>
-                            When you click the checkbox below, a box will pop up, which you will use in the next step.
+                            When you click the checkbox below, a box will pop up, which you will use in the next step to
+                            upload the code.
                             <br>
                         </label>
                         <input type="checkbox" class="help-checkbox" id="hcbp-upload" disabled onchange='cbdone("hcbp-upload"); cbhighlight("hcbp-uploading"); 
@@ -356,8 +368,8 @@
                             need to select the car's port for a second time, just like in the step above. Check the box
                             below to continue.
                         </label>
-                        <br> <input type="checkbox" class="help-checkbox" id="hcbp-upload-done" disabled onchange='cblightoff("hcbs-plug"); cbdis("hcbs-plug"); cbchk("hcbs-plug"); cbdone("hcbp-upload-done","hcbs-connect"); document.getElementById("hcbs-connect").scrollIntoView({ block: "end" });
-                            connectToSerial()' />
+                        <br> <input type="checkbox" class="help-checkbox" id="hcbp-upload-done" disabled
+                            onchange='cblightoff("hcbs-plug"); cbdis("hcbs-plug"); cbchk("hcbs-plug"); cbdone("hcbp-upload-done","hcbs-connect"); document.getElementById("hcbs-connect").scrollIntoView({ block: "end" }); document.getElementById("help-settings-plug-label").style.color="lightgrey"; connectToSerial()' />
                     </li>
                 </ol>
                 <hr>
@@ -368,7 +380,9 @@
 
                 <ol>
                     <li>
-                        <label for="hcbs-plug">Ensure the car is turned off (all lights in the car should be off),
+                        <label id="help-settings-plug-label" for="hcbs-plug">Ensure the car is turned off (all lights in
+                            the car
+                            should be off),
                             then connect the Arduino to your computer with a usb cable.
                             <br>
                             <b>Please check the box below every step (or click the text in the step) as you complete it
