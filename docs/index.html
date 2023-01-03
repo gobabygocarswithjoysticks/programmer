@@ -96,8 +96,9 @@
             </div>
             <div id="connect-to-car">
                 <h2>Connect to Car (to change settings)</h2>
-                <button id="serial-connect-button" onclick='document.getElementById("serial-connect-button").style.border = "";
-                connectToSerial();'>connect</button>
+                <button id="serial-connect-button"
+                    onclick='document.getElementById("serial-connect-button").style.border = "";
+                connectToSerial(); cbdone("hcbs-plug");cbhighlight("hcbs-connect"); cblightoff("hcbp-upload-done");cbchk("hcbp-upload-done");cbdis("hcbp-upload-done");'>connect</button>
                 <button id="serial-disconnect-button"
                     onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
                 </button>
@@ -171,9 +172,21 @@
                 <br>
 
                 <p id="config-help-paragraph"></p>
-                <table id="car-settings" style="width:99%;">
-                    <!-- settings received from the car will show up here -->
-                </table>
+                <div>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                        }
+
+                        table tr {
+                            border-bottom: 2px solid dimgrey;
+                            border-top: 2px solid dimgrey;
+                        }
+                    </style>
+                    <table id="car-settings" style="width:99%; border: 1px solid black; border-collapse: collapse;">
+                        <!-- settings received from the car will show up here -->
+                    </table>
+                </div>
 
                 <br>
                 <span id="save-settings-button-label-2"></span>
@@ -209,31 +222,25 @@
                 by David Buezas for uploading code to the car.
             </footer>
         </div> <!-- // end of main div -->
-        <div id="help-header"
-            style="width:40%; height:10vh; position:fixed; right:0; top:0vh; background-color:grey; padding-left:1%; padding-right:1%; box-sizing:border-box;">
-            <button
-                onclick='document.getElementById("help").hidden=true; document.getElementById("help-header").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
-                style="float: right;">
-                close help
-            </button>
-        </div>
 
         <div id="help-open" style="position: fixed; right:0; top:0vh;" hidden="true">
             <button
-                onclick='document.getElementById("help").hidden=false; document.getElementById("help-header").hidden=false; document.getElementById("help-open").hidden=true; document.getElementById("main").style.width="60%"'>
-                <h2>?</h2>
+                onclick='document.getElementById("help").hidden=false;  document.getElementById("help-open").hidden=true; document.getElementById("main").style.width="60%"'>
+                <h2> &#10067</h2>
             </button>
         </div>
 
 
 
-
-
-
-
-        <div id="help" style="width:40%; height:90vh; position:fixed; right:0; top:10vh; background-color:whitesmoke;
-             overflow-y:auto; padding-left:1%; padding-right:1%; box-sizing:border-box">
+        <div id="help"
+            style="width:40%; height:100vh; position:fixed; right:0; top:0; background-color:whitesmoke; overflow-y:auto; padding-left:1%; padding-right:1%; box-sizing:border-box">
             <p id="help-index">
+                <button
+                    onclick='document.getElementById("help").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
+                    style="position:fixed; right: 40%; top:0; text-align: right; font-size:2em; border-top-left-radius: 0.2em; border-bottom-left-radius: 0.2em; border-width: 0;">
+                    &#187
+                </button>
+
                 <br>
                 <button onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
                 showConfigButton();'>I want to change the speed of my car.
@@ -246,7 +253,7 @@
                 <br>
                 <br>
                 <button onclick='
-                document.getElementsByC("hcbp-start").style.outline = "4px solid magenta";
+                document.getElementById("hcbp-start").style.outline = "4px solid magenta";
                 showFirstTime();'>I want to upload code to a new car.
                 </button>
 
@@ -258,9 +265,9 @@
                     }
                 </style>
                 <hr>
-                <h3 id="help-upload">
+                <h2 id="help-upload">
                     Programming the Car
-                </h3>
+                </h2>
                 <mark class="serial-alert"> </mark>
                 <ol>
                     <li>
@@ -273,8 +280,8 @@
                             <br><br>
                             <b>
                                 Please check the box below every step as you complete it
-                                so that the website can you guide you through the process of programming the Arduino in
-                                your car. (Clicking the text of the step is another way to check the the box).
+                                so that the website can guide you through the process of programming the Arduino
+                                in your car. (Clicking the text of the step is another way to check the the box).
                             </b>
                             <br>
                         </label>
@@ -282,7 +289,8 @@
                             onchange='cbdone("hcbp-start","hcbp-plug");' />
                     </li>
                     <li>
-                        <label for="hcbp-plug">Ensure the car is turned off (all lights in the car should be off), then
+                        <label for="hcbp-plug">Ensure the car is turned off (all lights in the car should be off),
+                            then
                             plug the Arduino into to your computer with a usb cable.
                             <details>
                                 <summary>
@@ -330,12 +338,16 @@
                             </span><br><br>
                             <span id="hcbp-board-selection-text">
                                 The selector for what type of Arduino board is in your car can be left on
-                                "nanoOldBootloader" if you have a less expensive Arduino Nano clone, or should be
-                                changed to say "nano" if you bought an official Arduino Nano or Uno board.
+                                "old nano" if you have a less expensive Arduino Nano clone (old bootloader), or
+                                should
+                                be
+                                changed to say "new nano or uno" if you bought an official Arduino Nano or Uno
+                                board.
                             </span>
                             <br>
                             <br>
-                            When you click the checkbox below, a box will pop up, which you will use in the next step to
+                            When you click the checkbox below, a box will pop up, which you will use in the next
+                            step to
                             upload the code.
                             <br>
                         </label>
@@ -363,30 +375,37 @@
                     </li>
                     <li>
                         <label for="hcbp-upload-done">
-                            The code has now been uploaded, but that process causes the car to disconnect. So, the next
+                            The code has now been uploaded, but that process causes the car to disconnect. So, the
+                            next
                             step is to connect to the car again in order to customize its settings. You will
-                            need to select the car's port for a second time, just like in the step above. Check the box
+                            need to select the car's port for a second time, just like in the step above. Check the
+                            box
                             below to continue.
                         </label>
                         <br> <input type="checkbox" class="help-checkbox" id="hcbp-upload-done" disabled
                             onchange='cblightoff("hcbs-plug"); cbdis("hcbs-plug"); cbchk("hcbs-plug"); cbdone("hcbp-upload-done","hcbs-connect"); document.getElementById("hcbs-connect").scrollIntoView({ block: "end" }); document.getElementById("help-settings-plug-label").style.color="lightgrey"; connectToSerial()' />
                     </li>
                 </ol>
-                <hr>
-                <h3 id="help-settings">
+            </div><!-- upload section -->
+            <hr>
+            <div id="help-settings-container">
+                <h2 id="help-settings">
                     Settings
-                </h3>
+                </h2>
                 <mark class="serial-alert"> </mark>
 
                 <ol>
                     <li>
-                        <label id="help-settings-plug-label" for="hcbs-plug">Ensure the car is turned off (all lights in
+                        <label id="help-settings-plug-label" for="hcbs-plug">Ensure the car is turned off (all
+                            lights in
                             the car
                             should be off),
                             then connect the Arduino to your computer with a usb cable.
                             <br>
-                            <b>Please check the box below every step (or click the text in the step) as you complete it
-                                so that the website can you guide you through the process of programming the Arduino in
+                            <b>Please check the box below every step (or click the text in the step) as you complete
+                                it
+                                so that the website can you guide you through the process of programming the Arduino
+                                in
                                 your car.</b>
                             <details>
                                 <summary>
@@ -433,7 +452,8 @@
                     <li>
                         <label for="hcbs-connect">
                             In the box that popped up, choose the
-                            car's serial port (if you don't know which port is your car, you can unplug and replug the
+                            car's serial port (if you don't know which port is your car, you can unplug and replug
+                            the
                             USB cable and whichever
                             option goes away and comes back is the car).
                             <p id="serial-connected-indicator">
@@ -443,16 +463,290 @@
                     </li>
 
                     <li>
-                        <label for="hcbs-setting-index">
-                            setting index
-                        </label>
-                        <br>
-                        <input type="checkbox" class="help-checkbox" id="hcbs-setting-index" disabled />
+                        <span id="hcbs-setting-index">
+                            <span id="hcbs-setting-index-title">setting index</span>
+
+                        </span>
                     </li>
-
-
                 </ol>
             </div>
+            <div>
+                <h3>
+                    Info about settings:
+                </h3>
+                <table style="width:100%">
+                    <tr id="help--CONTROL_RIGHT">
+                        <td><b>control right: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way to the
+                            right. Check the setting for pin "joy x pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_CENTER_X">
+                        <td><b>control center x: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick's x axis when it is centered.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_LEFT">
+                        <td><b>control left: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way to the
+                            left. Check the setting for pin "joy x pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--X_DEADZONE">
+                        <td><b>x deadzone: </b> </td>
+                        <td>
+                            How big of a zone near the center of the x axis should joystick movement be ignored in?
+                            Try around
+                            15 to start with. The car won't start if the joystick isn't in the deadzone.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_UP">
+                        <td><b>control up: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way
+                            forwards. Check the setting for pin "joy y pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_CENTER_Y">
+                        <td><b>control center y: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick's y axis when it is centered.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_DOWN">
+                        <td><b>control down: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way
+                            backwards. Check the setting for pin "joy y pin" if you don't see a clear signal when
+                            you move the joystick.
+                        </td>
+                    <tr id="help--Y_DEADZONE">
+                        <td><b>y deadzone: </b> </td>
+                        <td>
+                            How big of a zone near the center of the y axis should joystick movement be ignored in?
+                            Try around 15 to start with. The car won't start if the joystick isn't in the deadzone.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_FORWARD">
+                        <td><b>acceleration forward: </b> </td>
+                        <td>
+                            Rate of increase of speed when the car is moving forward. (fastest forward) / (acceleration
+                            forward) =
+                            seconds to reach max speed. (Larger number means higher acceleration). You can use the
+                            slow/medium/fast buttons to the left to give you a value to start with then adjust from
+                            there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_FORWARD">
+                        <td><b>deceleration forward: </b> </td>
+                        <td>
+                            Rate of decrease of speed when the car is moving forward. (fastest forward) / (deceleration
+                            forward) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast buttons to the left to give you a value to start with then adjust
+                            from there.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_BACKWARD">
+                        <td><b>acceleration backward: </b> </td>
+                        <td>
+                            Rate of increase of speed when the car is moving backward. (fastest backwards) /
+                            (acceleration backward) =
+                            seconds to reach max speed. (Larger number means higher acceleration). You can use the
+                            slow/medium/fast buttons to the left to give you a value to start with then adjust from
+                            there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_BACKWARD">
+                        <td><b>deceleration backward: </b> </td>
+                        <td>
+                            Rate of decrease of speed when the car is moving backward. (fastest backwards) /
+                            (deceleration backward) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast
+                            buttons to the left to give you a value to start with then adjust from there.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_TURNING">
+                        <td><b>acceleration turning: </b> </td>
+                        <td>
+                            Rate of increase of rotation speed. (turn speed) / (acceleration turning) = seconds to
+                            reach
+                            max speed. (Larger number means higher acceleration). You can use the slow/medium/fast
+                            buttons to the left to give you a value to start with then adjust from there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_TURNING">
+                        <td><b>deceleration turning: </b> </td>
+                        <td>
+                            Rate of decrease of rotation speed. (turn speed) / (deceleration turning) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast buttons to the left to give you a value to start with then adjust
+                            from there.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_FORWARD">
+                        <td><b>fastest forward: </b> </td>
+                        <td>
+                            Maximum forward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_BACKWARD">
+                        <td><b>fastest backward: </b> </td>
+                        <td>
+                            Maximum backward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_BACKWARD">
+                        <td><b>fastest backward: </b> </td>
+                        <td>
+                            Maximum backward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--TURN_SPEED">
+                        <td><b>turn speed: </b> </td>
+                        <td>
+                            Maximum turning (spinning) speed (between 0.0 and 1.0). While associated with speed, this
+                            setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--SCALE_TURNING_WHEN_MOVING">
+                        <td><b>scale turning when moving: </b> </td>
+                        <td>
+                            This setting changes how tightly the car turns when the joystick is pushed to a corner, try
+                            0.5 to start. (Higher values mean tighter turns. It's recommended to stay within 0.0 and
+                            1.0). </td>
+                    </tr>
+                    <tr id="help--REVERSE_TURN_IN_REVERSE">
+                        <td><b>reverse turn in reverse: </b> </td>
+                        <td>Changes how the car drives in reverse (flips rotation direction if the car is moving
+                            backwards). If checked: car drives towards direction joystick
+                            pointed. If unchecked: car spins in direction joystick pointed.
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_CENTER">
+                        <td><b>left motor center: </b> </td>
+                        <td>
+                            What ESC signal makes the left motor stop? usually 1500
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_SLOW">
+                        <td><b>left motor slow: </b> </td>
+                        <td>
+                            Center ± what makes the left motor start to turn? Can be negative if the motor is wired
+                            backwards. Try 25.
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_FAST">
+                        <td><b>left motor fast: </b> </td>
+                        <td>
+                            Center ± what makes the left motor run at full speed? Can be negative if the motor is wired
+                            backwards. Usually 500.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_CENTER">
+                        <td><b>right motor center: </b> </td>
+                        <td>
+                            What ESC signal makes the right motor stop? usually 1500
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_SLOW">
+                        <td><b>right motor slow: </b> </td>
+                        <td>
+                            Center ± what makes the right motor start to turn? Can be negative if the motor is wired
+                            backwards. Try 25.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_FAST">
+                        <td><b>right motor fast: </b> </td>
+                        <td>
+                            Center ± what makes the right motor run at full speed? Can be negative if the motor is wired
+                            backwards. Usually 500.
+                        </td>
+                    </tr>
+                    <tr id="help--USE_SPEED_KNOB">
+                        <td><b>use speed knob: </b> </td>
+                        <td>
+                            Check the box if an optional knob for easily adjusting the max speed been added to your car.
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_SLOW_VAL">
+                        <td><b>speed knob slow val: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) This setting should be the analogRead value
+                            when the knob is turned towards the slowest setting. (check SPEED_KNOB_PIN if not a clear
+                            signal)
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_FAST_VAL">
+                        <td><b>speed knob fast val: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) This setting should be the analogRead value
+                            when the knob is turned towards the fastest setting. (check SPEED_KNOB_PIN if not a clear
+                            signal)
+                        </td>
+                    </tr>
+                    <tr id="help--SCALE_ACCEL_WITH_SPEED">
+                        <td><b>scale accel with speed: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) Check box if using a speed knob and you want to
+                            keep time to max speed constant instead of
+                            acceleration being constant. If checked: (1/accel)=time to reach max speed setting. If
+                            unchecked: (1/accel)=time to reach speed of 1.0 even if the car is limited from reaching a
+                            speed of 1.
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_PIN">
+                        <td><b>speed knob pin: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) Pin connected to optional potentiometer for
+                            adjusting max speed.
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_X_PIN">
+                        <td><b>joy x pin: </b> </td>
+                        <td>
+                            What analog pin is the X (left-right) axis of the joystick connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_Y_PIN">
+                        <td><b>joy y pin: </b> </td>
+                        <td>
+                            What analog pin is the Y (forwards-backwards) axis of the joystick connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_CONTROLLER_PIN">
+                        <td><b>left motor controller pin: </b> </td>
+                        <td>
+                            What Arduino pin is the left motor controller connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_CONTROLLER_PIN">
+                        <td><b>right motor controller pin: </b> </td>
+                        <td>
+                            What Arduino pin is the right motor controller connected to?
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+            </tr>
+            </table>
+        </div> <!-- end of settings section -->
         </div> <!-- end of help div -->
     </main>
 </body>

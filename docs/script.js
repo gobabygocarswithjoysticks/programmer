@@ -8,6 +8,7 @@ var sendStringSerialLock = false; // boolean, prevents sendStringSerial from bei
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
 var settings_received = false; // have valid settings been received yet?
 var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
+var help_info_highlight_id = null; // used to highlight the most recently requested setting info row
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -323,6 +324,9 @@ function gotNewSerial(data, length) {
             }
         }
         console.log("unexpected message: ");
+        if (!settings_received) {
+            console.log("no valid settings were received so data is being discarded");
+        }
         console.log(data);
         // not an expected message
     }
@@ -504,7 +508,11 @@ async function onSettingChangeFunction(setting) {
 function gotNewSettings(settings, slength) {
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
     document.getElementById('serial-connected-short').innerHTML = 'connected';
-    cbdone("hcbs-connect", "hcbs-setting-index");
+    cbchk("hcbs-connect");
+    cbdis("hcbs-connect");
+    cblightoff("hcbs-connect");
+    cbhighlight("hcbs-setting-index-title");
+    document.getElementById("hcbs-setting-index").scrollIntoView({ block: "end" });
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
@@ -542,13 +550,13 @@ function gotNewSettings(settings, slength) {
             entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
             entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
 
-            var setting_helper = document.createElement("span");
+            var setting_helper = document.createElement("td");
             setting_helper.style.display = "inline-block";
             setting_helper.setAttribute("overflow-wrap", "anywhere");
             if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
-                setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_X_PIN if not a clear signal)';
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
             } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
-                setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> (check JOY_Y_PIN if not a clear signal)';
+                setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
             } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
                 setting_helper.innerHTML = "";
                 if (setting === "JOY_X_PIN") {
@@ -599,6 +607,9 @@ function gotNewSettings(settings, slength) {
             }
 
             entry.appendChild(setting_helper);
+            var helpChild = document.createElement("td");
+            helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;` + setting + `&quot;);">&#x1F6C8</h2>`;
+            entry.appendChild(helpChild);
             list.appendChild(entry);
         }
 
@@ -610,7 +621,7 @@ function gotNewSettings(settings, slength) {
 
     } else { // not a valid version and amount of data
         var list = document.getElementById("car-settings");
-        list.innerHTML = "<mark> ERROR: The car sent invalid setting data. Maybe try reuploading code to get the latest version? </mark>";
+        list.innerHTML = "<mark> ERROR: The car sent invalid setting data. If disconnecting and reconnecting a couple times does not work then try reuploading the program to get the latest version. </mark>";
         document.getElementById("settings-advanced-settings-info").innerHTML = JSON.stringify(settings);
 
         console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ", checksum-actual: " + slength + ", checksum-reported: " + settings["CHECKSUM"] + ")");
@@ -625,6 +636,31 @@ function gotNewSettings(settings, slength) {
     document.getElementById("configure-car").hidden = false;
     document.getElementById("configure-car").scrollIntoView();
 }
+
+function infoButtonHelper(setting) {
+    //help open button
+    document.getElementById("help").hidden = false;
+    document.getElementById("help-open").hidden = true;
+    document.getElementById("main").style.width = "60%";
+    //
+    if (help_info_highlight_id != null) {
+        try {
+            document.getElementById("help--" + help_info_highlight_id).style.backgroundColor = "";
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    help_info_highlight_id = setting;
+
+    try {
+        document.getElementById("help--" + setting).style.backgroundColor = "yellow";
+        document.getElementById("help--" + setting).scrollIntoView();
+    } catch (e) {
+        console.log(e);
+    }
+
+}
+
 // used for giving actions to "helper" buttons to the right of the input boxes when changing car settings
 function helper(type, data, data2) {
     if (type === "joyX") {
@@ -677,7 +713,7 @@ function showPinSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = "You can look at the wiring in the car to see what pins were used.";
-    document.getElementById("configure-car").scrollIntoView();
+    document.getElementById("save-settings-button").scrollIntoView();
 
 }
 function showJoystickSettings() {
@@ -697,7 +733,7 @@ function showJoystickSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br><br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
-    document.getElementById("configure-car").scrollIntoView();
+    document.getElementById("save-settings-button").scrollIntoView();
 
 }
 async function swapxandypins() {
@@ -729,7 +765,7 @@ function showSpeedSettings() {
         }
     }
     document.getElementById("config-help-paragraph").innerHTML = "Customize the speed and acceleration of the car. <br> <br> For acceleration and deceleration, 1/(value) = seconds to reach max speed. Larger number means faster acceleration. <br> <br> FASTEST_FORWARD and FASTEST_BACKWARD can be values between 0 and 1, where 1 is fastest and 0 means no movement.";
-    document.getElementById("configure-car").scrollIntoView();
+    document.getElementById("save-settings-button").scrollIntoView();
 
 }
 function showAllSettings(scroll) {
@@ -754,7 +790,7 @@ function showAllSettings(scroll) {
     }
     document.getElementById("config-help-paragraph").innerHTML = "";
     if (scroll) {
-        document.getElementById("configure-car").scrollIntoView();
+        document.getElementById("save-settings-button").scrollIntoView();
     }
 }
 
@@ -807,9 +843,9 @@ async function updateUpload() {
 
 async function getCode() {
     var program_selector = document.getElementById("program-selector");
-    var program = program_selector.options[program_selector.selectedIndex].text;
+    var program = program_selector.options[program_selector.selectedIndex].value;
     var board_selector = document.getElementById("board-selector");
-    var board = board_selector.options[board_selector.selectedIndex].text;
+    var board = board_selector.options[board_selector.selectedIndex].value;
     var name = options.filter((v) => { return v[1] === program && v[2] === board })[0][0];
     var code = null;
     try {
@@ -853,6 +889,7 @@ function updateBoardOptionsSelector() {
     var program_selector = document.getElementById("program-selector");
     var selected_program = program_selector.options[program_selector.selectedIndex].text;
     var board_options = options.filter((v) => { return v[1] === selected_program });
+    board_options_nice_names = [... new Set(extractColumn(board_options, 3))];
     board_options = [... new Set(extractColumn(board_options, 2))];
 
     var select = document.getElementById("board-selector");
@@ -868,8 +905,9 @@ function updateBoardOptionsSelector() {
         // https://www.geeksforgeeks.org/how-to-create-a-dropdown-list-with-array-values-using-javascript/
         for (var i = 0; i < board_options.length; i++) {
             var optn = board_options[i];
+            var optn_name = board_options_nice_names[i];
             var el = document.createElement("option");
-            el.textContent = optn;
+            el.textContent = optn_name;
             el.value = optn;
             select.appendChild(el);
         }
