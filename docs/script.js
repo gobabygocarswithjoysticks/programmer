@@ -407,15 +407,17 @@ function followTheDot() {
     } else if (follow_the_dot === 2) {
         ftd_data["cx"] = live_data["joyXVal"];
         ftd_data["cy"] = live_data["joyYVal"];
-        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please quickly push and hold the joystick to the displayed position: <span id="follow_the_dot_span"></span>';
+        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please quickly push and hold the joystick to the displayed position: <span id="follow_the_dot_span"></span><canvas id="follow_the_dot_canvas" width="100" height="100"></span>';
         follow_the_dot = 3;
     } else if (follow_the_dot === 3) { // forwards
         document.getElementById("follow_the_dot_span").innerHTML = "FORWARDS";
+        followTheDotDrawOnCanvas("f");
         if (Math.abs(live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(live_data["joyYVal"] - last_live_data["joyYVal"]) < joy_calib_deadzone) { // moved in y and held
             if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) <= joy_calib_moved_enough) { // and x is still centered
                 ftd_data["f"] = live_data["joyYVal"];
                 follow_the_dot = 4;
                 document.getElementById("follow_the_dot_span").innerHTML = "BACKWARDS";
+                followTheDotDrawOnCanvas("b");
                 return; // normal procedure, continue
             } else { // x moved significantly also
                 follow_the_dot = null;
@@ -451,12 +453,14 @@ function followTheDot() {
             && (((live_data["joyYVal"] - ftd_data["cy"]) > 0) != ((ftd_data["f"] - ftd_data["cy"]) > 0))) { // moved opposite direction in y and held
             ftd_data["b"] = live_data["joyYVal"];
             document.getElementById("follow_the_dot_span").innerHTML = "LEFT";
+            followTheDotDrawOnCanvas("l");
             follow_the_dot = 5;
         }
     } else if (follow_the_dot === 5) {
         if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(live_data["joyXVal"] - last_live_data["joyXVal"]) < joy_calib_deadzone) { // moved in x and held
             ftd_data["l"] = live_data["joyXVal"];
             document.getElementById("follow_the_dot_span").innerHTML = "RIGHT";
+            followTheDotDrawOnCanvas("r");
             follow_the_dot = 6;
         }
     } else if (follow_the_dot === 6) {
@@ -507,7 +511,23 @@ function cancelFollowTheDot() {
     document.getElementById("settings-header").style.border = "";
     document.getElementById("settings-header").innerHTML = "";
 }
+function followTheDotDrawOnCanvas(dir) {
+    let canvas = document.getElementById("follow_the_dot_canvas");
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.lineWidth = "2";
+    ctx.strokeStyle = "grey";
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.arc(50 + (dir === "r" ? 35 : 0) + (dir === "l" ? -35 : 0), 50 - (dir === "f" ? 35 : 0) - (dir === "b" ? -35 : 0), 15, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
 
+}
 
 function drawMotorSignal(clear, canvasID, xpos, data, side) {
     // motor-signal-canvas
