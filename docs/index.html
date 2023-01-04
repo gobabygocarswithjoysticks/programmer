@@ -113,14 +113,6 @@
                         <br> As a safety measure, the car won't drive until the joystick is centered.</mark><br></div>
                 <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
                 <div id="car-telem-container" style="width:100%; display: flex; flex-wrap: wrap;">
-                    <span>
-                        test settings without the car moving
-                        <br><br>
-                        motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
-                        <br><br>
-                        <button id="motors-on-off-button"></button>
-                        <br>
-                    </span>
                     <div style="text-align: center">
                         <br>
                         Joystick Input
@@ -147,10 +139,10 @@
                     </div>
                     <div style="text-align: center">
                         <br>
-                        Motor Signals
-                        <br>
-                        motors:
+                        Motor Signals:
                         <b><span class="liveVal-movementAllowed">status loading</span></b>
+                        <br>
+                        <button id="motors-on-off-button"></button>
                         <br>
                         <canvas id="motor-signal-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
@@ -158,20 +150,21 @@
                     </div>
                 </div>
 
-                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>Save
-                    Changes</button>
+                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                    Save Changes
+                </button>
                 <span id="save-settings-button-label"></span>
                 <br><br>
 
-                <button id="show-pins-settings-button" onclick="showPinSettings()">choose pins</button>
-                <button id="show-joystick-settings-button" onclick="showJoystickSettings()">calibrate
-                    joystick</button>
-                <button id="show-drive-settings-button" onclick="showSpeedSettings()">change acceleration, speed,
-                    and other drive settings</button>
-                <button id="show-all-settings-button" onclick="showAllSettings(true)">show all</button>
+                <br><button onclick="showPinSettings()">choose pins</button>
+                <br><button onclick="showJoystickSettings()">calibrate joystick the hard way</button>
+                <button onclick="followTheDot()">calibrate joystick the easy way</button>
+                <br><button onclick="showSpeedSettings()">change speed and accel</button>
+                <br><button onclick="showAllSettings(true)">show all</button>
                 <br>
+                <div id="settings-header">
 
-                <p id="config-help-paragraph"></p>
+                </div>
                 <div>
                     <style>
                         table {
@@ -184,13 +177,15 @@
                         }
                     </style>
                     <table id="car-settings" style="width:99%; border: 1px solid black; border-collapse: collapse;">
-                        <!-- settings received from the car will show up here -->
+                        <!-- settings received from the car will show up here. settings table-->
                     </table>
                 </div>
 
                 <br>
+                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                    Save Changes
+                </button>
                 <span id="save-settings-button-label-2"></span>
-                <button id="save-settings-button" onclick='sendStringSerial("SAVE,")'>Save Changes</button>
                 <p>
                 <details>
                     <summary>
@@ -453,8 +448,7 @@
                         <label for="hcbs-connect">
                             In the box that popped up, choose the
                             car's serial port (if you don't know which port is your car, you can unplug and replug
-                            the
-                            USB cable and whichever
+                            the USB cable and whichever
                             option goes away and comes back is the car).
                             <p id="serial-connected-indicator">
                             </p>
@@ -464,12 +458,23 @@
 
                     <li>
                         <span id="hcbs-setting-index">
-                            <span id="hcbs-setting-index-title">setting index</span>
+                            <span id="hcbs-setting-index-title">
+                                What settings do you want to change? If you are programming a new car, then make sure to
+                                calibrate the joystick.
+                            </span>
+                            <br><button onclick="showPinSettings()">choose pins</button>
+                            <br><button onclick="showJoystickSettings()">calibrate joystick the hard way</button>
+                            <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
+                            <br><button onclick="showSpeedSettings()">change speed and accel</button>
+                            <br><button onclick="showAllSettings(true)">show all</button>
 
                         </span>
                     </li>
                 </ol>
             </div>
+
+
+
             <div>
                 <h3>
                     Info about settings:

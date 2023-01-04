@@ -6,9 +6,14 @@ var serial_connected_indicator_warning_timeout; // the result of a setInterval()
 var serialConnectionRunning = false; // boolean, is a car connected?
 var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
+var last_live_data = null; // the previous live data that the car reports (Json) (used for joystick calibration)
 var settings_received = false; // have valid settings been received yet?
 var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
 var help_info_highlight_id = null; // used to highlight the most recently requested setting info row
+var follow_the_dot = null; // used to sequence joystick calibration by "follow the dot"
+var ftd_data = {}; // used to store data used for joystick calibration by "follow the dot"
+var joy_calib_deadzone = 5; //signal noise should be below this
+var joy_calib_moved_enough = 40; // far enough from center to be an edge
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -199,7 +204,7 @@ async function connectToSerial() {
     try {
         port = await navigator.serial.requestPort();
         serial_connected_indicator_warning_timeout = setTimeout(() => {
-            document.getElementById('serial-connected-indicator').innerHTML = 'trying to connect... It is taking a long time, try pressing the <span id="serial-con-msg-time-disbut">disconnect button to the left</span> then reconnect by pressing the <span id="serial-con-msg-time-conbut">connect button to the left</span> after checking the port. Also try closing other tabs or Arduino windows that might be connected to the car.';
+            document.getElementById('serial-connected-indicator').innerHTML = 'trying to connect... It is taking a long time, try pressing the <span id="serial-con-msg-time-disbut">disconnect button to the left</span> then reconnect by pressing the <span id="serial-con-msg-time-conbut">connect button to the left</span> after checking the port. Also try closing other tabs or Arduino windows that might be connected to the car, unplugging and unplugging the car, and uploading the code again.';
             document.getElementById('serial-connected-short').innerHTML = 'trying to connect... It is taking a long time, try disconnecting and reconnecting.';
 
             document.getElementById('serial-disconnect-button').style.border = "3px solid red";
@@ -301,6 +306,7 @@ function gotNewSerial(data, length) {
         gotNewData(data, length);
     } else if (data["current settings, version:"] != null) {
         gotNewSettings(data, length);
+        cancelFollowTheDot();
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
@@ -338,6 +344,7 @@ function gotNewData(data, slength) {
         console.log(data);
         return;
     }
+    last_live_data = live_data;
     live_data = data;
     if (data["joyOK"] != null) {
         if (data["current values, millis:"] > 3000) {
@@ -376,7 +383,132 @@ function gotNewData(data, slength) {
     drawMotorSignal(true, "motor-signal-canvas", 60, data, "left");
     drawMotorSignal(false, "motor-signal-canvas", 120, data, "right");
 
+    if (follow_the_dot != null) {
+        followTheDot();
+    }
+
 }
+
+function followTheDot() {
+    if (follow_the_dot == null) {
+        follow_the_dot = 0;
+    }
+    if (follow_the_dot === 0) {
+        ftd_data = {};
+        var elements = document.getElementsByClassName("car-setting-row");
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].hidden = true; // hide all settings
+        }
+
+        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please do not touch the joystick yet. Joystick calibration will start in 5 seconds.';
+        document.getElementById('settings-header').style.border = "4px solid magenta";
+        document.getElementById('settings-header').scrollIntoView();
+        follow_the_dot = 2;
+    } else if (follow_the_dot === 2) {
+        ftd_data["cx"] = live_data["joyXVal"];
+        ftd_data["cy"] = live_data["joyYVal"];
+        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please quickly push and hold the joystick to the displayed position: <span id="follow_the_dot_span"></span>';
+        follow_the_dot = 3;
+    } else if (follow_the_dot === 3) { // forwards
+        document.getElementById("follow_the_dot_span").innerHTML = "FORWARDS";
+        if (Math.abs(live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(live_data["joyYVal"] - last_live_data["joyYVal"]) < joy_calib_deadzone) { // moved in y and held
+            if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) <= joy_calib_moved_enough) { // and x is still centered
+                ftd_data["f"] = live_data["joyYVal"];
+                follow_the_dot = 4;
+                document.getElementById("follow_the_dot_span").innerHTML = "BACKWARDS";
+                return; // normal procedure, continue
+            } else { // x moved significantly also
+                follow_the_dot = null;
+                document.getElementById("settings-header").innerHTML = 'Calibration canceled because movement was detected on both axes. Please check the the joystick pin settings and then restart the joystick calibration, and carefully move the joystick on only one axis at a time. <br> <button onclick="followTheDot();">restart</button><br>';
+                var elements = document.getElementsByClassName("car-setting-row");
+                for (var i = 0; i < elements.length; i++) {
+                    if (Array("setting---JOY_X_PIN", "setting---JOY_Y_PIN").indexOf(elements[i].id) > -1) {
+                        elements[i].hidden = false;
+                    } else {
+                        elements[i].hidden = true;
+                    }
+                }
+                return;
+            }
+        } // returns if the if statement was true
+        if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(live_data["joyXVal"] - last_live_data["joyXVal"]) < joy_calib_deadzone) { // moved in x and because earlier ifs didn't happen, not in y (pins swapped)
+            document.getElementById("settings-header").innerHTML = "Calibration canceled because it seems that the x and y joystick pins are swapped. It is recommended that you correct the joystick pin settings and then restart the joystick calibration. <br>"
+                + '<button onclick="swapxandypins(); followTheDot();" style="background-color:Chartreuse">swap x and y pins and restart</button> <br> <button onclick="followTheDot();">restart</button>';
+
+            var elements = document.getElementsByClassName("car-setting-row");
+            for (var i = 0; i < elements.length; i++) {
+                if (Array("setting---JOY_X_PIN", "setting---JOY_Y_PIN").indexOf(elements[i].id) > -1) {
+                    elements[i].hidden = false;
+                } else {
+                    elements[i].hidden = true;
+                }
+            }
+
+            follow_the_dot = null;
+        }
+    } else if (follow_the_dot === 4) {
+        if (Math.abs(live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(live_data["joyYVal"] - last_live_data["joyYVal"]) < joy_calib_deadzone
+            && (((live_data["joyYVal"] - ftd_data["cy"]) > 0) != ((ftd_data["f"] - ftd_data["cy"]) > 0))) { // moved opposite direction in y and held
+            ftd_data["b"] = live_data["joyYVal"];
+            document.getElementById("follow_the_dot_span").innerHTML = "LEFT";
+            follow_the_dot = 5;
+        }
+    } else if (follow_the_dot === 5) {
+        if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(live_data["joyXVal"] - last_live_data["joyXVal"]) < joy_calib_deadzone) { // moved in x and held
+            ftd_data["l"] = live_data["joyXVal"];
+            document.getElementById("follow_the_dot_span").innerHTML = "RIGHT";
+            follow_the_dot = 6;
+        }
+    } else if (follow_the_dot === 6) {
+        if (Math.abs(live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyXVal"] - ftd_data["cx"]) > joy_calib_moved_enough && Math.abs(live_data["joyXVal"] - last_live_data["joyXVal"]) < joy_calib_deadzone
+            && (((live_data["joyXVal"] - ftd_data["cy"]) > 0) != ((ftd_data["l"] - ftd_data["cx"]) > 0))) { // moved opposite direction in x and held
+            ftd_data["r"] = live_data["joyXVal"];
+            follow_the_dot = 7;
+            document.getElementById("settings-header").innerHTML = "processing...";
+        }
+    } else if (follow_the_dot === 7) {
+        document.getElementById('setting---' + "CONTROL_RIGHT").children[1].firstChild.value = ftd_data["r"];
+        onSettingChangeFunction("CONTROL_RIGHT");
+        follow_the_dot = 8;
+    } else if (follow_the_dot === 8) {
+        document.getElementById('setting---' + "CONTROL_CENTER_X").children[1].firstChild.value = ftd_data["cx"];
+        onSettingChangeFunction("CONTROL_CENTER_X");
+        follow_the_dot = 9;
+    } else if (follow_the_dot === 9) {
+        document.getElementById('setting---' + "CONTROL_LEFT").children[1].firstChild.value = ftd_data["l"];
+        onSettingChangeFunction("CONTROL_LEFT");
+        follow_the_dot = 10;
+    } else if (follow_the_dot === 10) {
+        document.getElementById('setting---' + "CONTROL_UP").children[1].firstChild.value = ftd_data["f"];
+        onSettingChangeFunction("CONTROL_UP");
+        follow_the_dot = 11;
+    } else if (follow_the_dot === 11) {
+        document.getElementById('setting---' + "CONTROL_CENTER_Y").children[1].firstChild.value = ftd_data["cy"];
+        onSettingChangeFunction("CONTROL_CENTER_Y");
+        follow_the_dot = 12;
+    } else if (follow_the_dot === 12) {
+        document.getElementById('setting---' + "CONTROL_DOWN").children[1].firstChild.value = ftd_data["b"];
+        onSettingChangeFunction("CONTROL_DOWN");
+
+        document.getElementById("settings-header").innerHTML = "calibration done!";
+
+        follow_the_dot = null;
+        showJoystickSettings();
+    }
+
+
+
+
+}
+
+function cancelFollowTheDot() {
+
+    follow_the_dot = null;
+    document.getElementById("settings-header").style.border = "";
+    document.getElementById("settings-header").innerHTML = "";
+}
+
+
 function drawMotorSignal(clear, canvasID, xpos, data, side) {
     // motor-signal-canvas
     let canvas = document.getElementById(canvasID);
@@ -568,22 +700,6 @@ function gotNewSettings(settings, slength) {
                 for (var Ai = 0; Ai <= 5; Ai++) {
                     setting_helper.innerHTML += '<button onclick="helper(&quot;joyPin&quot;,&quot;' + setting + '&quot;,&quot;' + Ai + '&quot;)"> A' + Ai + '</button>';
                 }
-            } else if ("SCALE_TURNING_WHEN_MOVING" === setting) {
-                setting_helper.innerHTML = "<span>This setting changes how tightly the car turns when the joystick is pushed to a corner, try 0.5 to start.</span>";
-            } else if ("SCALE_ACCEL_WITH_SPEED" === setting) {
-                setting_helper.innerHTML = "<span> Check box if using a speed knob and you want to keep time to max speed constant instead of acceleration being constant If checked: (1/accel)=time to reach max speed setting. If unchecked: (1/accel)=time to reach speed of 1.0.</span>";
-            } else if ("REVERSE_TURN_IN_REVERSE" === setting) {
-                setting_helper.innerHTML = "<span>Changes how the car drives in reverse. If checked: car drives towards direction joystick pointed. If unchecked: car spins in direction joystick pointed.</span>";
-            } else if (Array("X_DEADZONE", "Y_DEADZONE").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>How big of a zone near the center of an axis should movement be ignored in? Try around 25 to start with. The car won't start if the joystick isn't in the deadzone.</span>";
-            } else if (Array("LEFT_MOTOR_SLOW", "RIGHT_MOTOR_SLOW").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor start to turn? Can be negative if the motor is wired backwards. try 25</span>";
-            } else if (Array("LEFT_MOTOR_FAST", "RIGHT_MOTOR_FAST").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>Center \u00B1 what makes the motor run at full speed? Can be negative if the motor is wired backwards. try 500</span>";
-            } else if (Array("LEFT_MOTOR_CENTER", "RIGHT_MOTOR_CENTER").indexOf(setting) > -1) {
-                setting_helper.innerHTML = "<span>what ESC signal makes the motor stop? usually 1500</span>";
-            } else if ("USE_SPEED_KNOB" === setting) {
-                setting_helper.innerHTML = "<span>Has an optional knob for reducing max speed been added?</span>";
             } else if ("SPEED_KNOB_SLOW_VAL" === setting) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards slow setting. (check SPEED_KNOB_PIN if not a clear signal)';
             } else if ("SPEED_KNOB_FAST_VAL" === setting) {
@@ -712,7 +828,6 @@ function showPinSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = "You can look at the wiring in the car to see what pins were used.";
     document.getElementById("save-settings-button").scrollIntoView();
 
 }
@@ -732,7 +847,6 @@ function showJoystickSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = 'Move the joystick to the position of each setting and press the corresponding button that says "set to." <br><br> <button onclick="swapxandypins()">swap x and y (pins)</button>';
     document.getElementById("save-settings-button").scrollIntoView();
 
 }
@@ -764,7 +878,6 @@ function showSpeedSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("config-help-paragraph").innerHTML = "Customize the speed and acceleration of the car. <br> <br> For acceleration and deceleration, 1/(value) = seconds to reach max speed. Larger number means faster acceleration. <br> <br> FASTEST_FORWARD and FASTEST_BACKWARD can be values between 0 and 1, where 1 is fastest and 0 means no movement.";
     document.getElementById("save-settings-button").scrollIntoView();
 
 }
@@ -788,7 +901,7 @@ function showAllSettings(scroll) {
     } catch (e) {
         // sometimes the checkbox hasn't loaded when this function is called, but showAllSettings is called again when settings are received.
     }
-    document.getElementById("config-help-paragraph").innerHTML = "";
+
     if (scroll) {
         document.getElementById("save-settings-button").scrollIntoView();
     }
