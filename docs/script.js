@@ -12,7 +12,7 @@ var showEverything = false; //if the "show all the options at once button is pre
 var help_info_highlight_id = null; // used to highlight the most recently requested setting info row
 var follow_the_dot = null; // used to sequence joystick calibration by "follow the dot"
 var ftd_data = {}; // used to store data used for joystick calibration by "follow the dot"
-var joy_calib_deadzone = 5; //signal noise should be below this
+var joy_calib_deadzone = 3; //joystick signal noise should be below this
 var joy_calib_moved_enough = 40; // far enough from center to be an edge
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
@@ -407,7 +407,7 @@ function followTheDot() {
     } else if (follow_the_dot === 2) {
         ftd_data["cx"] = live_data["joyXVal"];
         ftd_data["cy"] = live_data["joyYVal"];
-        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please quickly push and hold the joystick to the displayed position: <span id="follow_the_dot_span"></span><canvas id="follow_the_dot_canvas" width="100" height="100"></span>';
+        document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please quickly push and hold the joystick to the displayed position: <span id="follow_the_dot_span"></span><br><canvas id="follow_the_dot_canvas" width="100" height="100"></span>';
         follow_the_dot = 3;
     } else if (follow_the_dot === 3) { // forwards
         document.getElementById("follow_the_dot_span").innerHTML = "FORWARDS";
@@ -835,6 +835,7 @@ function presetButtonGenerator(setting, settings, labels, values) {
 
 ////functions (called by buttons) for showing and hiding parts of the settings table to make the website look simpler
 function showPinSettings() {
+    cancelFollowTheDot();
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         if (Array(
@@ -878,6 +879,7 @@ async function swapxandypins() {
     await onSettingChangeFunction("JOY_Y_PIN");
 }
 function showSpeedSettings() {
+    cancelFollowTheDot();
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         if (Array(
@@ -902,6 +904,7 @@ function showSpeedSettings() {
 
 }
 function showAllSettings(scroll) {
+    cancelFollowTheDot();
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         elements[i].hidden = false;

@@ -157,7 +157,9 @@
                 <br><br>
 
                 <br><button onclick="showPinSettings()">choose pins</button>
-                <br><button onclick="showJoystickSettings()">calibrate joystick the hard way</button>
+                <br><button onclick="showJoystickSettings();cancelFollowTheDot();">
+                    calibrate joystick the hard way
+                </button>
                 <button onclick="followTheDot()">calibrate joystick the easy way</button>
                 <br><button onclick="showSpeedSettings()">change speed and accel</button>
                 <br><button onclick="showAllSettings(true)">show all</button>
@@ -463,7 +465,8 @@
                                 calibrate the joystick.
                             </span>
                             <br><button onclick="showPinSettings()">choose pins</button>
-                            <br><button onclick="showJoystickSettings()">calibrate joystick the hard way</button>
+                            <br><button onclick="showJoystickSettings();cancelFollowTheDot();">calibrate joystick the
+                                hard way</button>
                             <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
                             <br><button onclick="showSpeedSettings()">change speed and accel</button>
                             <br><button onclick="showAllSettings(true)">show all</button>
