@@ -15,6 +15,12 @@
 <body style="background-color:lightgrey; width:100wh; overflow-wrap: break-word; margin:0; border:0; padding:0;">
 
     <main>
+
+        <div id="pointer-arrow"
+            style='position: absolute; font-size: 60px; color: magenta; text-align: right; right:40%; top:25px;'>
+            &#129094
+        </div>
+
         <div id="main" style="width:60%">
             <h2> <a target="_blank" rel="noopener noreferrer"
                     href="https://github.com/gobabygocarswithjoysticks/index">GBG
@@ -37,16 +43,18 @@
             <div id="options-buttons">
                 <br>
                 <button id="first-time-program-button" onclick='
-                        document.getElementById("hcbp-start").style.outline = "4px solid magenta";
+                        document.getElementById("hcbp-start").style.outline = "7px solid magenta"; document.getElementById("pointer-arrow").hidden=true;
                         showFirstTime();'>I want to upload code to a new car.
                 </button>
                 <br><br>
-                <button id="config-button" onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
+                <button id="config-button" onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta"; document.getElementById("pointer-arrow").hidden=true;
                     showConfigButton();'>I want to change the settings of my car.
                 </button>
                 <br><br>
-                <button id="everything-button" onclick="showEverythingButton()">Show me all the options at
-                    once.</button>
+                <button id="everything-button"
+                    onclick='showEverythingButton();document.getElementById("pointer-arrow").hidden=true;'>
+                    Show me all the options at once.
+                </button>
                 <br>
                 <br>
             </div>
@@ -69,8 +77,9 @@
                     <br>
                     <span id="upload-warning-span">
                     </span>
-                    <button id="upload-button" arduino-uploader onclick="closeSerial()" board="" verify="true"
-                        hex-href="">
+                    <button id="upload-button" arduino-uploader
+                        onclick='closeSerial();document.getElementById("pointer-arrow").hidden=true;' board=""
+                        verify="true" hex-href="">
                         Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
                     </button>
                     <span class="upload-info"></span>
@@ -98,7 +107,7 @@
                 <h2>Connect to Car (to change settings)</h2>
                 <button id="serial-connect-button"
                     onclick='document.getElementById("serial-connect-button").style.border = "";
-                connectToSerial(); cbdone("hcbs-plug");cbhighlight("hcbs-connect"); cblightoff("hcbp-upload-done");cbchk("hcbp-upload-done");cbdis("hcbp-upload-done");'>connect</button>
+                connectToSerial(); cbdone("hcbs-plug");cbhighlight("hcbs-connect"); cblightoff("hcbp-upload-done");cbchk("hcbp-upload-done");cbdis("hcbp-upload-done");document.getElementById("pointer-arrow").hidden=true;'>connect</button>
                 <button id="serial-disconnect-button"
                     onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
                 </button>
@@ -115,7 +124,7 @@
                 <div id="car-telem-container" style="width:100%; display: flex; flex-wrap: wrap;">
                     <div style="text-align: center">
                         <br>
-                        Joystick Input
+                        <span onclick='infoButtonHelper("Joystick Input");'>Joystick Input &#x1F6C8</span>
                         <br>
                         <canvas id="joystick-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
@@ -123,7 +132,7 @@
                     </div>
                     <div style="text-align: center">
                         <br>
-                        Scaled Speed Target
+                        <span onclick='infoButtonHelper("Scaled Speed Target");'>Scaled Speed Target &#x1F6C8</span>
                         <br>
                         <canvas id="scaled-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
@@ -131,7 +140,8 @@
                     </div>
                     <div style="text-align: center">
                         <br>
-                        Smoothed Speed to Drive
+                        <span onclick='infoButtonHelper("Smoothed Speed to Drive");'>
+                            Smoothed Speed to Drive &#x1F6C8</span>
                         <br>
                         <canvas id="smoothed-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
@@ -139,8 +149,9 @@
                     </div>
                     <div style="text-align: center">
                         <br>
-                        Motor Signals:
-                        <b><span class="liveVal-movementAllowed">status loading</span></b>
+                        <span onclick='infoButtonHelper("Motor Signals");'>
+                            Motor Signals &#x1F6C8 :</span> <b><span class="liveVal-movementAllowed">status
+                                loading</span></b>
                         <br>
                         <button id="motors-on-off-button"></button>
                         <br>
@@ -156,13 +167,18 @@
                 <span id="save-settings-button-label"></span>
                 <br><br>
 
-                <br><button onclick="showPinSettings()">choose pins</button>
-                <br><button onclick="showJoystickSettings();cancelFollowTheDot();">
+                <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
+                    pins</button>
+                <br><button
+                    onclick='showJoystickSettings();cancelFollowTheDot(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";document.getElementById("pointer-arrow").hidden=true;'>
                     calibrate joystick the hard way
                 </button>
-                <button onclick="followTheDot()">calibrate joystick the easy way</button>
-                <br><button onclick="showSpeedSettings()">change speed and accel</button>
-                <br><button onclick="showAllSettings(true)">show all</button>
+                <button onclick='document.getElementById("pointer-arrow").hidden=true;followTheDot();'>
+                    calibrate joystick the easy way</button>
+                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showSpeedSettings();'>change
+                    speed and accel</button>
+                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>show
+                    all</button>
                 <br>
                 <div id="settings-header">
 
@@ -184,7 +200,7 @@
                 </div>
 
                 <br>
-                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                <button id="save-settings-button-2" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
                     Save Changes
                 </button>
                 <span id="save-settings-button-label-2"></span>
@@ -230,38 +246,50 @@
 
 
         <div id="help"
-            style="width:40%; height:100vh; position:fixed; right:0; top:0; background-color:whitesmoke; overflow-y:auto; padding-left:1%; padding-right:1%; box-sizing:border-box">
+            style="width:40%; height:100vh; position:fixed; right:0; top:0; background-color:whitesmoke; overflow-y:auto; padding-left:1%; padding-right:1%; padding-top:4px;padding-bottom:4px; box-sizing:border-box">
+
             <p id="help-index">
+
                 <button
-                    onclick='document.getElementById("help").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
+                    onclick='document.getElementById("pointer-arrow").hidden=true; document.getElementById("help").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
                     style="position:fixed; right: 40%; top:0; text-align: right; font-size:2em; border-top-left-radius: 0.2em; border-bottom-left-radius: 0.2em; border-width: 0;">
                     &#187
+                    <!-- //help close -->
                 </button>
 
+
                 <br>
-                <button onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
-                showConfigButton();'>I want to change the speed of my car.
+                <button id="speed-adjust-help-button"
+                    onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+                    showConfigButton(); speedAdjustHelp=true; showSpeedSettings();document.getElementById("pointer-arrow").hidden=true;'>
+                    I want to change the speed of my car.
                 </button>
                 <br><br>
-                <button onclick='document.getElementById("hcbs-plug").style.outline = "4px solid magenta";
-                    showConfigButton();'>I want to change the settings of my car.
+                <button
+                    onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+                    showConfigButton();     document.getElementById("connect-to-car").scrollIntoView();document.getElementById("pointer-arrow").hidden=true;'>
+                    I want to change the settings of my car.
                 </button>
                 <br>
                 <br>
                 <br>
                 <button onclick='
-                document.getElementById("hcbp-start").style.outline = "4px solid magenta";
-                showFirstTime();'>I want to upload code to a new car.
+                document.getElementById("hcbp-start").style.outline = "7px solid magenta";document.getElementById("pointer-arrow").hidden=true;
+                showFirstTime();'>
+                    I want to upload code to a new car.
                 </button>
 
             </p>
+            <hr>
+            <hr>
+            <hr>
+
             <div id="help-upload-container">
                 <style>
                     li {
                         margin-top: 5px;
                     }
                 </style>
-                <hr>
                 <h2 id="help-upload">
                     Programming the Car
                 </h2>
@@ -283,7 +311,7 @@
                             <br>
                         </label>
                         <input type="checkbox" class="help-checkbox" id="hcbp-start"
-                            onchange='cbdone("hcbp-start","hcbp-plug");' />
+                            onchange='cbdone("hcbp-start","hcbp-plug");document.getElementById("pointer-arrow").hidden=true;' />
                     </li>
                     <li>
                         <label for="hcbp-plug">Ensure the car is turned off (all lights in the car should be off),
@@ -385,7 +413,7 @@
                 </ol>
             </div><!-- upload section -->
             <hr>
-            <div id="help-settings-container">
+            <div id="help-settings-container" style="padding-top:4px;padding-bottom:4px;">
                 <h2 id="help-settings">
                     Settings
                 </h2>
@@ -393,17 +421,13 @@
 
                 <ol>
                     <li>
-                        <label id="help-settings-plug-label" for="hcbs-plug">Ensure the car is turned off (all
+                        <label id="help-settings-plug-label" for="hcbs-plug">
+                            Ensure the car is turned off (all
                             lights in
                             the car
                             should be off),
                             then connect the Arduino to your computer with a usb cable.
                             <br>
-                            <b>Please check the box below every step (or click the text in the step) as you complete
-                                it
-                                so that the website can you guide you through the process of programming the Arduino
-                                in
-                                your car.</b>
                             <details>
                                 <summary>
                                     show me how
@@ -432,17 +456,27 @@
                                     </tr>
                                 </table>
                             </details>
+                            <br>
 
                             If you smell or see smoke when you plug the car in, unplug it immediately and check for
                             short circuits in your car's wiring.
                             <br>
+                            <br>
                             Please check the box below to each step and the website will you guide you through
                             the process of using this website to change the settings of car.
-                            <br> The next step will help you connect to your car. A box will pop up.
+                            <br>
+                            <br>
+                            The next step will help you connect to your car. A box will pop up.
+                            <br>
+                            <br>
+                            <b>Please check the box below every step (or click the text in the step) as you complete it
+                                so that the website can you guide you through the process of programming the Arduino in
+                                your car.
+                            </b>
                         </label>
                         <br>
                         <input type="checkbox" class="help-checkbox" id="hcbs-plug" onclick='showConfigButton(); cbdone("hcbs-plug"); cbhighlight("hcbs-connect"); 
-                            document.getElementById("hcbs-connect").scrollIntoView({ block: "end" });
+                            document.getElementById("hcbs-connect").scrollIntoView({ block: "end" }); document.getElementById("pointer-arrow").hidden=true;
                             connectToSerial();' />
                     </li>
 
@@ -460,23 +494,24 @@
 
                     <li>
                         <span id="hcbs-setting-index">
-                            <span id="hcbs-setting-index-title">
+                            <div id="hcbs-setting-index-title">
                                 What settings do you want to change? If you are programming a new car, then make sure to
                                 calibrate the joystick.
-                            </span>
-                            <br><button onclick="showPinSettings()">choose pins</button>
-                            <br><button onclick="showJoystickSettings();cancelFollowTheDot();">calibrate joystick the
-                                hard way</button>
-                            <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
-                            <br><button onclick="showSpeedSettings()">change speed and accel</button>
-                            <br><button onclick="showAllSettings(true)">show all</button>
-
+                                <br><button onclick="showPinSettings()">choose pins</button>
+                                <br><button
+                                    onclick='cancelFollowTheDot(); showJoystickSettings(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";'>
+                                    calibrate joystick the hard way
+                                </button>
+                                <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
+                                <br><button onclick="showSpeedSettings()">change speed and accel</button>
+                                <br><button onclick="showAllSettings(true)">show all</button>
+                            </div>
                         </span>
                     </li>
                 </ol>
             </div>
 
-
+            <hr>
 
             <div>
                 <h3>
@@ -750,10 +785,43 @@
                         </td>
                     </tr>
 
+                    <tr id="help--Joystick Input">
+                        <td><b>Joystick Input: </b> </td>
+                        <td>
+                            This box displays the position that the car thinks the joystick is in. Make sure that it
+                            matches the joystick on the car and if it doesn't, calibrate the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--Scaled Speed Target">
+                        <td><b>Scaled Speed Target: </b> </td>
+                        <td>
+                            This box displays the driving (vertical axis) and turning (horizontal axis) speeds that the
+                            car will accelerate up to. You can change the forward, backward, and turning speed settings
+                            to change the limits of these speeds. The edges of the box represent speeds of 1, which is
+                            the maximum speed.
+                        </td>
+                    </tr>
+                    <tr id="help--Smoothed Speed to Drive">
+                        <td><b>Smoothed Speed to Drive: </b> </td>
+                        <td>
+                            This box displays the driving (vertical axis) and turning (horizontal axis) speeds that the
+                            car would drive at, after the acceleration limit is applied. This display can be used to see
+                            how long the car will take to accelerate and decelerate.
+                        </td>
+                    </tr>
+                    <tr id="help--Motor Signals">
+                        <td><b>Motor Signals: </b> </td>
+                        <td>
+                            The motors are automatically turned off when the website connects, and will turn back on
+                            when the car is rebooted, but you can turn the motors on and off whenever you want while
+                            your computer is still connected using the button.
+                            This display shows the signals (microseconds of pulse of servo signal) sent to the left and
+                            right motors.
+                        </td>
+                    </tr>
+
                 </table>
             </div>
-            </tr>
-            </table>
         </div> <!-- end of settings section -->
         </div> <!-- end of help div -->
     </main>

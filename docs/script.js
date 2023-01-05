@@ -9,6 +9,7 @@ var live_data = null; // the live data that the car reports (Json) (used for joy
 var last_live_data = null; // the previous live data that the car reports (Json) (used for joystick calibration)
 var settings_received = false; // have valid settings been received yet?
 var showEverything = false; //if the "show all the options at once button is pressed, all the settings will also be shown when they load
+var speedAdjustHelp = false; //help make adjusting the speed as easy as possible
 var help_info_highlight_id = null; // used to highlight the most recently requested setting info row
 var follow_the_dot = null; // used to sequence joystick calibration by "follow the dot"
 var ftd_data = {}; // used to store data used for joystick calibration by "follow the dot"
@@ -98,6 +99,22 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (url_tail === "new") {
         document.getElementById("first-time-program-button").click();
     }
+    if (url_tail === "speed") {
+        document.getElementById("speed-adjust-help-button").click();
+    }
+    setTimeout(function () {
+        document.getElementById("pointer-arrow").style.color = "Lime";
+        setTimeout(function () {
+            document.getElementById("pointer-arrow").style.color = "magenta";
+            setTimeout(function () {
+                document.getElementById("pointer-arrow").style.color = "Lime";
+                setTimeout(function () {
+                    document.getElementById("pointer-arrow").style.color = "magenta";
+                }, 150);
+            }, 150);
+        }, 150);
+    }, 550);
+
 
 });
 // the "I want to program a car" button was pressed, show the relevant section
@@ -140,7 +157,6 @@ function showConfigButton() {
         document.getElementById("options-buttons").style.backgroundColor = "lightgrey";
     }
 
-    document.getElementById("connect-to-car").scrollIntoView();
     document.getElementById("help-settings").scrollIntoView();
     document.getElementById("hcbp-start").style.outline = "";
 }
@@ -751,7 +767,10 @@ function gotNewSettings(settings, slength) {
 
         document.getElementById("car-telem-container").style.display = "flex";
 
-        if (showEverything) {
+        if (speedAdjustHelp) {
+            showSpeedSettings();
+            document.getElementById("hcbs-setting-index-title").innerHTML = "You can customize acceleration and speed in the window to the left.";
+        } else if (showEverything) {
             showAllSettings(false);
         }
 
@@ -770,7 +789,11 @@ function gotNewSettings(settings, slength) {
 
     document.getElementById("configure-car").style.backgroundColor = "white";
     document.getElementById("configure-car").hidden = false;
-    document.getElementById("configure-car").scrollIntoView();
+    if (speedAdjustHelp) {
+        document.getElementById("settings-header").scrollIntoView(true);
+    } else {
+        document.getElementById("configure-car").scrollIntoView();
+    }
 }
 
 function infoButtonHelper(setting) {
@@ -900,7 +923,7 @@ function showSpeedSettings() {
             elements[i].hidden = true;
         }
     }
-    document.getElementById("save-settings-button").scrollIntoView();
+    document.getElementById("settings-header").scrollIntoView();
 
 }
 function showAllSettings(scroll) {
