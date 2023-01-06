@@ -229,7 +229,7 @@ async function connectToSerial() {
             document.getElementById('serial-con-msg-time-conbut').style.border = "3px solid Blue";
             document.getElementById("serial-connected-indicator").scrollIntoView({ block: "end" });
         }, 3000);
-        await port.open({ baudRate: 115200 });
+        await port.open({ baudRate: 250000 });
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
@@ -321,8 +321,10 @@ function gotNewSerial(data, length) {
     if (data["current values, millis:"] != null && settings_received) {
         gotNewData(data, length);
     } else if (data["current settings, version:"] != null) {
-        gotNewSettings(data, length);
-        cancelFollowTheDot();
+        if (!settings_received) {
+            cancelFollowTheDot();
+            gotNewSettings(data, length);
+        }
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
@@ -725,6 +727,10 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
             } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyY&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyY" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
+            } else if (Array("LEFT_MOTOR_FAST").indexOf(setting) > -1) {
+                setting_helper.innerHTML = '<button onclick="helper(&quot;leftMotRev&quot;)">reverse left motor</button>';
+            } else if (Array("RIGHT_MOTOR_FAST").indexOf(setting) > -1) {
+                setting_helper.innerHTML = '<button onclick="helper(&quot;rightMotRev&quot;)">reverse right motor</button>';
             } else if (Array("JOY_X_PIN", "JOY_Y_PIN").indexOf(setting) > -1) { //joystick pin helping
                 setting_helper.innerHTML = "";
                 if (setting === "JOY_X_PIN") {
@@ -841,6 +847,22 @@ function helper(type, data, data2) {
     if (type === "presetSettingChange") { //sets setting with name of data to value of data2
         document.getElementById('setting---' + data).children[1].firstChild.value = data2;
         onSettingChangeFunction(data)
+    }
+    if (type === "leftMotRev") {
+        document.getElementById('setting---LEFT_MOTOR_SLOW').children[1].firstChild.value = -parseInt(document.getElementById('setting---LEFT_MOTOR_SLOW').children[1].firstChild.value);
+        onSettingChangeFunction('LEFT_MOTOR_SLOW')
+        setTimeout(function () {
+            document.getElementById('setting---LEFT_MOTOR_FAST').children[1].firstChild.value = -parseInt(document.getElementById('setting---LEFT_MOTOR_FAST').children[1].firstChild.value);
+            onSettingChangeFunction('LEFT_MOTOR_FAST')
+        }, 100);
+    }
+    if (type === "rightMotRev") {
+        document.getElementById('setting---RIGHT_MOTOR_SLOW').children[1].firstChild.value = -parseInt(document.getElementById('setting---RIGHT_MOTOR_SLOW').children[1].firstChild.value);
+        onSettingChangeFunction('RIGHT_MOTOR_SLOW')
+        setTimeout(function () {
+            document.getElementById('setting---RIGHT_MOTOR_FAST').children[1].firstChild.value = -parseInt(document.getElementById('setting---RIGHT_MOTOR_FAST').children[1].firstChild.value);
+            onSettingChangeFunction('RIGHT_MOTOR_FAST')
+        }, 100);
     }
 }
 // generates row of buttons that change settings to preset values
