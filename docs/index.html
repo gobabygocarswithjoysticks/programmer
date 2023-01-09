@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="width:100wh;">
 
 <head>
     <meta charset="UTF-8">
@@ -12,193 +12,906 @@
 
 </head>
 
-<body style="background-color:lightgrey;">
+<body style="background-color:lightgrey; width:100wh; overflow-wrap: break-word; margin:0; border:0; padding:0;">
 
     <main>
-        <h1> <a target="_blank" rel="noopener noreferrer" href="https://github.com/gobabygocarswithjoysticks/index">GBG
-                joystick car</a> programming and configuring website. </h1>
-        <p> For any questions about how to use this website, please post <a target="_blank" rel="noopener noreferrer"
-                href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support"> here</a>
-            or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
-        </p>
-        <p>
-            This website can only change the settings of cars with the new code that this site uploads, it won't work
-            with the original go baby go code.
-        </p>
 
-        <noscript> <mark> Your browser is not running a script that is required for this website to function. Please
-                enable javascript or try a different browser. </mark> </noscript>
-        <mark id="serial-alert"> </mark>
-        <div id="options-buttons">
-            <br>
-            <button id="config-button" onclick="showConfigButton()">I want to change the settings of my car.</button>
-            <button id="first-time-program-button" onclick="showFirstTime()">I want to upload code to a new
-                car.</button>
-            <button id="everything-button" onclick="showEverythingButton()">Show me all the options at once.</button>
-            <br>
-            <br>
+        <div id="pointer-arrow"
+            style='position: absolute; font-size: 60px; color: magenta; text-align: right; right:40%; top:25px;'>
+            &#129094
         </div>
-        <mark id="eepromFailureMessageSpace" hidden></mark>
-        <hr>
-        <div id="upload-program">
-            <h2> Upload Program </h2>
-            <p> Leave the program to upload on the default selection. For cheap Arduino Nano like boards, select
-                "nanoOldBootloader". For official Arduino Nano boards, and for Arduino Uno boards, select "nano" for the
-                board. If there is an error uploading, try selecting the other board type.</p>
-            <mark id="no-config-alert"> </mark>
-            <div id="upload-controls-div">
-                <label for="program-selector">Select program to upload:</label>
-                <select name="program-selector" id="program-selector" onchange="updateBoardOptionsSelector();"></select>
-                <br>
-                <label for="board-selector">Select your board:</label>
-                <select name="board-selector" id="board-selector" onchange="getCode();"></select>
-                <br>
-                <span id="upload-warning-span">
-                </span>
-                <p id="upload-connect-comment">After pressing upload, a box will pop up. Choose the car's
-                    serial port in the box that pops up (unplug and replug the car and whichever option goes away
-                    and comes back is the car).
-                </p>
-                <button id="upload-button" arduino-uploader onclick="closeSerial()" board="" verify="true" hex-href="">
-                    Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
-                </button>
-            </div>
+
+        <div id="main" style="width:60%">
+            <h2> <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/gobabygocarswithjoysticks/index">GBG
+                    joystick car</a> programming and configuring website. </h2>
+            <p> For any questions about how to use this website, or other feedback, please post <a target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support">
+                    here</a>
+                or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
+            </p>
             <p>
-            <details>
-                <summary>
-                    Advanced settings
-                </summary>
-                <ol>
-                    <li id="source-name-display">
-                    </li>
-                    <li>
-                        Get car code from main branch instead of from most recent release:
-                        <input type="checkbox" id="upload-main-checkbox" onclick="updateUpload()"></input>
-                    </li>
-                </ol>
-            </details>
+                This website can only change the settings of cars with the new code that this site uploads, it won't
+                work with the original go baby go code.
             </p>
 
+            <noscript> <mark> Your browser is not running a script that is required for this website to function.
+                    Please
+                    enable javascript or try a different browser. </mark> </noscript>
+            <mark class="serial-alert"> </mark>
+            <div id="options-buttons">
+                <br>
+                <button id="first-time-program-button" onclick='
+                        document.getElementById("hcbp-start").style.outline = "7px solid magenta"; document.getElementById("pointer-arrow").hidden=true;
+                        showFirstTime();'>I want to upload code to a new car.
+                </button>
+                <br><br>
+                <button id="config-button" onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta"; document.getElementById("pointer-arrow").hidden=true;
+                    showConfigButton();'>I want to change the settings of my car.
+                </button>
+                <br><br>
+                <button id="everything-button"
+                    onclick='showEverythingButton();document.getElementById("pointer-arrow").hidden=true;'>
+                    Show me all the options at once.
+                </button>
+                <br>
+                <br>
+            </div>
+            <mark id="eepromFailureMessageSpace" hidden></mark>
             <hr>
-        </div>
-        <div id="connect-to-car">
-            <h2>Connect to Car (to change settings)</h2>
-            <mark id="post-upload-connect-message" hidden>The code has been uploaded. Next, connect and configure your
-                car.</mark>
-            <p id="serial-connected-indicator">After pressing connect, a box will pop up. Choose the car's serial
-                port in the box that pops up (unplug and replug the car and whichever option goes away and comes
-                back is the car).</p>
-            <button id="serial-connect-button" onclick="connectToSerial()">connect</button>
-            <button id="serial-disconnect-button" onclick="closeSerial()">disconnect</button>
-            <hr>
-        </div>
-        <div id="configure-car">
-            <h2>Calibrate and Configure Your Car</h2>
-            <div id="joystick-not-centered-message" hidden><mark>The joystick doesn't appear to be centered. <br> Please
-                    center the joystick, and if this message doesn't go away, please calibrate the joystick. <br> As a
-                    safety measure, the car won't drive until the joystick is centered.</mark><br></div>
-            <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
-            <table>
-                <tr style="text-align: center">
-                    <td>
+            <div id="upload-program">
+                <h2> Upload Program </h2>
+                <mark id="no-config-alert"> </mark>
+                <div id="upload-controls-div">
+                    <div id="program-selector-container">
+                        <label for="program-selector">Select program to upload:</label>
+                        <select name="program-selector" id="program-selector"
+                            onchange="updateBoardOptionsSelector();"></select>
+                    </div>
+                    <br>
+                    <div id="board-selector-container">
+                        <label for="board-selector">Select your board:</label>
+                        <select name="board-selector" id="board-selector" onchange="getCode();"></select>
+                    </div>
+                    <br>
+                    <span id="upload-warning-span">
+                    </span>
+                    <button id="upload-button" arduino-uploader
+                        onclick='closeSerial();document.getElementById("pointer-arrow").hidden=true;' board=""
+                        verify="true" hex-href="">
+                        Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
+                    </button>
+                    <span class="upload-info"></span>
+                </div>
+                <p>
+                <details>
+                    <summary>
+                        Advanced settings
+                    </summary>
+                    <ol>
+                        <li>These options are only useful to people developing code for these cars.</li>
+                        <li id="source-name-display">
+                        </li>
+                        <li>
+                            Get car code from main branch instead of from most recent release:
+                            <input type="checkbox" id="upload-main-checkbox" onclick="updateUpload()"></input>
+                        </li>
+                    </ol>
+                </details>
+                </p>
 
-                    </td>
-                    <td>
-                        Joystick Input
-                    </td>
-                    <td>
-                        Scaled Speed Target
-                    </td>
-                    <td>
-                        Smoothed Speed to Drive
-                    </td>
-                    <td>
-                        Motor Signals<br>
-                        motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        test settings without the car moving
-                        <br><br>
-                        motors: <b><span class="liveVal-movementAllowed">status loading</span></b>
-                        <br><br>
-                        <button id="motors-on-off-button"></button>
-                    </td>
-                    <td>
+                <hr>
+            </div>
+            <div id="connect-to-car">
+                <h2>Connect to Car (to change settings)</h2>
+                <button id="serial-connect-button"
+                    onclick='document.getElementById("serial-connect-button").style.border = "";
+                connectToSerial(); cbdone("hcbs-plug");cbhighlight("hcbs-connect"); cblightoff("hcbp-upload-done");cbchk("hcbp-upload-done");cbdis("hcbp-upload-done");document.getElementById("pointer-arrow").hidden=true;'>connect</button>
+                <button id="serial-disconnect-button"
+                    onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
+                </button>
+                <div id="serial-connected-short"></div>
+                <hr>
+            </div>
+            <div id="configure-car">
+                <h2>Calibrate and Configure Your Car</h2>
+                <div id="joystick-not-centered-message" hidden><mark>The joystick doesn't appear to be centered.
+                        <br>
+                        Please center the joystick, and if this message doesn't go away, please calibrate the joystick.
+                        <br> As a safety measure, the car won't drive until the joystick is centered.</mark><br></div>
+                <div id="cal-con-first-look-message">Connect to your car to see settings here.<br><br></div>
+                <div id="car-telem-container" style="width:100%; display: flex; flex-wrap: wrap;">
+                    <div style="text-align: center">
+                        <br>
+                        <span onclick='infoButtonHelper("Joystick Input");'>
+                            <b><span class="liveVal-input-mode">Joystick</span></b> Input &#x1F6C8</span>
+                        <br>
                         <canvas id="joystick-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
-                    </td>
-                    <td>
+                        <br>
+                        <span class="liveVal-button-status"></span>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        <span onclick='infoButtonHelper("Scaled Speed Target");'>Scaled Speed Target &#x1F6C8</span>
+                        <br>
                         <canvas id="scaled-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
-                    </td>
-                    <td>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        <span onclick='infoButtonHelper("Smoothed Speed to Drive");'>
+                            Smoothed Speed to Drive &#x1F6C8</span>
+                        <br>
                         <canvas id="smoothed-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
-                    </td>
-                    <td>
+                    </div>
+                    <div style="text-align: center">
+                        <br>
+                        <span onclick='infoButtonHelper("Motor Signals");'>
+                            Motor Signals &#x1F6C8 :</span> <b><span class="liveVal-movementAllowed">status
+                                loading</span></b>
+                        <br>
+                        <button id="motors-on-off-button"></button>
+                        <br>
                         <canvas id="motor-signal-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
-                    </td>
-                </tr>
-            </table>
+                    </div>
+                </div>
 
-            <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>Save
-                Changes</button>
-            <span id="save-settings-button-label"></span>
-            <br><br>
+                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                    Save Changes
+                </button>
+                <span id="save-settings-button-label"></span>
+                <br><br>
 
-            <button id="show-pins-settings-button" onclick="showPinSettings()">choose pins</button>
-            <button id="show-joystick-settings-button" onclick="showJoystickSettings()">calibrate joystick</button>
-            <button id="show-drive-settings-button" onclick="showSpeedSettings()">change acceleration, speed, and other
-                drive settings</button>
-            <button id="show-all-settings-button" onclick="showAllSettings(true)">show all</button>
+                <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
+                    pins</button>
+                <br><button
+                    onclick='showJoystickSettings();cancelFollowTheDot(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";document.getElementById("pointer-arrow").hidden=true;'>
+                    calibrate joystick the hard way
+                </button>
+                <button onclick='document.getElementById("pointer-arrow").hidden=true;followTheDot();'>
+                    calibrate joystick the easy way</button>
+                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showSpeedSettings();'>change
+                    speed and accel</button>
+                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>show
+                    all</button>
+                <br>
+                <div id="settings-header">
+
+                </div>
+                <div>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                        }
+
+                        table tr {
+                            border-bottom: 2px solid dimgrey;
+                            border-top: 2px solid dimgrey;
+                        }
+                    </style>
+                    <table id="car-settings" style="width:99%; border: 1px solid black; border-collapse: collapse;">
+                        <!-- settings received from the car will show up here. settings table-->
+                    </table>
+                </div>
+
+                <br>
+                <button id="save-settings-button-2" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                    Save Changes
+                </button>
+                <span id="save-settings-button-label-2"></span>
+                <p>
+                <details>
+                    <summary>
+                        Advanced settings
+                    </summary>
+                    <button id="read-back-settings-button"
+                        onclick='settings_received=false;sendStringSerial("SETTINGS,");'>read back
+                        settings in RAM</button>
+                    <button id="revert-settings-button" ;
+                        onclick='settings_received=false; sendStringSerial("REVERT,");'>revert to
+                        default</button>
+                    <button id="reboot-arduino-button"
+                        onclick='sendStringSerial("REBOOT,"); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
+                        arduino, revert to saved settings</button>
+                    <button onclick='showAllSettingsForReal()'>show inactive settings</button>
+                    <div id="settings-advanced-settings-info">no extra info loaded yet</div>
+                </details>
+                </p>
+                <hr>
+            </div>
             <br>
-
-            <p id="config-help-paragraph"></p>
-
-            <table id="car-settings">
-                <!-- settings received from the car will show up here -->
-            </table>
-
             <br>
-            <span id="save-settings-button-label-2"></span>
-            <p>
-            <details>
-                <summary>
-                    Advanced settings
-                </summary>
-                <button id="read-back-settings-button" onclick='sendStringSerial("SETTINGS,")'>read back
-                    settings in RAM</button>
-                <button id="revert-settings-button" onclick='sendStringSerial("REVERT,")'>revert to default</button>
-                <button id="reboot-arduino-button"
-                    onclick='sendStringSerial("REBOOT,");  document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
-                    arduino, revert to saved settings</button>
-                <div id="settings-advanced-settings-info">no extra info loaded yet</div>
-            </details>
+            <footer style="text-align:center">
+                The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
+                <br>
+
+                <br>
+                This website uses <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
+                (generously shared under the MIT license)
+                by David Buezas for uploading code to the car.
+            </footer>
+        </div> <!-- // end of main div -->
+
+        <div id="help-open" style="position: fixed; right:0; top:0vh;" hidden="true">
+            <button
+                onclick='document.getElementById("help").hidden=false;  document.getElementById("help-open").hidden=true; document.getElementById("main").style.width="60%"'>
+                <h2> &#10067</h2>
+            </button>
+        </div>
+
+
+
+        <div id="help"
+            style="width:40%; height:100vh; position:fixed; right:0; top:0; background-color:whitesmoke; overflow-y:auto; padding-left:1%; padding-right:1%; padding-top:4px;padding-bottom:4px; box-sizing:border-box">
+
+            <p id="help-index">
+
+                <button
+                    onclick='document.getElementById("pointer-arrow").hidden=true; document.getElementById("help").hidden=true; document.getElementById("help-open").hidden=false; document.getElementById("main").style.width="100%"'
+                    style="position:fixed; right: 40%; top:0; text-align: right; font-size:2em; border-top-left-radius: 0.2em; border-bottom-left-radius: 0.2em; border-width: 0;">
+                    &#187
+                    <!-- //help close -->
+                </button>
+
+
+                <br>
+                <button id="speed-adjust-help-button"
+                    onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+                    showConfigButton(); speedAdjustHelp=true; showSpeedSettings();document.getElementById("pointer-arrow").hidden=true;'>
+                    I want to change the speed of my car.
+                </button>
+                <br><br>
+                <button
+                    onclick='document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+                    showConfigButton();     document.getElementById("connect-to-car").scrollIntoView();document.getElementById("pointer-arrow").hidden=true;'>
+                    I want to change the settings of my car.
+                </button>
+                <br>
+                <br>
+                <br>
+                <button onclick='
+                document.getElementById("hcbp-start").style.outline = "7px solid magenta";document.getElementById("pointer-arrow").hidden=true;
+                showFirstTime();'>
+                    I want to upload code to a new car.
+                </button>
+
             </p>
             <hr>
-        </div>
-        <br>
-        <br>
-        <footer style="text-align:center">
-            The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
-                href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
-            <br>
+            <hr>
+            <hr>
 
-            <br>
-            This website uses <a target="_blank" rel="noopener noreferrer"
-                href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
-            (generously shared under the MIT license)
-            by David Buezas for uploading code to the car.
-        </footer>
+            <div id="help-upload-container">
+                <style>
+                    li {
+                        margin-top: 5px;
+                    }
+                </style>
+                <h2 id="help-upload">
+                    Programming the Car
+                </h2>
+                <mark class="serial-alert"> </mark>
+                <ol>
+                    <li>
+                        <label for="hcbp-start">
+                            Congratulations on finishing the
+                            <a target="_blank" rel="noopener noreferrer"
+                                href="https://github.com/gobabygocarswithjoysticks/index">
+                                hardware modifications</a>
+                            of your car!
+                            <br><br>
+                            <b>
+                                Please check the box below every step as you complete it
+                                so that the website can guide you through the process of programming the Arduino
+                                in your car. (Clicking the text of the step is another way to check the the box).
+                            </b>
+                            <br>
+                        </label>
+                        <input type="checkbox" class="help-checkbox" id="hcbp-start"
+                            onchange='cbdone("hcbp-start","hcbp-plug");document.getElementById("pointer-arrow").hidden=true;' />
+                    </li>
+                    <li>
+                        <label for="hcbp-plug">Ensure the car is turned off (all lights in the car should be off),
+                            then
+                            plug the Arduino into to your computer with a usb cable.
+                            <details>
+                                <summary>
+                                    show me how
+                                </summary>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/power-off.JPG" alt="power switch turned off">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-align.JPG" alt="align the usb cable with the Arduino">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-plug.JPG" alt="plug the usb cable into the Arduino">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-computer-plug.jpg"
+                                                alt="plug the usb cable into your computer">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </details>
+                            If you smell or see smoke when you plug the car in, unplug it immediately and check for
+                            short circuits in your car's wiring.
+                        </label>
+                        <br>
+                        <input type="checkbox" class="help-checkbox" id="hcbp-plug"
+                            onchange='showFirstTime(); cbdone("hcbp-plug","hcbp-upload");
+                                 document.getElementById("program-selector-container").style.outline = "2px solid LimeGreen";
+                                 document.getElementById("hcbp-default-selection-text").style.outline = "2px solid LimeGreen";
+                                 document.getElementById("board-selector-container").style.outline = "2px solid SlateBlue";
+                                 document.getElementById("hcbp-board-selection-text").style.outline = "2px solid SlateBlue";' disabled />
+                    </li>
+                    <li>
+                        <label for="hcbp-upload">
+                            <span id="hcbp-default-selection-text">
+                                The selector for what program to upload should be left on "gbg_program".
+                            </span><br><br>
+                            <span id="hcbp-board-selection-text">
+                                The selector for what type of Arduino board is in your car can be left on
+                                "old nano" if you have a less expensive Arduino Nano clone (old bootloader), or
+                                should
+                                be
+                                changed to say "new nano or uno" if you bought an official Arduino Nano or Uno
+                                board.
+                            </span>
+                            <br>
+                            <br>
+                            When you click the checkbox below, a box will pop up, which you will use in the next
+                            step to
+                            upload the code.
+                            <br>
+                        </label>
+                        <input type="checkbox" class="help-checkbox" id="hcbp-upload" disabled onchange='cbdone("hcbp-upload"); cbhighlight("hcbp-uploading"); 
+                        document.getElementById("upload-button").click();
+                        document.getElementById("hcbp-uploading").scrollIntoView({ block: "end" });
+                        document.getElementById("program-selector-container").style.outline = "0px";
+                        document.getElementById("hcbp-default-selection-text").style.outline = "0px";
+                        document.getElementById("board-selector-container").style.outline = "0px";
+                        document.getElementById("hcbp-board-selection-text").style.outline = "0px";' disabled />
+                    </li>
+                    <li>
+                        <label for="hcbp-uploading">
+                            In the box that popped up, click on the car's serial port in the list (to find the car's
+                            port you can unplug and replug the USB cable and whichever option goes away and comes
+                            back is the car). Then, click the "connect" button of the box.
+                            <br><br>
+                            If there is an error with uploading, you might need to follow instructions that will
+                            appear below this paragraph to select the car's port again and try uploading again.
+                            <br><br>
+                            <div id="upload-connect-comment"></div>
+                            <div class="upload-info" id="hcbp-upload-info"></div>
+                        </label>
+                        <input type="checkbox" class="help-checkbox" id="hcbp-uploading" disabled />
+                    </li>
+                    <li>
+                        <label for="hcbp-upload-done">
+                            The code has now been uploaded, but that process causes the car to disconnect. So, the
+                            next
+                            step is to connect to the car again in order to customize its settings. You will
+                            need to select the car's port for a second time, just like in the step above. Check the
+                            box
+                            below to continue.
+                        </label>
+                        <br> <input type="checkbox" class="help-checkbox" id="hcbp-upload-done" disabled
+                            onchange='cblightoff("hcbs-plug"); cbdis("hcbs-plug"); cbchk("hcbs-plug"); cbdone("hcbp-upload-done","hcbs-connect"); document.getElementById("hcbs-connect").scrollIntoView({ block: "end" }); document.getElementById("help-settings-plug-label").style.color="lightgrey"; connectToSerial()' />
+                    </li>
+                </ol>
+            </div><!-- upload section -->
+            <hr>
+            <div id="help-settings-container" style="padding-top:4px;padding-bottom:4px;">
+                <h2 id="help-settings">
+                    Settings
+                </h2>
+                <mark class="serial-alert"> </mark>
+
+                <ol>
+                    <li>
+                        <label id="help-settings-plug-label" for="hcbs-plug">
+                            Ensure the car is turned off (all
+                            lights in
+                            the car
+                            should be off),
+                            then connect the Arduino to your computer with a usb cable.
+                            <br>
+                            <details>
+                                <summary>
+                                    show me how
+                                </summary>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/power-off.JPG" alt="power switch turned off">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-align.JPG" alt="align the usb cable with the Arduino">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-plug.JPG" alt="plug the usb cable into the Arduino">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="./pics/usb-computer-plug.jpg"
+                                                alt="plug the usb cable into your computer">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </details>
+                            <br>
+
+                            If you smell or see smoke when you plug the car in, unplug it immediately and check for
+                            short circuits in your car's wiring.
+                            <br>
+                            <br>
+                            Please check the box below to each step and the website will you guide you through
+                            the process of using this website to change the settings of car.
+                            <br>
+                            <br>
+                            The next step will help you connect to your car. A box will pop up.
+                            <br>
+                            <br>
+                            <b>Please check the box below every step (or click the text in the step) as you complete it
+                                so that the website can you guide you through the process of programming the Arduino in
+                                your car.
+                            </b>
+                        </label>
+                        <br>
+                        <input type="checkbox" class="help-checkbox" id="hcbs-plug" onclick='showConfigButton(); cbdone("hcbs-plug"); cbhighlight("hcbs-connect"); 
+                            document.getElementById("hcbs-connect").scrollIntoView({ block: "end" }); document.getElementById("pointer-arrow").hidden=true;
+                            connectToSerial();' />
+                    </li>
+
+                    <li>
+                        <label for="hcbs-connect">
+                            In the box that popped up, choose the
+                            car's serial port (if you don't know which port is your car, you can unplug and replug
+                            the USB cable and whichever
+                            option goes away and comes back is the car).
+                            <p id="serial-connected-indicator">
+                            </p>
+                        </label>
+                        <input type="checkbox" class="help-checkbox" id="hcbs-connect" disabled />
+                    </li>
+
+                    <li>
+                        <span id="hcbs-setting-index">
+                            <div id="hcbs-setting-index-title">
+                                What settings do you want to change? If you are programming a new car, then make sure to
+                                calibrate the joystick.
+                                <br><button onclick="showPinSettings()">choose pins</button>
+                                <br><button
+                                    onclick='cancelFollowTheDot(); showJoystickSettings(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";'>
+                                    calibrate joystick the hard way
+                                </button>
+                                <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
+                                <br><button onclick="showSpeedSettings()">change speed and accel</button>
+                                <br><button onclick="showAllSettings(true)">show all</button>
+                            </div>
+                        </span>
+                    </li>
+                </ol>
+            </div>
+
+            <hr>
+
+            <div>
+                <h3>
+                    Info about settings:
+                </h3>
+                <table style="width:100%">
+                    <tr id="help--CONTROL_RIGHT">
+                        <td><b>control right: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way to the
+                            right. Check the setting for pin "joy x pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_CENTER_X">
+                        <td><b>control center x: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick's x axis when it is centered.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_LEFT">
+                        <td><b>control left: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way to the
+                            left. Check the setting for pin "joy x pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--X_DEADZONE">
+                        <td><b>x deadzone: </b> </td>
+                        <td>
+                            How big of a zone near the center of the x axis should joystick movement be ignored in?
+                            Try around
+                            15 to start with. The car won't start if the joystick isn't in the deadzone.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_UP">
+                        <td><b>control up: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way
+                            forwards. Check the setting for pin "joy y pin" if you don't see a clear signal when you
+                            move the joystick.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_CENTER_Y">
+                        <td><b>control center y: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick's y axis when it is centered.
+                        </td>
+                    </tr>
+                    <tr id="help--CONTROL_DOWN">
+                        <td><b>control down: </b> </td>
+                        <td>
+                            The value (between 0 and 1023) returned from the joystick when it is all the way
+                            backwards. Check the setting for pin "joy y pin" if you don't see a clear signal when
+                            you move the joystick.
+                        </td>
+                    <tr id="help--Y_DEADZONE">
+                        <td><b>y deadzone: </b> </td>
+                        <td>
+                            How big of a zone near the center of the y axis should joystick movement be ignored in?
+                            Try around 15 to start with. The car won't start if the joystick isn't in the deadzone.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_FORWARD">
+                        <td><b>acceleration forward: </b> </td>
+                        <td>
+                            Rate of increase of speed when the car is moving forward. (fastest forward) / (acceleration
+                            forward) =
+                            seconds to reach max speed. (Larger number means higher acceleration). You can use the
+                            slow/medium/fast buttons to the left to give you a value to start with then adjust from
+                            there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_FORWARD">
+                        <td><b>deceleration forward: </b> </td>
+                        <td>
+                            Rate of decrease of speed when the car is moving forward. (fastest forward) / (deceleration
+                            forward) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast buttons to the left to give you a value to start with then adjust
+                            from there.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_BACKWARD">
+                        <td><b>acceleration backward: </b> </td>
+                        <td>
+                            Rate of increase of speed when the car is moving backward. (fastest backwards) /
+                            (acceleration backward) =
+                            seconds to reach max speed. (Larger number means higher acceleration). You can use the
+                            slow/medium/fast buttons to the left to give you a value to start with then adjust from
+                            there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_BACKWARD">
+                        <td><b>deceleration backward: </b> </td>
+                        <td>
+                            Rate of decrease of speed when the car is moving backward. (fastest backwards) /
+                            (deceleration backward) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast
+                            buttons to the left to give you a value to start with then adjust from there.
+                        </td>
+                    </tr>
+                    <tr id="help--ACCELERATION_TURNING">
+                        <td><b>acceleration turning: </b> </td>
+                        <td>
+                            Rate of increase of rotation speed. (turn speed) / (acceleration turning) = seconds to
+                            reach
+                            max speed. (Larger number means higher acceleration). You can use the slow/medium/fast
+                            buttons to the left to give you a value to start with then adjust from there.
+                        </td>
+                    </tr>
+                    <tr id="help--DECELERATION_TURNING">
+                        <td><b>deceleration turning: </b> </td>
+                        <td>
+                            Rate of decrease of rotation speed. (turn speed) / (deceleration turning) =
+                            seconds to slow to a stop from max speed. (Larger number means higher deceleration). You can
+                            use the slow/medium/fast buttons to the left to give you a value to start with then adjust
+                            from there.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_FORWARD">
+                        <td><b>fastest forward: </b> </td>
+                        <td>
+                            Maximum forward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_BACKWARD">
+                        <td><b>fastest backward: </b> </td>
+                        <td>
+                            Maximum backward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--FASTEST_BACKWARD">
+                        <td><b>fastest backward: </b> </td>
+                        <td>
+                            Maximum backward speed (between 0.0 and 1.0). While associated with speed, this setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--TURN_SPEED">
+                        <td><b>turn speed: </b> </td>
+                        <td>
+                            Maximum turning (spinning) speed (between 0.0 and 1.0). While associated with speed, this
+                            setting is
+                            actually a limit on the power/torque of the motors so if you want to drive on a lawn a
+                            higher value might be needed.
+                        </td>
+                    </tr>
+                    <tr id="help--SCALE_TURNING_WHEN_MOVING">
+                        <td><b>scale turning when moving: </b> </td>
+                        <td>
+                            This setting changes how tightly the car turns when the joystick is pushed to a corner, try
+                            0.5 to start. (Higher values mean tighter turns. It's recommended to stay within 0.0 and
+                            1.0). </td>
+                    </tr>
+                    <tr id="help--REVERSE_TURN_IN_REVERSE">
+                        <td><b>reverse turn in reverse: </b> </td>
+                        <td>Changes how the car drives in reverse (flips rotation direction if the car is moving
+                            backwards). If checked: car drives towards direction joystick
+                            pointed. If unchecked: car spins in direction joystick pointed.
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_CENTER">
+                        <td><b>left motor center: </b> </td>
+                        <td>
+                            What ESC signal makes the left motor stop? usually 1500
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_SLOW">
+                        <td><b>left motor slow: </b> </td>
+                        <td>
+                            Center ± what makes the left motor start to turn? Can be negative if the motor is wired
+                            backwards. Try 25.
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_FAST">
+                        <td><b>left motor fast: </b> </td>
+                        <td>
+                            Center ± what makes the left motor run at full speed? Can be negative if the motor is wired
+                            backwards. Usually 500.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_CENTER">
+                        <td><b>right motor center: </b> </td>
+                        <td>
+                            What ESC signal makes the right motor stop? usually 1500
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_SLOW">
+                        <td><b>right motor slow: </b> </td>
+                        <td>
+                            Center ± what makes the right motor start to turn? Can be negative if the motor is wired
+                            backwards. Try 25.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_FAST">
+                        <td><b>right motor fast: </b> </td>
+                        <td>
+                            Center ± what makes the right motor run at full speed? Can be negative if the motor is wired
+                            backwards. Usually 500.
+                        </td>
+                    </tr>
+                    <tr id="help--USE_SPEED_KNOB">
+                        <td><b>use speed knob: </b> </td>
+                        <td>
+                            Check the box if an optional knob for easily adjusting the max speed been added to your car.
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_SLOW_VAL">
+                        <td><b>speed knob slow val: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) This setting should be the analogRead value
+                            when the knob is turned towards the slowest setting. (check SPEED_KNOB_PIN if not a clear
+                            signal)
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_FAST_VAL">
+                        <td><b>speed knob fast val: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) This setting should be the analogRead value
+                            when the knob is turned towards the fastest setting. (check SPEED_KNOB_PIN if not a clear
+                            signal)
+                        </td>
+                    </tr>
+                    <tr id="help--SCALE_ACCEL_WITH_SPEED">
+                        <td><b>scale accel with speed: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) Check box if using a speed knob and you want to
+                            keep time to max speed constant instead of
+                            acceleration being constant. If checked: (1/accel)=time to reach max speed setting. If
+                            unchecked: (1/accel)=time to reach speed of 1.0 even if the car is limited from reaching a
+                            speed of 1.
+                        </td>
+                    </tr>
+                    <tr id="help--SPEED_KNOB_PIN">
+                        <td><b>speed knob pin: </b> </td>
+                        <td>
+                            (Hidden unless "use speed knob" is enabled.) Pin connected to optional potentiometer for
+                            adjusting max speed.
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_X_PIN">
+                        <td><b>joy x pin: </b> </td>
+                        <td>
+                            What analog pin is the X (left-right) axis of the joystick connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_Y_PIN">
+                        <td><b>joy y pin: </b> </td>
+                        <td>
+                            What analog pin is the Y (forwards-backwards) axis of the joystick connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_CONTROLLER_PIN">
+                        <td><b>left motor controller pin: </b> </td>
+                        <td>
+                            What Arduino pin is the left motor controller connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_CONTROLLER_PIN">
+                        <td><b>right motor controller pin: </b> </td>
+                        <td>
+                            What Arduino pin is the right motor controller connected to?
+                        </td>
+                    </tr>
+                    <tr id="help--ENABLE_STARTUP_PULSE">
+                        <td><b>enable startup pulse: </b> </td>
+                        <td>
+                            If the small movement that the car uses to indicate it is ready to drive is bothering the
+                            driver, then you can turn it off by unchecking this setting.
+                        </td>
+                    </tr>
+                    <tr id="help--LEFT_MOTOR_PULSE">
+                        <td><b>left motor pulse: </b> </td>
+                        <td>
+                            What signal (inverted if LEFT_MOTOR_SLOW is negative) and added to LEFT_MOTOR_CENTER makes
+                            the left motor move enough to cause a gentle movement that can be used to indicate the car
+                            is ready to drive.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_PULSE">
+                        <td><b>right motor pulse: </b> </td>
+                        <td>
+                            What signal (inverted if RIGHT_MOTOR_SLOW is negative) and added to RIGHT_MOTOR_CENTER makes
+                            the right motor move enough to cause a gentle movement that can be used to indicate the car
+                            is ready to drive.
+                        </td>
+                    </tr>
+                    <tr id="help--START_MOTOR_PULSE_TIME">
+                        <td><b>start motor pulse time: </b> </td>
+                        <td>
+                            How many thousandths of a second are the motors pulsed to indicate that the car is ready to
+                            drive.
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_CALIB_COUNT">
+                        <td><b>joy calib count: </b> </td>
+                        <td>
+                            How many centered joystick readings need to be taken in a row before the joystick is
+                            considered centered and ok? One reading takes a bit under 2 thousandths of a second.
+                            <br>
+                            Set to -1 to turn off joystick center check.
+                        </td>
+                    </tr>
+                    <tr id="help--ENABLE_BUTTON_CTRL">
+                        <td><b>enable button ctrl: </b> </td>
+                        <td>
+                            The car can be controlled with buttons instead of a joystick.
+                            <br>
+                            When in button mode, some text indicating the state of each button appears. It looks like
+                            "buttons: 0001xx" where 0 means button off, 1 means button pressed, and x means the button
+                            is not used because of the value of "num drive buttons"
+                        </td>
+                    </tr>
+                    <tr id="help--USE_BUTTON_MODE_PIN">
+                        <td><b>use button mode pin: </b> </td>
+                        <td>
+                            Use a switch to change between button mode and joystick mode at any time. Turn on "enable
+                            button ctrl" to use.
+                        </td>
+                    </tr>
+                    <tr id="help--BUTTON_MODE_PIN">
+                        <td><b>button mode pin: </b> </td>
+                        <td>
+                            What pin is the optional button mode switch wired to? Turn on "use button mode switch" to
+                            use.
+                        </td>
+                    </tr>
+                    <tr id="help--NUM_DRIVE_BUTTONS">
+                        <td><b>num drive buttons: </b> </td>
+                        <td>
+                            How many optional buttons are wired to the car? Up to six buttons are supported. Turn on
+                            "enable button ctrl" to use.
+                        </td>
+                    </tr>
+                    <tr id="help--Drive Button">
+                        <td><b>Drive Buttons: </b> </td>
+                        <td>
+                            What amount of speed and turning should the car accelerate to when pin is pulled low by a
+                            button? If more than one button is pressed, the speeds and turning amounts add together.
+                            "pin" can be any digital pin on the Arduino, speed is between -1.0(backwards) and
+                            1.0(forwards), and turn is between -1.0 (turning left) and 1.0 (turning right).
+                        </td>
+                    </tr>
 
 
+                    <tr id="help--Joystick Input">
+                        <td><b>Joystick Input: </b> </td>
+                        <td>
+                            This box displays the position that the car thinks the joystick is in. Make sure that it
+                            matches the joystick on the car and if it doesn't, calibrate the joystick.
+                            <br>
+                            If "enable button ctrl" is on, then this box will be displaying the input caused by the
+                            buttons instead, and the title will change to say "Button Input."
+                        </td>
+                    </tr>
+                    <tr id="help--Scaled Speed Target">
+                        <td><b>Scaled Speed Target: </b> </td>
+                        <td>
+                            This box displays the driving (vertical axis) and turning (horizontal axis) speeds that the
+                            car will accelerate up to. You can change the forward, backward, and turning speed settings
+                            to change the limits of these speeds. The edges of the box represent speeds of 1, which is
+                            the maximum speed.
+                        </td>
+                    </tr>
+                    <tr id="help--Smoothed Speed to Drive">
+                        <td><b>Smoothed Speed to Drive: </b> </td>
+                        <td>
+                            This box displays the driving (vertical axis) and turning (horizontal axis) speeds that the
+                            car would drive at, after the acceleration limit is applied. This display can be used to see
+                            how long the car will take to accelerate and decelerate.
+                        </td>
+                    </tr>
+                    <tr id="help--Motor Signals">
+                        <td><b>Motor Signals: </b> </td>
+                        <td>
+                            The motors are automatically turned off when the website connects, and will turn back on
+                            when the car is rebooted, but you can turn the motors on and off whenever you want while
+                            your computer is still connected using the button.
+                            This display shows the signals (microseconds of pulse of servo signal) sent to the left and
+                            right motors.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div> <!-- end of settings section -->
+        </div> <!-- end of help div -->
     </main>
 </body>
 
