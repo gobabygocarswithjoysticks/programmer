@@ -25,7 +25,7 @@
             <h2> <a target="_blank" rel="noopener noreferrer"
                     href="https://github.com/gobabygocarswithjoysticks/index">GBG
                     joystick car</a> programming and configuring website. </h2>
-            <p> For any questions about how to use this website, please post <a target="_blank"
+            <p> For any questions about how to use this website, or other feedback, please post <a target="_blank"
                     rel="noopener noreferrer"
                     href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support">
                     here</a>
@@ -124,11 +124,14 @@
                 <div id="car-telem-container" style="width:100%; display: flex; flex-wrap: wrap;">
                     <div style="text-align: center">
                         <br>
-                        <span onclick='infoButtonHelper("Joystick Input");'>Joystick Input &#x1F6C8</span>
+                        <span onclick='infoButtonHelper("Joystick Input");'>
+                            <b><span class="liveVal-input-mode">Joystick</span></b> Input &#x1F6C8</span>
                         <br>
                         <canvas id="joystick-input-canvas" width="220" height="220">
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
+                        <br>
+                        <span class="liveVal-button-status"></span>
                     </div>
                     <div style="text-align: center">
                         <br>
@@ -209,13 +212,16 @@
                     <summary>
                         Advanced settings
                     </summary>
-                    <button id="read-back-settings-button" onclick='sendStringSerial("SETTINGS,")'>read back
+                    <button id="read-back-settings-button"
+                        onclick='settings_received=false;sendStringSerial("SETTINGS,");'>read back
                         settings in RAM</button>
-                    <button id="revert-settings-button" onclick='sendStringSerial("REVERT,")'>revert to
+                    <button id="revert-settings-button" ;
+                        onclick='settings_received=false; sendStringSerial("REVERT,");'>revert to
                         default</button>
                     <button id="reboot-arduino-button"
-                        onclick='sendStringSerial("REBOOT,");  document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
+                        onclick='sendStringSerial("REBOOT,"); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                         arduino, revert to saved settings</button>
+                    <button onclick='showAllSettingsForReal()'>show inactive settings</button>
                     <div id="settings-advanced-settings-info">no extra info loaded yet</div>
                 </details>
                 </p>
@@ -784,12 +790,86 @@
                             What Arduino pin is the right motor controller connected to?
                         </td>
                     </tr>
+                    <tr id="help--LEFT_MOTOR_PULSE">
+                        <td><b>left motor pulse: </b> </td>
+                        <td>
+                            What signal (inverted if LEFT_MOTOR_SLOW is negative) and added to LEFT_MOTOR_CENTER makes
+                            the left motor move enough to cause a gentle movement that can be used to indicate the car
+                            is ready to drive.
+                        </td>
+                    </tr>
+                    <tr id="help--RIGHT_MOTOR_PULSE">
+                        <td><b>right motor pulse: </b> </td>
+                        <td>
+                            What signal (inverted if RIGHT_MOTOR_SLOW is negative) and added to RIGHT_MOTOR_CENTER makes
+                            the right motor move enough to cause a gentle movement that can be used to indicate the car
+                            is ready to drive.
+                        </td>
+                    </tr>
+                    <tr id="help--START_MOTOR_PULSE_TIME">
+                        <td><b>start motor pulse time: </b> </td>
+                        <td>
+                            How many thousandths of a second are the motors pulsed to indicate that the car is ready to
+                            drive.
+                        </td>
+                    </tr>
+                    <tr id="help--JOY_CALIB_COUNT">
+                        <td><b>joy calib count: </b> </td>
+                        <td>
+                            How many centered joystick readings need to be taken in a row before the joystick is
+                            considered centered and ok? One reading takes a bit under 2 thousandths of a second.
+                        </td>
+                    </tr>
+                    <tr id="help--ENABLE_BUTTON_CTRL">
+                        <td><b>enable button ctrl: </b> </td>
+                        <td>
+                            The car can be controlled with buttons instead of a joystick.
+                            <br>
+                            When in button mode, some text indicating the state of each button appears. It looks like
+                            "buttons: 0001xx" where 0 means button off, 1 means button pressed, and x means the button
+                            is not used because of the value of "num drive buttons"
+                        </td>
+                    </tr>
+                    <tr id="help--USE_BUTTON_MODE_PIN">
+                        <td><b>use button mode pin: </b> </td>
+                        <td>
+                            Use a switch to change between button mode and joystick mode at any time. Turn on "enable
+                            button ctrl" to use.
+                        </td>
+                    </tr>
+                    <tr id="help--BUTTON_MODE_PIN">
+                        <td><b>button mode pin: </b> </td>
+                        <td>
+                            What pin is the optional button mode switch wired to? Turn on "use button mode switch" to
+                            use.
+                        </td>
+                    </tr>
+                    <tr id="help--NUM_DRIVE_BUTTONS">
+                        <td><b>num drive buttons: </b> </td>
+                        <td>
+                            How many optional buttons are wired to the car? Up to six buttons are supported. Turn on
+                            "enable button ctrl" to use.
+                        </td>
+                    </tr>
+                    <tr id="help--Drive Button">
+                        <td><b>Drive Buttons: </b> </td>
+                        <td>
+                            What amount of speed and turning should the car accelerate to when pin is pulled low by a
+                            button? If more than one button is pressed, the speeds and turning amounts add together.
+                            "pin" can be any digital pin on the Arduino, speed is between -1.0(backwards) and
+                            1.0(forwards), and turn is between -1.0 (turning left) and 1.0 (turning right).
+                        </td>
+                    </tr>
+
 
                     <tr id="help--Joystick Input">
                         <td><b>Joystick Input: </b> </td>
                         <td>
                             This box displays the position that the car thinks the joystick is in. Make sure that it
                             matches the joystick on the car and if it doesn't, calibrate the joystick.
+                            <br>
+                            If "enable button ctrl" is on, then this box will be displaying the input caused by the
+                            buttons instead, and the title will change to say "Button Input."
                         </td>
                     </tr>
                     <tr id="help--Scaled Speed Target">
@@ -819,7 +899,6 @@
                             right motors.
                         </td>
                     </tr>
-
                 </table>
             </div>
         </div> <!-- end of settings section -->

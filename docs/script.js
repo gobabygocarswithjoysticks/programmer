@@ -323,8 +323,8 @@ function gotNewSerial(data, length) {
     } else if (data["current settings, version:"] != null) {
         if (!settings_received) {
             cancelFollowTheDot();
-            gotNewSettings(data, length);
         }
+        gotNewSettings(data, length);
     } else if (data["result"] != null) {
         gotNewResult(data);
     } else {
@@ -404,6 +404,46 @@ function gotNewData(data, slength) {
     if (follow_the_dot != null) {
         followTheDot();
     }
+
+    var buttonstatus = "";
+    if (!(data["buttons"] === 0)) { // ENABLE_BUTTON_CTRL
+        buttonstatus += "buttons: ";
+        for (var i = 0; i < Math.floor(Math.log2(data["buttons"])); i++) {
+            if (i >= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value)) {
+                buttonstatus += "x";
+            } else {
+                if (((data["buttons"] >> i) & 0x1) === 1) {
+                    buttonstatus += "1";
+                } else {
+                    buttonstatus += "0";
+                }
+            }
+        }
+    }
+    var elements = document.getElementsByClassName("liveVal-button-status");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = buttonstatus;
+    }
+
+    var elements = document.getElementsByClassName("liveVal-input-mode");
+    for (var i = 0; i < elements.length; i++) {
+        if (data["b_m_p"] === "B")
+            elements[i].innerHTML = "Joystick";
+        else if (data["b_m_p"] === "A")
+            elements[i].innerHTML = "Button";
+        else if (data["b_m_p"] === "Y")
+            elements[i].innerHTML = "Button";
+        else if (data["b_m_p"] === "N")
+            elements[i].innerHTML = "Joystick";
+    }
+    var elements = document.getElementsByClassName("liveVal-button-mode-switch-state");
+    for (var i = 0; i < elements.length; i++) {
+        if (data["b_m_p"] === "Y")
+            elements[i].innerHTML = "ON";
+        else if (data["b_m_p"] === "N")
+            elements[i].innerHTML = "OFF";
+    }
+
 
 }
 
@@ -665,6 +705,31 @@ async function onSettingChangeFunction(setting) {
                 document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
             }
         }
+
+        if (setting === "ENABLE_BUTTON_CTRL") {
+            var DBRelated = document.getElementsByClassName("drive-button");
+            for (var i = 0; i < DBRelated.length; i++) {
+                DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+                    DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+            }
+            document.getElementById("setting---USE_BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+            document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+            document.getElementById("setting---NUM_DRIVE_BUTTONS").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+        }
+        if (setting === "USE_BUTTON_MODE_PIN") {
+            document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked);
+        }
+        if (setting === "ENABLE_STARTUP_PULSE") {
+            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
+                document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = false;
+                document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = false;
+                document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = false;
+            } else {
+                document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = true;
+                document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = true;
+                document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
+            }
+        }
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",");
     } else {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",");
@@ -674,6 +739,40 @@ async function onSettingChangeFunction(setting) {
     document.getElementById('setting---' + setting).children[4].hidden = true; //blank
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
 }
+
+// something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
+async function onSettingChangeFunctionDB(setting, which) {
+    document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
+    document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button, or your changes will be lost when the car is turned off.";
+
+    await sendStringSerial("DRIVE_BUTTONS:" +
+        setting.substring(setting.lastIndexOf("_") + 1) + "_" // button number
+        + document.getElementById('DBSetting---' + setting + 'pin').value + "_"
+        + document.getElementById('DBSetting---' + setting + 'speed').value + "_"
+        + document.getElementById('DBSetting---' + setting + 'turn').value
+        + ",");
+
+
+    document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
+    document.getElementById('setting---' + setting).children[4].hidden = true; //blank
+    document.getElementById('setting---' + setting).children[3].hidden = false; // show error
+}
+async function onSettingChangeFunctionNDB() {
+    document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
+    document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button, or your changes will be lost when the car is turned off.";
+
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        DBRelated[i].hidden = DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+    }
+
+    await sendStringSerial("NUM_DRIVE_BUTTONS" + ":" + (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value) + ",");
+
+    document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[2].hidden = true; // checkmark still hidden
+    document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[4].hidden = true; //blank
+    document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[3].hidden = false; // show error
+}
+
 // handle message from the Arduino where it prints current readings and values
 function gotNewSettings(settings, slength) {
     document.getElementById('serial-connected-indicator').innerHTML = "connected";
@@ -695,7 +794,7 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (version === 2 && len === 36 && slength === settings["CHECKSUM"]) {
+    if (version === 10 && len === 45 + 6/*maxNumDriveButtons*/ && slength === settings["CHECKSUM"]) {
         settings_received = true;
         clearInterval(serial_connected_indicator_warning_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
@@ -708,10 +807,26 @@ function gotNewSettings(settings, slength) {
             entry.setAttribute("class", "car-setting-row");
             entry.innerHTML += '<td><span style="display: inline-block; max-width: 25vw;">' + setting.replaceAll('_', ' ').toLowerCase() + "</span></td>";
 
-            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB").indexOf(setting) > -1) { //boolean checkbox
+            var setting_helper = document.createElement("td");
+            setting_helper.style.display = "inline-block";
+            setting_helper.setAttribute("overflow-wrap", "anywhere");
+
+
+            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
+            } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
+                entry.innerHTML += '<td></td>';
+                entry.classList.add("drive-button");
+
+                setting_helper.innerHTML =
+                    ' pin\xa0\xa0\xa0\xa0\xa0\xa0<input id="DBSetting---' + setting + 'pin" type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting][0] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;,&quot;pin&quot;)" ></input>'
+                    + '<br>speed\xa0\xa0<input id="DBSetting---' + setting + 'speed" type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][1] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;,&quot;speed&quot;)" ></input>'
+                    + '<br>turn\xa0\xa0\xa0\xa0\xa0<input id="DBSetting---' + setting + 'turn" type="text" style="display: inline-block" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][2] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;,&quot;turn&quot;)" ></input>'
+
+            } else if (setting === "NUM_DRIVE_BUTTONS") {
+                entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
             } else {//integer
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
@@ -720,9 +835,6 @@ function gotNewSettings(settings, slength) {
             entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
             entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
 
-            var setting_helper = document.createElement("td");
-            setting_helper.style.display = "inline-block";
-            setting_helper.setAttribute("overflow-wrap", "anywhere");
             if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
             } else if (Array("CONTROL_UP", "CONTROL_CENTER_Y", "CONTROL_DOWN").indexOf(setting) > -1) { //joystick calibration helping
@@ -746,7 +858,14 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards slow setting. (check SPEED_KNOB_PIN if not a clear signal)';
             } else if ("SPEED_KNOB_FAST_VAL" === setting) {
                 setting_helper.innerHTML = '<button onclick="helper(&quot;speedKnobVal&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-speedKnobVal" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button> analogRead value when knob is turned towards fast setting. (check SPEED_KNOB_PIN if not a clear signal)';
+            } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
+                // settings_helper set above
+            } else if ("BUTTON_MODE_PIN" === setting) {
+                setting_helper.innerHTML = '<br><br><span class="liveVal-button-mode-switch-state"></span>';
+            } else if ("ENABLE_BUTTON_CTRL" === setting) {
+                setting_helper.innerHTML = '<br><br><span class="liveVal-button-status"></span>';
             } else {
+                // presetButtonGenerator can handle setting not being one of the settings with presets
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
                     setting,
                     Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED"),
@@ -766,7 +885,11 @@ function gotNewSettings(settings, slength) {
 
             entry.appendChild(setting_helper);
             var helpChild = document.createElement("td");
-            helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;` + setting + `&quot;);">&#x1F6C8</h2>`;
+            if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
+                helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;Drive Button&quot;);">&#x1F6C8</h2>`;
+            } else {
+                helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;` + setting + `&quot;);">&#x1F6C8</h2>`;
+            }
             entry.appendChild(helpChild);
             list.appendChild(entry);
         }
@@ -873,7 +996,7 @@ function presetButtonGenerator(setting, settings, labels, values) {
     let index = settings.indexOf(setting);
     let html = "";
     for (let i = 0; i < values[index].length; i++) {
-        html += `<button onclick="helper(&quot;presetSettingChange&quot;,&quot;` + setting + `&quot;,` + values[index][i] + `)">` + labels[i] + `</button>`;
+        html += '<button onclick = "helper(&quot;presetSettingChange&quot;,&quot;' + setting + '&quot;,' + values[index][i] + ')" > ' + labels[i] + '</button>';
     }
     return html;
 }
@@ -948,13 +1071,19 @@ function showSpeedSettings() {
     document.getElementById("settings-header").scrollIntoView();
 
 }
+function showAllSettingsForReal() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].hidden = false;
+    }
+}
 function showAllSettings(scroll) {
     cancelFollowTheDot();
     var elements = document.getElementsByClassName("car-setting-row");
     for (var i = 0; i < elements.length; i++) {
         elements[i].hidden = false;
     }
-    try {
+    try { // hide disabled settings
         if (document.getElementById('setting---' + "USE_SPEED_KNOB").children[1].firstChild.checked) {
             document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = false;
             document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = false;
@@ -965,6 +1094,26 @@ function showAllSettings(scroll) {
             document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = true;
             document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = true;
             document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
+        }
+
+        var DBRelated = document.getElementsByClassName("drive-button");
+        for (var i = 0; i < DBRelated.length; i++) {
+            DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+                DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+        }
+        document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+        document.getElementById("setting---USE_BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+        document.getElementById("setting---NUM_DRIVE_BUTTONS").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
+
+
+        if (document.getElementById('setting---' + "ENABLE_STARTUP_PULSE").children[1].firstChild.checked) {
+            document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = false;
+            document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = false;
+            document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = false;
+        } else {
+            document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = true;
+            document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = true;
+            document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
         }
     } catch (e) {
         // sometimes the checkbox hasn't loaded when this function is called, but showAllSettings is called again when settings are received.
@@ -981,7 +1130,13 @@ function gotNewResult(result) {
         document.getElementById('setting---' + result["setting"]).children[3].hidden = true; // hide error
         document.getElementById('setting---' + result["setting"]).children[4].hidden = true; // hide blank
         document.getElementById('setting---' + result["setting"]).children[2].hidden = false; // show checkmark
-        document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
+        if (/DRIVE_BUTTON_(\d+)/.test(result["setting"])) {
+            document.getElementById('DBSetting---' + result["setting"] + 'pin').value = result["value"][0];
+            document.getElementById('DBSetting---' + result["setting"] + 'speed').value = result["value"][1];
+            document.getElementById('DBSetting---' + result["setting"] + 'turn').value = result["value"][2];
+        } else {
+            document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
+        }
     }
     if (result["result"] === "saved") { // saved settings to EEPROM
         var elements = document.getElementsByClassName("car-setting-row");
