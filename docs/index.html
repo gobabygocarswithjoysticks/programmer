@@ -790,6 +790,13 @@
                             What Arduino pin is the right motor controller connected to?
                         </td>
                     </tr>
+                    <tr id="help--ENABLE_STARTUP_PULSE">
+                        <td><b>enable startup pulse: </b> </td>
+                        <td>
+                            If the small movement that the car uses to indicate it is ready to drive is bothering the
+                            driver, then you can turn it off by unchecking this setting.
+                        </td>
+                    </tr>
                     <tr id="help--LEFT_MOTOR_PULSE">
                         <td><b>left motor pulse: </b> </td>
                         <td>
@@ -818,6 +825,8 @@
                         <td>
                             How many centered joystick readings need to be taken in a row before the joystick is
                             considered centered and ok? One reading takes a bit under 2 thousandths of a second.
+                            <br>
+                            Set to -1 to turn off joystick center check.
                         </td>
                     </tr>
                     <tr id="help--ENABLE_BUTTON_CTRL">
