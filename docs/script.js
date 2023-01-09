@@ -97,10 +97,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     var url_tail = window.location.href.substring(window.location.href.lastIndexOf('#') + 1);
     if (url_tail === "new") {
-        document.getElementById("first-time-program-button").click();
+        // document.getElementById("first-time-program-button").click();
+        document.getElementById("hcbp-start").style.outline = "7px solid magenta";
+        showFirstTime();
     }
     if (url_tail === "speed") {
-        document.getElementById("speed-adjust-help-button").click();
+        // document.getElementById("speed-adjust-help-button").click();
+        document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+        showConfigButton();
+        speedAdjustHelp = true;
+        showSpeedSettings();
     }
     setTimeout(function () {
         document.getElementById("pointer-arrow").style.color = "Lime";
