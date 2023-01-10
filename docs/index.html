@@ -132,6 +132,7 @@
                         </canvas>
                         <br>
                         <span class="liveVal-button-status"></span>
+                        <br>
                     </div>
                     <div style="text-align: center">
                         <br>
@@ -163,17 +164,29 @@
                         </canvas>
                     </div>
                 </div>
-
-                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                <br>
+                <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,",false)'>
                     Save Changes
                 </button>
                 <span id="save-settings-button-label"></span>
+                <br>
+                <button onclick='exportSettings();'>
+                    download a file containing a backup of the current settings
+                </button>
+                <br>
+                <div id="restore-settings-div">
+                    <button onclick='restoreSettings();'>
+                        restore backed up settings from a file
+                    </button> <span id="restore-settings-msg-div"></span>
+                    <input id="restore-settings-input" hidden="true" type="file" accept=".txt"
+                        onchange='restoreSettingsGotFile(this.files);' />
+                </div>
                 <br><br>
 
                 <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
                     pins</button>
                 <br><button
-                    onclick='showJoystickSettings();cancelFollowTheDot(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";document.getElementById("pointer-arrow").hidden=true;'>
+                    onclick='showJoystickSettings();cancelFollowTheDot(); document.getElementById("pointer-arrow").hidden=true; showSwapPinsInSettingsHeader();'>
                     calibrate joystick the hard way
                 </button>
                 <button onclick='document.getElementById("pointer-arrow").hidden=true;followTheDot();'>
@@ -182,7 +195,7 @@
                     speed and accel</button>
                 <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>show
                     all</button>
-                <br>
+                <br><br>
                 <div id="settings-header">
 
                 </div>
@@ -203,7 +216,7 @@
                 </div>
 
                 <br>
-                <button id="save-settings-button-2" style="font-size: 24px;" onclick='sendStringSerial("SAVE,")'>
+                <button id="save-settings-button-2" style="font-size: 24px;" onclick='sendStringSerial("SAVE,",false)'>
                     Save Changes
                 </button>
                 <span id="save-settings-button-label-2"></span>
@@ -213,13 +226,13 @@
                         Advanced settings
                     </summary>
                     <button id="read-back-settings-button"
-                        onclick='settings_received=false;sendStringSerial("SETTINGS,");'>read back
+                        onclick='settings_received=false;sendStringSerial("SETTINGS,",false);'>read back
                         settings in RAM</button>
                     <button id="revert-settings-button" ;
-                        onclick='settings_received=false; sendStringSerial("REVERT,");'>revert to
+                        onclick='settings_received=false; sendStringSerial("REVERT,",false);'>revert to
                         default</button>
                     <button id="reboot-arduino-button"
-                        onclick='sendStringSerial("REBOOT,"); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
+                        onclick='sendStringSerial("REBOOT,",false); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                         arduino, revert to saved settings</button>
                     <button onclick='showAllSettingsForReal()'>show inactive settings</button>
                     <div id="settings-advanced-settings-info">no extra info loaded yet</div>
@@ -505,7 +518,7 @@
                                 calibrate the joystick.
                                 <br><button onclick="showPinSettings()">choose pins</button>
                                 <br><button
-                                    onclick='cancelFollowTheDot(); showJoystickSettings(); document.getElementById("settings-header").innerHTML="Set each value by moving the joystick in the corresponding direction and pressing the set to button.";'>
+                                    onclick='cancelFollowTheDot(); showJoystickSettings(); showSwapPinsInSettingsHeader();'>
                                     calibrate joystick the hard way
                                 </button>
                                 <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
@@ -872,7 +885,7 @@
 
 
                     <tr id="help--Joystick Input">
-                        <td><b>Joystick Input: </b> </td>
+                        <td><b><span class="liveVal-input-mode">Joystick</span> Input: </b> </td>
                         <td>
                             This box displays the position that the car thinks the joystick is in. Make sure that it
                             matches the joystick on the car and if it doesn't, calibrate the joystick.

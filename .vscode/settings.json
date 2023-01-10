@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "buttonstatus",
         "calib",
         "cbchk",
         "cbdis",
@@ -13,6 +14,7 @@
         "hcbs",
         "maxlength",
         "slength",
+        "swapleftandrightpins",
         "telem",
         "unhighlights"
     ]
