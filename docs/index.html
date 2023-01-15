@@ -17,22 +17,23 @@
     <main>
 
         <div id="pointer-arrow"
-            style='position: absolute; font-size: 60px; color: magenta; text-align: right; right:40%; top:25px;'>
-            &#129094
+            style='position: absolute; font-size: 60px; color: magenta; text-align: right; right:40%; top:25px;'
+            onclick='document.getElementById("pointer-arrow").hidden=true;'>
+            <span style="font-size: 3rem;">start here</span>&#129094
         </div>
 
         <div id="main" style="width:60%">
             <h2> <a target="_blank" rel="noopener noreferrer"
                     href="https://gobabygocarswithjoysticks.github.io/index/">GBG
                     joystick car</a> programming and configuring website. </h2>
-            <p> For any questions about how to use this website, or other feedback, please post <a target="_blank"
+            <p> For any questions about how to use this website, or other feedback,<br>please post <a target="_blank"
                     rel="noopener noreferrer"
                     href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support">
                     here</a>
                 or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
             </p>
             <p>
-                This website can only change the settings of cars with the new code that this site uploads, it won't
+                This website can only change the settings of cars with the new code that this site uploads, <br>it won't
                 work with the original go baby go code.
             </p>
 
@@ -216,10 +217,6 @@
                 </div>
 
                 <br>
-                <button id="save-settings-button-2" style="font-size: 24px;" onclick='sendStringSerial("SAVE,",false)'>
-                    Save Changes
-                </button>
-                <span id="save-settings-button-label-2"></span>
                 <p>
                 <details>
                     <summary>
@@ -338,7 +335,7 @@
                             plug the Arduino into to your computer with a usb cable.
                             <details>
                                 <summary>
-                                    show me how
+                                    <b><i>Show me how</i></b>
                                 </summary>
                                 <table>
                                     <tr>
@@ -364,6 +361,7 @@
                                     </tr>
                                 </table>
                             </details>
+                            <br>
                             If you smell or see smoke when you plug the car in, unplug it immediately and check for
                             short circuits in your car's wiring.
                         </label>
@@ -441,15 +439,12 @@
                 <ol>
                     <li>
                         <label id="help-settings-plug-label" for="hcbs-plug">
-                            Ensure the car is turned off (all
-                            lights in
-                            the car
-                            should be off),
+                            Ensure the car is turned off (all lights in the car should be off),
                             then connect the Arduino to your computer with a usb cable.
                             <br>
                             <details>
                                 <summary>
-                                    show me how
+                                    <b><i>Show me how</i></b>
                                 </summary>
                                 <table>
                                     <tr>
@@ -524,6 +519,12 @@
                                 <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
                                 <br><button onclick="showSpeedSettings()">change speed and accel</button>
                                 <br><button onclick="showAllSettings(true)">show all</button>
+                                <br><br><br><br><br>
+                                <button id="save-settings-button-2" style="font-size: 24px;"
+                                    onclick='sendStringSerial("SAVE,",false)'>
+                                    Save Changes
+                                </button>
+                                <span id="save-settings-button-label-2"></span>
                             </div>
                         </span>
                     </li>
@@ -536,7 +537,7 @@
                 <h3>
                     Info about settings:
                 </h3>
-                <table style="width:100%">
+                <table style="width:300px; table-layout: fixed; width: 100%;">
                     <tr id="help--CONTROL_RIGHT">
                         <td><b>control right: </b> </td>
                         <td>
@@ -879,7 +880,7 @@
                             What amount of speed and turning should the car accelerate to when pin is pulled low by a
                             button? If more than one button is pressed, the speeds and turning amounts add together.
                             "pin" can be any digital pin on the Arduino, speed is between -1.0(backwards) and
-                            1.0(forwards), and turn is between -1.0 (turning left) and 1.0 (turning right).
+                            1.0(forwards), and turn is between -1.0(turning left) and 1.0(turning right).
                         </td>
                     </tr>
 

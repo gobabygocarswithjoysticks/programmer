@@ -811,7 +811,7 @@ function gotNewSettings(settings, slength) {
     cbdis("hcbs-connect");
     cblightoff("hcbs-connect");
     cbhighlight("hcbs-setting-index-title");
-    document.getElementById("hcbs-setting-index").scrollIntoView({ block: "end" });
+    document.getElementById("hcbs-setting-index").scrollIntoView();
 
     document.getElementById("connect-to-car").style.backgroundColor = "lightgrey";
 
@@ -918,9 +918,9 @@ function gotNewSettings(settings, slength) {
             entry.appendChild(setting_helper);
             var helpChild = document.createElement("td");
             if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
-                helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;Drive Button&quot;);">&#x1F6C8</h2>`;
+                helpChild.innerHTML = `<span style="font-size:1.5rem;" onclick="infoButtonHelper(&quot;Drive Button&quot;);">&#x1F6C8</span>`;
             } else {
-                helpChild.innerHTML = `<h2 onclick="infoButtonHelper(&quot;` + setting + `&quot;);">&#x1F6C8</h2>`;
+                helpChild.innerHTML = `<span style="font-size:1.5rem;" onclick="infoButtonHelper(&quot;` + setting + `&quot;);">&#x1F6C8</span>`;
             }
             entry.appendChild(helpChild);
             list.appendChild(entry);
