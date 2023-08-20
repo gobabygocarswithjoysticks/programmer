@@ -895,6 +895,21 @@
                             1.0(forwards), and turn is between -1.0(turning left) and 1.0(turning right).
                         </td>
                     </tr>
+                    <tr id="help--STEERING_OFF_SWITCH">
+                        <td><b>steering off switch: </b> </td>
+                        <td>
+                            If this option is checked, turning on a switch wired between USE_BUTTON_MODE_PIN and the gnd
+                            pin of the Arduino makes the car only drive forwards and back, with steering and turning
+                            unavailable. If you want the car to always be unable to turn, set TURN_SPEED to 0.
+                        </td>
+                    </tr>
+                    <tr id="help--STEERING_OFF_SWITCH_PIN">
+                        <td><b>steering off switch pin: </b> </td>
+                        <td>
+                            Pin of the Arduino connected to the switch that turns on and off the steering of the car.
+                            See STEERING_OFF_SWITCH above.
+                        </td>
+                    </tr>
 
 
                     <tr id="help--Joystick Input">

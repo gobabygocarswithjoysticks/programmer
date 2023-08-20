@@ -508,7 +508,7 @@ function followTheDot() {
                 return; // normal procedure, continue
             } else { // x moved significantly also
                 follow_the_dot = null;
-                document.getElementById("settings-header").innerHTML = 'Calibration canceled because movement was detected on both axes. Please check the the joystick pin settings and then restart the joystick calibration, and carefully move the joystick on only one axis at a time. <br> <button onclick="followTheDot();">restart</button><br>';
+                document.getElementById("settings-header").innerHTML = 'Calibration canceled because movement was detected on both axes. Please check the joystick pin settings and then restart the joystick calibration, and carefully move the joystick on only one axis at a time. <br> <button onclick="followTheDot();">restart</button><br>';
                 var elements = document.getElementsByClassName("car-setting-row");
                 for (var i = 0; i < elements.length; i++) {
                     if (Array("setting---JOY_X_PIN", "setting---JOY_Y_PIN").indexOf(elements[i].id) > -1) {
@@ -759,6 +759,15 @@ async function onSettingChangeFunction(setting) {
                 document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
             }
         }
+
+        if (setting === "STEERING_OFF_SWITCH") {
+            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
+                document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = false;
+            } else {
+                document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = true;
+            }
+        }
+
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",", true);
     } else {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",", true);
@@ -824,7 +833,7 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (version === 10 && len === 45 + 6/*maxNumDriveButtons*/ && slength === settings["CHECKSUM"]) {
+    if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || version === 11 && len == 47 + 6) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         clearInterval(serial_connected_indicator_warning_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
@@ -842,7 +851,7 @@ function gotNewSettings(settings, slength) {
             setting_helper.setAttribute("overflow-wrap", "anywhere");
 
 
-            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN").indexOf(setting) > -1) { //boolean checkbox
+            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
@@ -1156,6 +1165,14 @@ function showAllSettings(scroll) {
             document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = true;
             document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
         }
+
+
+        if (document.getElementById('setting---' + "STEERING_OFF_SWITCH").children[1].firstChild.checked) {
+            document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = false;
+        } else {
+            document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = true;
+        }
+
     } catch (e) {
         // sometimes the checkbox hasn't loaded when this function is called, but showAllSettings is called again when settings are received.
     }
