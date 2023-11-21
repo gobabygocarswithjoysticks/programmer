@@ -16,6 +16,7 @@ var ftd_data = {}; // used to store data used for joystick calibration by "follo
 var joy_calib_deadzone = 3; //joystick signal noise should be below this
 var joy_calib_moved_enough = 40; // far enough from center to be an edge
 var verify = {}; // holds timers for sent but not yet acknowledged settings that will cause a resend if not canceled
+var serialMonitorString = ""; // the string that is displayed in the serial monitor box, for advanced debugging
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -294,6 +295,13 @@ async function connectToSerial() {
             }
             // value is a string with the characters that were just read from the serial port (usually a fragment of a full message)
             string += value;
+
+            var serialBoxElement = document.getElementById("serialMonitorBox");
+            if (serialBoxElement != null && serialBoxElement.hidden == false) {
+                serialMonitorString += value;
+                serialBoxElement.innerHTML = serialMonitorString;
+            }
+
             if (string.length > 10000) { // avoid the string getting extremely long if no terminating character is being sent (a car sending valid messages sends terminating characters, so it's fine to just toss the data)
                 string = "";
             }

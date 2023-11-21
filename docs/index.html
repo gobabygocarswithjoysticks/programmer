@@ -233,6 +233,17 @@
                         arduino, revert to saved settings</button>
                     <button onclick='showAllSettingsForReal()'>show inactive settings</button>
                     <div id="settings-advanced-settings-info">no extra info loaded yet</div>
+                    <button onclick='document.getElementById("serialMonitorBox").hidden=false'>
+                        show serial monitor</button>
+                    <button onclick='document.getElementById("serialMonitorBox").hidden=true'>
+                        hide serial monitor</button>
+                    <button onclick='downloadFile(serialMonitorString,"gbg serial monitor log.txt");'>
+                        download data from serial monitor</button>
+                    <button onclick='serialMonitorString=""'>
+                        clear serial monitor log</button>
+                    <div id="serialMonitorBox" hidden=true style="height:400px;overflow:auto;">
+                        no data received yet
+                    </div>
                 </details>
                 </p>
                 <hr>
