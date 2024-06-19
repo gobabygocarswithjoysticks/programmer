@@ -211,6 +211,12 @@ async function sendStringSerial(string, verifyData) {
                 name = "DRIVE_BUTTON_"; // change name to match the setting property of the car's result message
                 name += string.split(":")[1].split("_")[0]; // add the button number
             }
+            if (name == "S") {
+                name = "stopped";
+            }
+            if (name == "G") {
+                name == "movement allowed";
+            }
             verify[name] = setTimeout(() => {
                 console.log("serial resend triggered: ", string);
                 try {
