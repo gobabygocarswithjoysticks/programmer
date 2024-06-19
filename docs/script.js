@@ -3,6 +3,7 @@ var options = null; // configurations_info, but just the lines with program info
 var port = null; // serial port for connection to car
 var reader = null; // reads from the serial port
 var serial_connected_indicator_warning_timeout; // the result of a setInterval() used to display a warning message if the car is taking a long time to send a valid message
+var serial_connected_rerequest_timeout; // the result of a setInterval() that will request "SETTINGS" if settings are not received. (rpi picos don't reboot on serial connection so they don't send the needed settings)
 var serialConnectionRunning = false; // boolean, is a car connected?
 var sendStringSerialLock = false; // boolean, prevents sendStringSerial from being used more than once at a time (sendStringSerial just exits without sending a message if a message is in the process of being sent.
 var live_data = null; // the live data that the car reports (Json) (used for joystick calibration and other displays)
@@ -235,12 +236,28 @@ async function sendStringSerial(string, verifyData) {
     }
     sendStringSerialLock = false;
 }
+async function rerequestSettings() {
+    try {
+        const writer1 = port.writable.getWriter();
+        try {
+            var enc = new TextEncoder(); // always utf-8
+            await writer1.write(enc.encode("SETTINGS,"));
+        } catch (e) {
+            console.log(e);
+        } finally {
+            writer1.releaseLock();
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 // connect to serial connection (makes a popup asking what port to use)
 async function connectToSerial() {
     if (serialConnectionRunning) return;
     serialConnectionRunning = true;
-    document.getElementById('serial-connected-indicator').innerHTML = "trying to connect...";
-    document.getElementById('serial-connected-short').innerHTML = 'trying to connect...';
+    document.getElementById('serial-connected-indicator').innerHTML = "please select the serial port.";
+    document.getElementById('serial-connected-short').innerHTML = 'please select the serial port.';
 
 
     document.getElementById("serial-connect-button").hidden = true;
@@ -249,6 +266,8 @@ async function connectToSerial() {
 
     try {
         port = await navigator.serial.requestPort();
+        document.getElementById('serial-connected-indicator').innerHTML = "connecting...";
+        document.getElementById('serial-connected-short').innerHTML = 'connecting...';
         serial_connected_indicator_warning_timeout = setTimeout(() => {
             document.getElementById('serial-connected-indicator').innerHTML = 'trying to connect... It is taking a long time, try pressing the <span id="serial-con-msg-time-disbut">disconnect button to the left</span> then reconnect by pressing the <span id="serial-con-msg-time-conbut">connect button to the left</span> after checking the port. Also try closing other tabs or Arduino windows that might be connected to the car, unplugging and unplugging the car, and uploading the code again.';
             document.getElementById('serial-connected-short').innerHTML = 'trying to connect... It is taking a long time, try disconnecting and reconnecting.';
@@ -258,11 +277,13 @@ async function connectToSerial() {
             document.getElementById('serial-connect-button').style.border = "3px solid Blue";
             document.getElementById('serial-con-msg-time-conbut').style.border = "3px solid Blue";
             document.getElementById("serial-connected-indicator").scrollIntoView({ block: "end" });
-        }, 3000);
+        }, 3250);
         await port.open({ baudRate: 250000 });
+        serial_connected_rerequest_timeout = setTimeout(rerequestSettings, 2500);
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
+        clearInterval(serial_connected_rerequest_timeout);
         document.getElementById('serial-connected-indicator').innerHTML = 'Did not connect. If you did not cancel the connection, try closing other tabs or Arduino windows that might be connected to the car. Then, try to connect again by pressing <span id="ser-con-canceled">the connect button to the left</span>.';
         document.getElementById('serial-connected-short').innerHTML = 'Did not connect. Try again';
 
@@ -844,6 +865,7 @@ function gotNewSettings(settings, slength) {
     if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || version === 11 && len == 47 + 6) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         clearInterval(serial_connected_indicator_warning_timeout);
+        clearInterval(serial_connected_rerequest_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
