@@ -1,5 +1,7 @@
 ## [A website for programming and adjusting the settings of go baby go cars with joysticks.](https://gobabygocarswithjoysticks.github.io/programmer/)
 
+[![pages-build-deployment](https://github.com/gobabygocarswithjoysticks/programmer/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/gobabygocarswithjoysticks/programmer/actions/workflows/pages/pages-build-deployment)
+
 Github for this (the website) code: https://github.com/gobabygocarswithjoysticks/programmer
 
 Github for the Arduino code that gets uploaded by this website: https://github.com/gobabygocarswithjoysticks/car-code
