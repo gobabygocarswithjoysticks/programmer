@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "BOOTSEL",
         "buttonstatus",
         "calib",
         "cbchk",
@@ -13,8 +14,10 @@
         "hcbp",
         "hcbs",
         "maxlength",
+        "pico",
         "picos",
         "rerequest",
+        "RPIPICO",
         "slength",
         "swapleftandrightpins",
         "telem",

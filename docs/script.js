@@ -1279,6 +1279,10 @@ async function updateUpload() {
 }
 
 async function getCode() {
+    var upload_warning_span = document.getElementById("upload-warning-span");
+    var upload_button = document.getElementById("upload-button");
+    upload_button.hidden = true;
+
     var program_selector = document.getElementById("program-selector");
     var program = program_selector.options[program_selector.selectedIndex].value;
     var board_selector = document.getElementById("board-selector");
@@ -1286,40 +1290,63 @@ async function getCode() {
     var name = options.filter((v) => { return v[1] === program && v[2] === board })[0][0];
     var code = null;
     try {
-        if (configurations_info[0] === "release") {
-            code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
-        } else {
-            code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino.hex");
+        var fileEnding = "hex";
+        var blob = false;
+        if (board === "RPIPICO") {
+            fileEnding = "uf2";
+            blob = true; // uf2s get messed up when read as text, but work when read as a blob
         }
+        code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding, blob);
     } catch (e) { }
 
-    var upload_warning_span = document.getElementById("upload-warning-span");
-    var upload_button = document.getElementById("upload-button");
 
     if (code == null) {
         upload_warning_span.innerHTML = "<mark>The code for the car can not be found. Please check your internet connection, try again in 10 minutes, then please contact us if the problem continues.</mark>";
         upload_button.hidden = true;
     } else { // code received! 
+
+        if (board === "RPIPICO") {
+            document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "<mark>When you click the checkbox below, a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.</mark>";
+            document.getElementById("upload-info-under-button").innerHTML = 'You have selected to upload to a Raspberry Pi Pico, which requires a different process than the other boards. When you click the "Upload!" button a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.';
+            upload_button.removeAttribute("AWU"); // now arduino-web-uploader won't run, the pico code needs to run instead
+            upload_button.addEventListener("click", function () {
+                if (upload_button.hasAttribute("AWU")) { // if in normal uploader mode not pico mode
+                    return;
+                }
+                document.getElementById("upload-info-under-button").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the USB cable back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the RPI-RP2 drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
+
+                document.getElementById("uploading-step-4").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the USB cable back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the RPI-RP2 drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
+                downloadFile(code, program + ".ino.uf2");
+                cbdone("hcbp-uploading", "hcbp-upload-done");
+                document.getElementById("upload-button").style.outline = "0px";
+            });
+
+        } else {
+            document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "When you click the checkbox below, a box will pop up, which you will use in the next step to upload the code.";
+            document.getElementById("uploading-step-4").innerHTML = 'In the box that popped up, click on the car&#39;s serial port in the list (to find the car&#39;s port you can unplug and replug the USB cable and whichever option goes away and comes back is the car). Then, click the "connect" button of the box. <br><br> If there is an error with uploading, you might need to follow instructions that will appear below this paragraph to select the car&#39;s port again and try uploading again.';
+            /* 
+            I edited arduino-web-uploader so hexHref should be the actual hex code instead of a url where it can be downloaded. 
+            This way the hex code can be downloaded by this script instead of by the uploader code where I wouldn't have control of it. 
+            The code is stored inside the html of the page.
+            */
+            upload_button.setAttribute("AWU", "true");
+            upload_button.setAttribute("hexHref", code);
+            upload_button.setAttribute("board", board);
+        }
+
         upload_warning_span.innerHTML = "";
         var upload_progress_span = document.getElementById("upload-progress");
         upload_progress_span.innerHTML = "Ready";
         upload_button.hidden = false;
-        /* 
-        I edited arduino-web-uploader so hex-href should be the actual hex code instead of a url where it can be downloaded. 
-        This way the hex code can be downloaded by this script instead of by the uploader code where I wouldn't have control of it. 
-        The code is stored inside the html of the page.
-        */
-        upload_button.setAttribute("hex-href", code);
-        upload_button.setAttribute("board", board);
     }
 
+    codeURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/" + program;
 
-    if (configurations_info[0] === "release") {
-        codeURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/" + program;
-    } else {
-        codeURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/" + program;
-    }
     document.getElementById("source-name-display").innerHTML = 'source: <a target="_blank" rel="noopener noreferrer" href= "' + codeURLForHumans + '">' + codeURLForHumans + '</a>';
+
+    hexURLForHumans = "https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding;
+
+    document.getElementById("source-hex-display").innerHTML = 'hex file: <a target="_blank" rel="noopener noreferrer" href= "' + hexURLForHumans + '">' + hexURLForHumans + '</a>';
 
 }
 function updateBoardOptionsSelector() {
@@ -1411,11 +1438,15 @@ async function getConfigInfo(fromMain) {
 /**
  * code for getting data from a url, returns response.text if the request succeeds, and throws an error if there is an error status.
  */
-async function getRequest(url) {
+async function getRequest(url, blob = false) {
     await fetch(url)
         .then((response) => {
             if (response.status == 200) {
-                return response.text();
+                if (blob) {
+                    return response.blob();
+                } else {
+                    return response.text();
+                }
             } else {
                 throw new Error(`HTTP error in getRequest() Status: ${response.status} `);
             }

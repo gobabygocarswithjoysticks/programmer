@@ -78,12 +78,11 @@
                     <br>
                     <span id="upload-warning-span">
                     </span>
-                    <button id="upload-button" arduino-uploader
-                        onclick='closeSerial();document.getElementById("pointer-arrow").hidden=true;' board=""
-                        verify="true" hex-href="">
+                    <button id="upload-button" class="arduinoUploader" AWU="true"
+                        onclick='closeSerial(); document.getElementById("pointer-arrow").hidden = true;'>
                         Upload! [<span class="upload-progress" id="upload-progress">Ready</span>]
                     </button>
-                    <span class="upload-info"></span>
+                    <span id="upload-info-under-button" class="upload-info"></span>
                 </div>
                 <p>
                 <details>
@@ -93,6 +92,8 @@
                     <ol>
                         <li>These options are only useful to people developing code for these cars.</li>
                         <li id="source-name-display">
+                        </li>
+                        <li id="source-hex-display"> hex file:
                         </li>
                         <li>
                             Get car code from main branch instead of from most recent release:
@@ -345,7 +346,7 @@
                         <label for="hcbp-plug">
                             Ensure the car is turned off (all lights in the car should be off), then
                             unscrew and remove the seat (the Arduino is under the seat), then plug the Arduino into your
-                            computer with a mini usb cable.
+                            computer with a usb cable.
                             <details>
                                 <summary>
                                     <b><i>Show me how</i></b>
@@ -397,18 +398,19 @@
                                 The selector for what program to upload should be left on "gbg_program".
                             </span><br><br>
                             <span id="hcbp-board-selection-text">
-                                The selector for what type of Arduino board is in your car can be left on
-                                "old nano" if you have a less expensive Arduino Nano clone (old bootloader), or
-                                should
-                                be
-                                changed to say "new nano or uno" if you bought an official Arduino Nano or Uno
-                                board.
+                                &#x2022; The selector for what type of Arduino board is in your car can be left on
+                                "old nano" if you have a less expensive Arduino Nano clone (old bootloader).
+                                <br><br>
+                                &#x2022; The selector should be changed to say "new nano or uno" if you bought an
+                                official Arduino Nano or Uno board.
+                                <br><br>
+                                &#x2022; The selector should be changed to say "rpi pico" if you
+                                are using a Raspberry Pi Pico.
                             </span>
                             <br>
                             <br>
-                            When you click the checkbox below, a box will pop up, which you will use in the next
-                            step to
-                            upload the code.
+                            <span id="hcbp-upload-ahead-of-time-text">When you click the checkbox below, a box will pop
+                                up, which you will use in the next step to upload the code.</span>
                             <br>
                         </label>
                         <input type="checkbox" class="help-checkbox" id="hcbp-upload" disabled onchange='cbdone("hcbp-upload"); cbhighlight("hcbp-uploading"); 
@@ -421,12 +423,13 @@
                     </li>
                     <li>
                         <label for="hcbp-uploading">
-                            In the box that popped up, click on the car's serial port in the list (to find the car's
-                            port you can unplug and replug the USB cable and whichever option goes away and comes
-                            back is the car). Then, click the "connect" button of the box.
-                            <br><br>
-                            If there is an error with uploading, you might need to follow instructions that will
-                            appear below this paragraph to select the car's port again and try uploading again.
+                            <span id="uploading-step-4">
+                                In the box that popped up, click on the car&#39;s serial port in the list (to find the
+                                car&#39;s port you can unplug and replug the USB cable and whichever option goes away
+                                and comes back is the car). Then, click the "connect" button of the box. <br><br> If
+                                there is an error with uploading, you might need to follow instructions that will appear
+                                below this paragraph to select the car&#39;s port again and try uploading again.
+                            </span>
                             <br><br>
                             <div id="upload-connect-comment"></div>
                             <div class="upload-info" id="hcbp-upload-info"></div>
@@ -459,7 +462,7 @@
                         <label id="help-settings-plug-label" for="hcbs-plug">
                             Ensure the car is turned off (all lights in the car should be off), then
                             unscrew and remove the seat (the Arduino is under the seat), then plug the Arduino into your
-                            computer with a mini usb cable. <br>
+                            computer with a usb cable. <br>
                             <details>
                                 <summary>
                                     <b><i>Show me how</i></b>
@@ -873,7 +876,7 @@
                             The car can be controlled with buttons instead of a joystick.
                             <br>
                             When in button mode, some text indicating the state of each button appears. It looks like
-                            "buttons: 0001xx" where 0 means button off, 1 means button pressed, and x means the button
+                            "buttons: 0001xx" where 0 means button off (open circuit), 1 means button pressed (connected to ground), and x means the button
                             is not used because of the value of "num drive buttons"
                         </td>
                     </tr>
