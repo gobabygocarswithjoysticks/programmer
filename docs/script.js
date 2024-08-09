@@ -1523,6 +1523,13 @@ function downloadFile(input, fileName) {
 };
 function restoreSettings() {
     if (settings_received) {
+        var elements = document.getElementsByClassName("car-setting-row");
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].children[3].hidden = true; // hide error
+            elements[i].children[2].hidden = true; // hide checkmark    
+            elements[i].children[4].hidden = false; // show blank
+        }
+
         document.getElementById("restore-settings-input").value = "";
         document.getElementById("restore-settings-input").click();
     } else {
@@ -1540,6 +1547,7 @@ async function loadLibrary() {
             option.text = library_json[i]["filename"];
             document.getElementById("settings-library-selector").add(option);
         }
+        getLibrary();
     } catch (e) {
         console.log(e);
         document.getElementById('settings-library-div').innerHTML = "Error loading config library";
@@ -1547,6 +1555,13 @@ async function loadLibrary() {
 }
 async function getLibrary() {
     try {
+        var elements = document.getElementsByClassName("car-setting-row");
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].children[3].hidden = true; // hide error
+            elements[i].children[2].hidden = true; // hide checkmark    
+            elements[i].children[4].hidden = false; // show blank
+        }
+
         var config_selector = document.getElementById("settings-library-selector");
         var config = config_selector.options[config_selector.selectedIndex].text;
         document.getElementById("settings-library-description-div").innerHTML = config_selector.options[config_selector.selectedIndex].value;
@@ -1590,7 +1605,7 @@ function restoreSettingsProcessFile(text) {
 function restoreSettingsUpdate(settings) {
     showAllSettings();
     var settingCount = 0;
-    document.getElementById('restore-settings-msg-div').innerHTML = "working...";
+    document.getElementById('restore-settings-msg-div').innerHTML = "<b>working...</b>";
     for (const setting in settings) {
         setTimeout(() => { restoreSettingsSet(setting, settings) }, settingCount * 220);
         settingCount++;
