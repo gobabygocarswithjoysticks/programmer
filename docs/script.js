@@ -18,6 +18,7 @@ var joy_calib_deadzone = 3; //joystick signal noise should be below this
 var joy_calib_moved_enough = 40; // far enough from center to be an edge
 var verify = {}; // holds timers for sent but not yet acknowledged settings that will cause a resend if not canceled
 var serialMonitorString = ""; // the string that is displayed in the serial monitor box, for advanced debugging
+var library_config_text = null; // variable holding the text for the currently loaded config file from the library of files on github
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -30,7 +31,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById("options-buttons").style.backgroundColor = "white";
     document.getElementById("serial-disconnect-button").hidden = true;
 
-    updateUpload(); // get the compiled code from github
+    updateUpload(); // get the compiled code from github https://github.com/gobabygocarswithjoysticks/car-code
+
+    loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
 
     // hide sections of the website and change the background color to help guide users.
     document.getElementById("upload-program").hidden = true;
@@ -1526,13 +1529,49 @@ function restoreSettings() {
         document.getElementById('restore-settings-msg-div').innerHTML = "Connect to a car before restoring settings.";
     }
 }
+
+async function loadLibrary() {
+    try {
+        config_library_list = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-config-library/main/config-list.txt");
+        var library_json = JSON.parse(config_library_list)["configs"];
+        for (var i = 0; i < library_json.length; i++) {
+            var option = document.createElement("option");
+            option.value = library_json[i]["description"];
+            option.text = library_json[i]["filename"];
+            document.getElementById("settings-library-selector").add(option);
+        }
+    } catch (e) {
+        console.log(e);
+        document.getElementById('settings-library-div').innerHTML = "Error loading config library";
+    }
+}
+async function getLibrary() {
+    try {
+        var config_selector = document.getElementById("settings-library-selector");
+        var config = config_selector.options[config_selector.selectedIndex].text;
+        document.getElementById("settings-library-description-div").innerHTML = config_selector.options[config_selector.selectedIndex].value;
+        library_config_text = null;
+        library_config_text = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-config-library/main/configs/" + config + ".txt");
+    } catch (e) {
+        console.log(e);
+        document.getElementById('settings-library-div').innerHTML = "Error loading library config";
+    }
+}
+function restoreWebSettings() {
+    if (library_config_text == null) {
+        console.log("no text loaded for library config");
+    } else {
+        restoreSettingsProcessFile(library_config_text);
+    }
+}
+
 function restoreSettingsGotFile(fileList) {
     if (fileList.length != 1) return;
     var reader = new FileReader();
     reader.onload = () => {
         restoreSettingsProcessFile(reader.result);
     }
-    reader.readAsText(fileList[0]);
+    reader.readAsText(fileList[0]); // converts to text which then goes to the callback above
 }
 function restoreSettingsProcessFile(text) {
     try {

@@ -184,6 +184,16 @@
                     <input id="restore-settings-input" hidden="true" type="file" accept=".txt"
                         onchange='restoreSettingsGotFile(this.files);' />
                 </div>
+                <div id="settings-library-div">
+                    <a href="https://github.com/gobabygocarswithjoysticks/car-config-library">Library of settings</a>
+                    <select id="settings-library-selector" onchange="getLibrary();">
+                    </select>
+                    <button onclick='restoreWebSettings();'>
+                        pull selection from settings library
+                    </button>
+                    <br>
+                    <span id="settings-library-description-div"></span>
+                </div>
                 <br><br>
 
                 <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
@@ -876,7 +886,8 @@
                             The car can be controlled with buttons instead of a joystick.
                             <br>
                             When in button mode, some text indicating the state of each button appears. It looks like
-                            "buttons: 0001xx" where 0 means button off (open circuit), 1 means button pressed (connected to ground), and x means the button
+                            "buttons: 0001xx" where 0 means button off (open circuit), 1 means button pressed (connected
+                            to ground), and x means the button
                             is not used because of the value of "num drive buttons"
                         </td>
                     </tr>
