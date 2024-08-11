@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     updateUpload(); // get the compiled code from github https://github.com/gobabygocarswithjoysticks/car-code
 
-    loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
-
     // hide sections of the website and change the background color to help guide users.
     document.getElementById("upload-program").hidden = true;
     document.getElementById("connect-to-car").hidden = true;
@@ -868,6 +866,7 @@ function gotNewSettings(settings, slength) {
     if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || version === 11 && len == 47 + 6) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
+        loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
         clearInterval(serial_connected_indicator_warning_timeout);
         clearInterval(serial_connected_rerequest_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
