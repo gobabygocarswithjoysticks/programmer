@@ -867,6 +867,7 @@ function gotNewSettings(settings, slength) {
     var len = Object.keys(settings).length;
     if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || version === 11 && len == 47 + 6) && slength === settings["CHECKSUM"]) {
         settings_received = true;
+        document.getElementById('restore-settings-msg-div').innerHTML = "";
         clearInterval(serial_connected_indicator_warning_timeout);
         clearInterval(serial_connected_rerequest_timeout);
         document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
@@ -1555,18 +1556,23 @@ async function loadLibrary() {
 }
 async function getLibrary() {
     try {
-        var elements = document.getElementsByClassName("car-setting-row");
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].children[3].hidden = true; // hide error
-            elements[i].children[2].hidden = true; // hide checkmark    
-            elements[i].children[4].hidden = false; // show blank
+        if (settings_received) {
+            var elements = document.getElementsByClassName("car-setting-row");
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].children[3].hidden = true; // hide error
+                elements[i].children[2].hidden = true; // hide checkmark    
+                elements[i].children[4].hidden = false; // show blank
+            }
+
+            var config_selector = document.getElementById("settings-library-selector");
+            var config = config_selector.options[config_selector.selectedIndex].text;
+            document.getElementById("settings-library-description-div").innerHTML = config_selector.options[config_selector.selectedIndex].value;
+            library_config_text = null;
+            library_config_text = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-config-library/main/configs/" + config + ".txt");
+        } else {
+            document.getElementById('restore-settings-msg-div').innerHTML = "Connect to a car to restore settings.";
         }
 
-        var config_selector = document.getElementById("settings-library-selector");
-        var config = config_selector.options[config_selector.selectedIndex].text;
-        document.getElementById("settings-library-description-div").innerHTML = config_selector.options[config_selector.selectedIndex].value;
-        library_config_text = null;
-        library_config_text = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-config-library/main/configs/" + config + ".txt");
     } catch (e) {
         console.log(e);
         document.getElementById('settings-library-div').innerHTML = "Error loading library config";
