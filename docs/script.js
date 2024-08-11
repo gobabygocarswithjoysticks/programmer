@@ -1541,6 +1541,7 @@ async function loadLibrary() {
     try {
         config_library_list = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-config-library/main/config-list.txt");
         var library_json = JSON.parse(config_library_list)["configs"];
+        document.getElementById("settings-library-selector").innerHTML = null;
         for (var i = 0; i < library_json.length; i++) {
             var option = document.createElement("option");
             option.value = library_json[i]["description"];
