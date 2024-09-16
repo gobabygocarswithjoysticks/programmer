@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else if (mutationRecords[0].addedNodes[0].data === "Error!") {
             var x = document.getElementsByClassName("upload-info");
             for (var i = 0; i < x.length; i++) {
-                x[i].innerHTML = 'Error Uploading! Check the USB cable, board, and port selections, then press the upload button to the left to try again.';
+                x[i].innerHTML = 'Error Uploading! Check the USB cable, board, and port selections, then press the upload button to the left to try again. If you have an Arduino nano try selecting the other type of nano.';
             }
             document.getElementById("hcbp-upload-info").innerHTML = 'Error Uploading! Check the board and port selections, then press the <span style="border:3px solid red;">upload button</span> to the left to try again.';
             document.getElementById("hcbp-uploading").scrollIntoView({ block: "end" });
