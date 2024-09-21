@@ -930,6 +930,7 @@ function gotNewSettings(settings, slength) {
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
             } else if (Array("CAR_WIFI_PASSWORD", "CAR_WIFI_NAME").indexOf(setting) > -1) {
                 entry.innerHTML += '<td><input type="text" maxlength="9" size="9" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;);" ></input></td> ';
+                var runOnWifiSettingChange = true;
             } else {//integer
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
@@ -998,6 +999,11 @@ function gotNewSettings(settings, slength) {
             entry.appendChild(helpChild);
             list.appendChild(entry);
         }
+
+        if (runOnWifiSettingChange != null) {
+            onWifiSettingChange();
+        }
+
 
         document.getElementById("car-telem-container").style.display = "flex";
 
