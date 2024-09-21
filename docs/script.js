@@ -929,8 +929,7 @@ function gotNewSettings(settings, slength) {
             } else if (setting === "NUM_DRIVE_BUTTONS") {
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
             } else if (Array("CAR_WIFI_PASSWORD", "CAR_WIFI_NAME").indexOf(setting) > -1) {
-                entry.innerHTML += '<td><input type="text" maxlength="9" size="9" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;); onWifiSettingChange();" ></input></td> ';
-                var runOnWifiSettingChange = true;
+                entry.innerHTML += '<td><input type="text" maxlength="9" size="9" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;);" ></input></td> ';
             } else {//integer
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
@@ -998,11 +997,6 @@ function gotNewSettings(settings, slength) {
             }
             entry.appendChild(helpChild);
             list.appendChild(entry);
-        }
-
-        if (runOnWifiSettingChange != null) {
-            console.log("hi");
-            onWifiSettingChange();
         }
 
         document.getElementById("car-telem-container").style.display = "flex";
@@ -1269,6 +1263,10 @@ function gotNewResult(result) {
             document.getElementById('DBSetting---' + result["setting"] + 'turn').value = result["value"][2];
         } else {
             document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
+        }
+
+        if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD") {
+            onWifiSettingChange();
         }
     }
     if (result["result"] === "movement allowed") {
