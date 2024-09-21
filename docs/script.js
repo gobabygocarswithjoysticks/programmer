@@ -816,7 +816,7 @@ async function onSettingChangeFunction(setting) {
 async function onWifiSettingChange() {
     try {
         document.getElementById("qrcode-car-site").innerHTML = "";
-        new QRCode(document.getElementById("qrcode-car-site", { width: 16, height: 16 }), "http://10.0.0.1");
+        new QRCode(document.getElementById("qrcode-car-site", { width: 256, height: 256 }), "http://10.0.0.1");
 
         var wifiName = "gbgcar" + document.getElementById('setting---' + "CAR_WIFI_NAME").children[1].firstChild.value;
         var wifiPassword = "gobabygo" + document.getElementById('setting---' + "CAR_WIFI_PASSWORD").children[1].firstChild.value;
@@ -826,7 +826,7 @@ async function onWifiSettingChange() {
 
         document.getElementById("wifi-network-qr-span").innerHTML = "";
 
-        new QRCode(document.getElementById("wifi-network-qr-span", { width: 16, height: 16 }), "WIFI:S:" + wifiName + ";T:WPA;P:" + wifiPassword + ";;");
+        new QRCode(document.getElementById("wifi-network-qr-span", { width: 256, height: 256 }), "WIFI:S:" + wifiName + ";T:WPA;P:" + wifiPassword + ";;");
 
         document.getElementById("wifi-info-div").hidden = false;
         document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = false;
