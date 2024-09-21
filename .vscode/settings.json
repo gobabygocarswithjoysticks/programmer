@@ -10,17 +10,25 @@
         "cbhighlight",
         "cblightoff",
         "conbut",
+        "davidshimjs",
         "disbut",
+        "gbgcar",
+        "gobabygo",
         "hcbp",
         "hcbs",
         "maxlength",
+        "microcontroller",
         "pico",
         "picos",
+        "qrcode",
+        "qrcodejs",
         "rerequest",
         "RPIPICO",
+        "RPIPICOW",
         "slength",
         "swapleftandrightpins",
         "telem",
-        "unhighlights"
+        "unhighlights",
+        "wirelessly"
     ]
 }

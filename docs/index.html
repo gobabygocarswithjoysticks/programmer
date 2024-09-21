@@ -8,6 +8,8 @@
     <!-- lightly modified from https://github.com/dbuezas/arduino-web-uploader -->
     <script src="./arduino-web-uploader.js"></script>
 
+    <script src="./qrcode.min.js"></script>
+
     <script src="./script.js"></script> <!-- for the Upload Program section -->
 
 </head>
@@ -195,6 +197,29 @@
                     <br>
                     <span id="settings-library-description-div"></span>
                 </div>
+
+                <div id="wifi-info-div" hidden>
+                    <br>
+                    <br>
+                    <details open>
+                        <summary>
+                            The car you are connected to has a webpage for wirelessly controlling it. <br>
+                            First, connect to the car's wifi network named <span id="wifi-ssid-span"></span> with the
+                            password <span id="wifi-password-span"></span> or scan this QR code to easily connect to
+                            the network:
+                        </summary>
+                        <div id="wifi-network-qr-span" style="margin:1em;"></div>
+                    </details>
+                    <br>
+                    <details open>
+                        <summary>
+                            Then, open a web browser and go to <a target="_blank" rel="noopener noreferrer"
+                                href="http://10.0.0.1">http://10.0.0.1</a> or scan this QR code:
+                        </summary>
+                        <div id="qrcode-car-site" style="margin:1em;"></div>
+                    </details>
+                </div>
+
                 <br><br>
 
                 <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
@@ -272,7 +297,11 @@
                 This website uses <a target="_blank" rel="noopener noreferrer"
                     href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
                 (generously shared under the MIT license)
-                by David Buezas for uploading code to the car.
+                by David Buezas for uploading code to cars that use Arduino Nano and Arduino Uno boards.
+                <br><br>
+                This website uses <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/davidshimjs/qrcodejs">qrcodejs</a>
+                by davidshimjs.
             </footer>
         </div> <!-- // end of main div -->
 
@@ -935,6 +964,23 @@
                         <td>
                             Pin of the Arduino connected to the switch that turns on and off the steering of the car.
                             See STEERING_OFF_SWITCH above.
+                        </td>
+                    </tr>
+                    <tr id="help--CAR_WIFI_NAME">
+                        <td><b>car wifi name: </b> </td>
+                        <td>
+                            If you are using a microcontroller with wifi, it will create a wifi network named
+                            gbgcar[number]. The network name will update on the next reboot of the car. The number will
+                            be limited to values between 0 and 99. This number should be unique among cars that will be
+                            used near each other to avoid conflicts.
+                        </td>
+                    </tr>
+                    <tr id="help--CAR_WIFI_PASSWORD">
+                        <td><b>car wifi password: </b> </td>
+                        <td>
+                            Use this to make a unique password for the wifi network created by the car. The password is
+                            gobabygo[number]. The password will update on the next reboot of the car. The number will be
+                            limited to positive integers with 9 or fewer digits.
                         </td>
                     </tr>
 

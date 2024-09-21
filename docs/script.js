@@ -19,6 +19,7 @@ var joy_calib_moved_enough = 40; // far enough from center to be an edge
 var verify = {}; // holds timers for sent but not yet acknowledged settings that will cause a resend if not canceled
 var serialMonitorString = ""; // the string that is displayed in the serial monitor box, for advanced debugging
 var library_config_text = null; // variable holding the text for the currently loaded config file from the library of files on github
+var eepromAlertedEver = false; // has the user been alerted about EEPROM failure?
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -192,6 +193,7 @@ async function closeSerial() {
         serialConnectionRunning = false;
         // if reader.cancel succeeded, connectToSerial sets serialConnectionRunning to false after the loop in that function exits.
     }
+    document.getElementById("eepromFailureMessageSpace").hidden = true;
     document.getElementById("serial-disconnect-button").hidden = true;
     document.getElementById("serial-connect-button").hidden = false;
     document.getElementById("configure-car").style.backgroundColor = "lightgrey";
@@ -403,7 +405,10 @@ function gotNewSerial(data, length) {
                     + `<br>Please email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a> with any questions.`;
                 document.getElementById("eepromFailureMessageSpace").hidden = false;
                 document.getElementById("eepromFailureMessageSpace").scrollIntoView();
-                alert('Error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be recalled, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
+                if (eepromAlertedEver == false) {
+                    alert('Error detected! You are probably wondering why your car is not moving and the Arduino board is blinking SOS in morse code. The memory that holds the settings for the car has been corrupted and the settings could not be recalled, so the car is now in failsafe mode. This probably means that the Arduino has bad EEPROM memory, so the recommended action is to replace the Arduino, especially if you receive this warning more than once. Press OK and this information will be repeated on the website, and there will be a way to exit the failsafe mode.');
+                    eepromAlertedEver = true;
+                }
             }
         }
         console.log("unexpected message: ");
@@ -808,6 +813,30 @@ async function onSettingChangeFunction(setting) {
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
 }
 
+async function onWifiSettingChange() {
+    try {
+        document.getElementById("qrcode-car-site").innerHTML = "";
+        new QRCode(document.getElementById("qrcode-car-site", { width: 16, height: 16 }), "http://10.0.0.1");
+
+        var wifiName = "gbgcar" + document.getElementById('setting---' + "CAR_WIFI_NAME").children[1].firstChild.value;
+        var wifiPassword = "gobabygo" + document.getElementById('setting---' + "CAR_WIFI_PASSWORD").children[1].firstChild.value;
+
+        document.getElementById("wifi-ssid-span").innerHTML = wifiName;
+        document.getElementById("wifi-password-span").innerHTML = wifiPassword;
+
+        document.getElementById("wifi-network-qr-span").innerHTML = "";
+
+        new QRCode(document.getElementById("wifi-network-qr-span", { width: 16, height: 16 }), "WIFI:S:" + wifiName + ";T:WPA;P:" + wifiPassword + ";;");
+
+        document.getElementById("wifi-info-div").hidden = false;
+        document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = false;
+        document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = false;
+
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 // something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
 async function onSettingChangeFunctionDB(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
@@ -863,7 +892,7 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || version === 11 && len == 47 + 6) && slength === settings["CHECKSUM"]) {
+    if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11 && len == 47 + 6) || (version === 12 && len == 49 + 6)) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
@@ -899,6 +928,9 @@ function gotNewSettings(settings, slength) {
 
             } else if (setting === "NUM_DRIVE_BUTTONS") {
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
+            } else if (Array("CAR_WIFI_PASSWORD", "CAR_WIFI_NAME").indexOf(setting) > -1) {
+                entry.innerHTML += '<td><input type="text" maxlength="9" size="9" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;); onWifiSettingChange();" ></input></td> ';
+                var runOnWifiSettingChange = true;
             } else {//integer
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
@@ -966,6 +998,11 @@ function gotNewSettings(settings, slength) {
             }
             entry.appendChild(helpChild);
             list.appendChild(entry);
+        }
+
+        if (runOnWifiSettingChange != null) {
+            console.log("hi");
+            onWifiSettingChange();
         }
 
         document.getElementById("car-telem-container").style.display = "flex";
