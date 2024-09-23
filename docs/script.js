@@ -20,6 +20,9 @@ var verify = {}; // holds timers for sent but not yet acknowledged settings that
 var serialMonitorString = ""; // the string that is displayed in the serial monitor box, for advanced debugging
 var library_config_text = null; // variable holding the text for the currently loaded config file from the library of files on github
 var eepromAlertedEver = false; // has the user been alerted about EEPROM failure?
+var picoUploadListenerFunction = null;
+var esp32UploadListenerFunction = null;
+import { ESPLoader, FlashOptions, LoaderOptions, Transport } from "esptool-js.js"; // TODO: use file not url
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -29,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             x[i].innerHTML = "Web Serial is not available, so this site won't be able to communicate with your car. Please use Google Chrome, Opera, or Edge, and make sure Web Serial is enabled.";
         }
     }
+
     document.getElementById("options-buttons").style.backgroundColor = "white";
     document.getElementById("serial-disconnect-button").hidden = true;
 
@@ -281,7 +285,11 @@ async function connectToSerial() {
             document.getElementById('serial-con-msg-time-conbut').style.border = "3px solid Blue";
             document.getElementById("serial-connected-indicator").scrollIntoView({ block: "end" });
         }, 3250);
-        await port.open({ baudRate: 250000 });
+        if (document.getElementById("esp32-serial-baud").checked) {
+            await port.open({ baudRate: 115200 });
+        } else {
+            await port.open({ baudRate: 250000 });
+        }
         serial_connected_rerequest_timeout = setTimeout(rerequestSettings, 2500);
     } catch (e) { // port selection canceled
         serialConnectionRunning = false;
@@ -1326,6 +1334,7 @@ async function getCode() {
     var upload_warning_span = document.getElementById("upload-warning-span");
     var upload_button = document.getElementById("upload-button");
     upload_button.hidden = true;
+    upload_warning_span.innerHTML = "loading...";
 
     var program_selector = document.getElementById("program-selector");
     var program = program_selector.options[program_selector.selectedIndex].value;
@@ -1334,27 +1343,89 @@ async function getCode() {
     var name = options.filter((v) => { return v[1] === program && v[2] === board })[0][0];
     var code = null;
     try {
-        var fileEnding = "hex";
-        var blob = false;
-        if (board === "RPIPICO" || board === "RPIPICOW") {
-            fileEnding = "uf2";
-            blob = true; // uf2s get messed up when read as text, but work when read as a blob
+        if (board === "ESP") {
+            code = {};
+            code["boot_app"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/boot_app0.bin", true);
+            code["ino_bin"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "bin", true);
+            code["bootloader"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "bootloader.bin", true);
+            code["partitions"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "partitions.bin", true);
+            if (code["boot_app"] == null || code["ino_bin"] == null || code["bootloader"] == null || code["partitions"] == null) {
+                code = null; // there was a problem getting all 4 components of the code
+            }
+            document.getElementById("esp32-serial-baud").checked = true;
+            var fileEnding = null;
         }
-        code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding, blob);
-    } catch (e) { }
-
+        else {
+            document.getElementById("esp32-serial-baud").checked = false;
+            var fileEnding = "hex";
+            var blob = false;
+            if (board === "RPIPICO" || board === "RPIPICOW") {
+                fileEnding = "uf2";
+                blob = true; // uf2s get messed up when read as text, but work when read as a blob
+            }
+            code = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding, blob);
+        }
+    } catch (e) {
+        console.log("error downloading code " + e);
+    }
 
     if (code == null) {
         upload_warning_span.innerHTML = "<mark>The code for the car can not be found. Please check your internet connection, try again in 10 minutes, then please contact us if the problem continues.</mark>";
         upload_button.hidden = true;
     } else { // code received! 
+        if (board === "ESP") {
+            document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "When you click the checkbox below, a box will pop up, which you will use in the next step to upload the code.";
+            document.getElementById("upload-info-under-button").innerHTML = '';
+            document.getElementById("uploading-step-4").innerHTML = 'In the box that popped up, click on the car&#39;s serial port in the list (to find the car&#39;s port you can unplug and replug the USB cable and whichever option goes away and comes back is the car). Then, click the "connect" button of the box. <br><br> If there is an error with uploading, you might need to follow instructions that will appear below this paragraph to select the car&#39;s port again and try uploading again.';
+            upload_button.removeAttribute("AWU"); // now arduino-web-uploader won't run, the pico code needs to run instead
+            upload_button.setAttribute("espUpload", "true");
+            var upload_progress_span = document.getElementById("upload-progress");
+            upload_progress_span.innerHTML = "Ready";
+            if (esp32UploadListenerFunction != null) {
+                upload_button.removeEventListener("click", esp32UploadListenerFunction);
+            }
+            //TODO: MAKE SURE ESP32 UPLOADER CAN'T BE RUN TWICE AT THE SAME TIME OR ON TOP OF SERIAL CONNECTION
+            esp32UploadListenerFunction = async function () {
+                if (upload_button.hasAttribute("AWU")) { // if in normal uploader mode not pico mode
+                    return;
+                }
+                if (!upload_button.hasAttribute("espUpload")) { // if not in esp32 uploader mode
+                    return;
+                }
 
-        if (board === "RPIPICO" || board === "RPIPICOW") {
+                upload_button.hidden = false;
+                upload_warning_span.innerHTML = "";
+                console.log("time to upload ESP32 code");
+                //https://github.com/espressif/esptool-js/blob/main/examples/typescript/src/index.ts
+
+                const device = await navigator.serial.requestPort({});
+                const transport = new Transport(device, true);
+                const flashOptions = {
+                    transport,
+                    baudrate: 115200,
+                    terminal: espLoaderTerminal,
+                }
+
+                let esploader = new ESP32Loader(flashOptions);
+
+                // esploader.writeFlash();
+
+            }
+            upload_button.addEventListener("click", esp32UploadListenerFunction);
+
+        } else if (board === "RPIPICO" || board === "RPIPICOW") {
             document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "<mark>When you click the checkbox below, a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.</mark>";
             document.getElementById("upload-info-under-button").innerHTML = 'You have selected to upload to a Raspberry Pi Pico, which requires a different process than the other boards. When you click the "Upload!" button a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.';
             upload_button.removeAttribute("AWU"); // now arduino-web-uploader won't run, the pico code needs to run instead
-            upload_button.addEventListener("click", function () {
+            upload_button.removeAttribute("espUpload");
+            if (picoUploadListenerFunction != null) {
+                upload_button.removeEventListener("click", picoUploadListenerFunction);
+            }
+            picoUploadListenerFunction = function () {
                 if (upload_button.hasAttribute("AWU")) { // if in normal uploader mode not pico mode
+                    return;
+                }
+                if (upload_button.hasAttribute("espUpload")) { // if in esp32 uploader mode not pico mode
                     return;
                 }
                 document.getElementById("upload-info-under-button").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the USB cable back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the RPI-RP2 drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
@@ -1363,10 +1434,11 @@ async function getCode() {
                 downloadFile(code, program + ".ino.uf2");
                 cbdone("hcbp-uploading", "hcbp-upload-done");
                 document.getElementById("upload-button").style.outline = "0px";
-            });
-
+            }
+            upload_button.addEventListener("click", picoUploadListenerFunction);
         } else {
             document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "When you click the checkbox below, a box will pop up, which you will use in the next step to upload the code.";
+            document.getElementById("upload-info-under-button").innerHTML = '';
             document.getElementById("uploading-step-4").innerHTML = 'In the box that popped up, click on the car&#39;s serial port in the list (to find the car&#39;s port you can unplug and replug the USB cable and whichever option goes away and comes back is the car). Then, click the "connect" button of the box. <br><br> If there is an error with uploading, you might need to follow instructions that will appear below this paragraph to select the car&#39;s port again and try uploading again.';
             /* 
             I edited arduino-web-uploader so hexHref should be the actual hex code instead of a url where it can be downloaded. 
@@ -1374,6 +1446,7 @@ async function getCode() {
             The code is stored inside the html of the page.
             */
             upload_button.setAttribute("AWU", "true");
+            upload_button.removeAttribute("espUpload");
             upload_button.setAttribute("hexHref", code);
             upload_button.setAttribute("board", board);
         }
@@ -1388,7 +1461,11 @@ async function getCode() {
 
     document.getElementById("source-name-display").innerHTML = 'source: <a target="_blank" rel="noopener noreferrer" href= "' + codeURLForHumans + '">' + codeURLForHumans + '</a>';
 
-    hexURLForHumans = "https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding;
+    if (fileEnding == null) {//esp32 has multiple files so show the directory instead
+        hexURLForHumans = "https://github.com/gobabygocarswithjoysticks/car-code/tree/" + configurations_info[1] + "/hex/" + name;
+    } else {
+        hexURLForHumans = "https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + fileEnding;
+    }
 
     document.getElementById("source-hex-display").innerHTML = 'hex file: <a target="_blank" rel="noopener noreferrer" href= "' + hexURLForHumans + '">' + hexURLForHumans + '</a>';
 

@@ -10,7 +10,9 @@
 
     <script src="./qrcode.min.js"></script>
 
-    <script src="./script.js"></script> <!-- for the Upload Program section -->
+    <script type="module" src="./esptool-js.js"></script>
+
+    <script type="module" src="./script.js"></script> <!-- for the Upload Program section -->
 
 </head>
 
@@ -115,6 +117,8 @@
                 <button id="serial-disconnect-button"
                     onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
                 </button>
+                <label for="esp32-serial-baud" style='margin-left:25px'> esp32</label>
+                <input type="checkbox" id="esp32-serial-baud">
                 <div id="serial-connected-short"></div>
                 <hr>
             </div>
@@ -290,8 +294,10 @@
             <br>
             <br>
             <footer style="text-align:center">
-                The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
-                    href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
+                <strong>
+                    The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
+                        href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
+                </strong>
                 <br>
 
                 <br>
@@ -303,6 +309,10 @@
                 This website uses <a target="_blank" rel="noopener noreferrer"
                     href="https://github.com/davidshimjs/qrcodejs">qrcodejs</a>
                 by davidshimjs.
+                <br><br>
+                This website uses <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/espressif/esptool-js">esptool-js</a>
+                by Espressif Systems for uploading code to cars that use ESP32 boards.
             </footer>
         </div> <!-- // end of main div -->
 
@@ -447,6 +457,11 @@
                                 <br><br>
                                 &#x2022; The selector should be changed to say "rpi pico" if you
                                 are using a Raspberry Pi Pico, or "rpi pico W" if you are using a Raspberry Pi Pico W.
+                                <br><br>
+                                &#x2022; The selector should be changed to say "ESP32" if you
+                                are using an ESP32. The "esp32" checkbox that you will later see next to the connect
+                                button should automatically
+                                check itself.
                             </span>
                             <br>
                             <br>
