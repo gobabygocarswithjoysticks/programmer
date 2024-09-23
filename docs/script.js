@@ -22,7 +22,7 @@ var library_config_text = null; // variable holding the text for the currently l
 var eepromAlertedEver = false; // has the user been alerted about EEPROM failure?
 var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
-import { ESPLoader, FlashOptions, LoaderOptions, Transport } from "./esptool-js.js"; // TODO: use file not url
+import { ESPLoader, Transport } from "./esptool-js.js"; // TODO: use file not url
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
