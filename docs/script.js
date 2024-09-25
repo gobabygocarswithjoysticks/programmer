@@ -22,7 +22,6 @@ var library_config_text = null; // variable holding the text for the currently l
 var eepromAlertedEver = false; // has the user been alerted about EEPROM failure?
 var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
-// import { ESPLoader, Transport } from "./esptool-js.js"; // TODO: use file not url
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -1345,10 +1344,36 @@ async function getCode() {
     try {
         if (board === "ESP") {
             code = {};
+
             code["boot_app"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/boot_app0.bin", true);
             code["ino_bin"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "bin", true);
             code["bootloader"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "bootloader.bin", true);
             code["partitions"] = await getRequest("https://raw.githubusercontent.com/gobabygocarswithjoysticks/car-code/" + configurations_info[1] + "/hex/" + name + "/" + program + ".ino." + "partitions.bin", true);
+
+            const reader1 = new FileReader();
+            reader1.onload = (ev) => {
+                code["boot_app"] = ev.target.result;
+            }
+            reader1.readAsBinaryString(code["boot_app"]); // I know it's deprecated but I can't find anything else that works
+
+            const reader2 = new FileReader();
+            reader2.onload = (ev) => {
+                code["ino_bin"] = ev.target.result;
+            }
+            reader2.readAsBinaryString(code["ino_bin"]);
+
+            const reader3 = new FileReader();
+            reader3.onload = (ev) => {
+                code["bootloader"] = ev.target.result;
+            }
+            reader3.readAsBinaryString(code["bootloader"]);
+
+            const reader4 = new FileReader();
+            reader4.onload = (ev) => {
+                code["partitions"] = ev.target.result;
+            }
+            reader4.readAsBinaryString(code["partitions"]);
+
             if (code["boot_app"] == null || code["ino_bin"] == null || code["bootloader"] == null || code["partitions"] == null) {
                 code = null; // there was a problem getting all 4 components of the code
             }
@@ -1384,7 +1409,6 @@ async function getCode() {
             if (esp32UploadListenerFunction != null) {
                 upload_button.removeEventListener("click", esp32UploadListenerFunction);
             }
-            //TODO: MAKE SURE ESP32 UPLOADER CAN'T BE RUN TWICE AT THE SAME TIME OR ON TOP OF SERIAL CONNECTION
             esp32UploadListenerFunction = async function () {
                 if (upload_button.hasAttribute("AWU")) { // if in normal uploader mode not pico mode
                     return;
@@ -1392,24 +1416,91 @@ async function getCode() {
                 if (!upload_button.hasAttribute("espUpload")) { // if not in esp32 uploader mode
                     return;
                 }
+                if (upload_button.disabled) {
+                    return;
+                }
+                document.getElementById("upload-button").disabled = true;
 
                 upload_button.hidden = false;
                 upload_warning_span.innerHTML = "";
-                console.log("time to upload ESP32 code");
-                //https://github.com/espressif/esptool-js/blob/main/examples/typescript/src/index.ts
+                //using this example: https://github.com/espressif/esptool-js/blob/main/examples/typescript/src/index.ts
+                try {
 
-                const device = await navigator.serial.requestPort({});
-                const transport = new Transport(device, true);
-                const flashOptions = {
-                    transport,
-                    baudrate: 115200,
-                    terminal: espLoaderTerminal,
+                    var device = await navigator.serial.requestPort({});
+                    var transport = new Transport(device, true);
+                    let espLoaderTerminal = {
+                        clean() {
+                        },
+                        writeLine(data) {
+                            if (data === "Leaving...") {
+                                document.getElementById("upload-progress").innerHTML = "Done!"
+                            }
+                        },
+                        write(data) {
+                        },
+                    };
+
+                    // files: python -m esptool --chip esp32 --port COM30 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size 4MB 0x1000 blink.ino.bootloader.bin 0x8000 blink.ino.partitions.bin 0xe000 boot_app0.bin 0x10000 blink.ino.bin
+                    let fileArray = [];
+
+                    await fileArray.push({ data: await code["bootloader"], address: 0x1000 });
+                    await fileArray.push({ data: await code["partitions"], address: 0x8000 });
+                    await fileArray.push({ data: await code["boot_app"], address: 0xe000 });
+                    await fileArray.push({ data: await code["ino_bin"], address: 0x10000 });
+
+                    const flashOptionsMain = {
+                        transport,
+                        baudrate: 921600,
+                        enableTracing: false,
+                        debugLogging: false,
+                        terminal: espLoaderTerminal
+                    }
+
+                    let esploader = new ESPLoader(flashOptionsMain);
+
+                    alert("Hold the IO0 button on the ESP32 until the green progress bar appears. Press OK on this message when you have started to hold the button.")
+
+                    document.getElementById("upload-progress").innerHTML = "0%"
+
+                    setTimeout(() => {
+                        if (document.getElementById("upload-progress").innerHTML === "0%") {
+                            alert("It's taking too long to connect to the ESP32. This can happen if you weren't holding the IO0 button. Try refreshing the website and trying again.");
+                        }
+                    }, 5000);
+
+
+                    await esploader.main();
+
+                    const flashOptions = {
+                        fileArray: fileArray,
+                        flashSize: "keep",
+                        eraseAll: false,
+                        compress: true,
+                        baudrate: 921600,
+                        reportProgress: (fileIndex, written, total) => {
+                            espLoaderTerminal.writeLine("PROGRESS:" + fileIndex + "," + written + "," + total);
+                            document.getElementById("upload-progress").innerHTML = Math.floor(1 + (fileIndex * 10) + ((fileIndex < 3) ? 9 * (written / total) : 68 * (written / total))) + "%";
+                        }
+                        , calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image))
+                    };
+
+                    await esploader.writeFlash(flashOptions);
+
+                    await esploader.hardReset();
+
+                } catch (e) {
+                    console.log(e);
+                    document.getElementById("upload-progress").innerHTML = "Error!"
+                } finally {
+                    //
+                    try {
+                        await device.close();
+                    } catch (e) {
+                        console.log("caught error closing device (it probably never opened");
+                        console.log(e);
+                    }
+                    document.getElementById("upload-button").disabled = false;
                 }
-
-                let esploader = new ESP32Loader(flashOptions);
-
-                // esploader.writeFlash();
-
             }
             upload_button.addEventListener("click", esp32UploadListenerFunction);
 
@@ -1428,12 +1519,20 @@ async function getCode() {
                 if (upload_button.hasAttribute("espUpload")) { // if in esp32 uploader mode not pico mode
                     return;
                 }
+                if (upload_button.disabled) {
+                    return;
+                }
+                document.getElementById("upload-button").disabled = true;
+
+
                 document.getElementById("upload-info-under-button").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the USB cable back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the RPI-RP2 drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
 
                 document.getElementById("uploading-step-4").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the USB cable back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the RPI-RP2 drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
                 downloadFile(code, program + ".ino.uf2");
                 cbdone("hcbp-uploading", "hcbp-upload-done");
                 document.getElementById("upload-button").style.outline = "0px";
+
+                document.getElementById("upload-button").disabled = false;
             }
             upload_button.addEventListener("click", picoUploadListenerFunction);
         } else {

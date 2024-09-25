@@ -10,7 +10,9 @@
 
     <script src="./qrcode.min.js"></script>
 
-    <script type="module" src="./esptool-js.js"></script>
+    <script src="./cryptojs.js"></script>
+
+    <script src="./esptool-js.js"></script>
 
     <script src="./script.js"></script> <!-- for the Upload Program section -->
 
@@ -35,10 +37,6 @@
                     href="https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support">
                     here</a>
                 or email <a href="mailto: gobabygocarswithjoysticks@gmail.com">gobabygocarswithjoysticks@gmail.com</a>.
-            </p>
-            <p>
-                This website can only change the settings of cars with the new code that this site uploads, <br>it won't
-                work with the original go baby go code.
             </p>
 
             <noscript> <mark> Your browser is not running a script that is required for this website to function.
@@ -117,7 +115,7 @@
                 <button id="serial-disconnect-button"
                     onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
                 </button>
-                <label for="esp32-serial-baud" style='margin-left:25px'> esp32</label>
+                <label for="esp32-serial-baud" style='margin-left:25px; font-size: small;'> esp32</label>
                 <input type="checkbox" id="esp32-serial-baud">
                 <div id="serial-connected-short"></div>
                 <hr>
@@ -303,7 +301,6 @@
                 <br>
                 This website uses <a target="_blank" rel="noopener noreferrer"
                     href="https://github.com/dbuezas/arduino-web-uploader">arduino-web-uploader</a>
-                (generously shared under the MIT license)
                 by David Buezas for uploading code to cars that use Arduino Nano and Arduino Uno boards.
                 <br><br>
                 This website uses <a target="_blank" rel="noopener noreferrer"
@@ -455,10 +452,10 @@
                                 &#x2022; The selector should be changed to say "new nano or uno" if you bought an
                                 official Arduino Nano or Uno board.
                                 <br><br>
-                                &#x2022; The selector should be changed to say "rpi pico" if you
+                                &#x2022; (Experimental!) The selector should be changed to say "rpi pico" if you
                                 are using a Raspberry Pi Pico, or "rpi pico W" if you are using a Raspberry Pi Pico W.
                                 <br><br>
-                                &#x2022; The selector should be changed to say "ESP32" if you
+                                &#x2022; (Experimental!) The selector should be changed to say "ESP32" if you
                                 are using an ESP32. The "esp32" checkbox that you will later see next to the connect
                                 button should automatically
                                 check itself.
