@@ -11,4 +11,10 @@ For any questions about how to use this website, please post [here](https://gith
 
 ## Acknowledgements
 
-- This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) (generously shared under the MIT license) by David Buezas for uploading code to the car.
+- This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas for uploading code to the car.
+
+- This website uses [qrcodejs](https://github.com/davidshimjs/qrcodejs) by davidshimjs for generating qr codes to make wifi connection easier.
+
+- This website uses [esptool-js](https://github.com/espressif/esptool-js) by Espressif Systems for uploading code to cars that use ESP32 boards.
+
+- The remote website uses [JoyStick](https://github.com/bobboteck/JoyStick) by Roberto D'Amico.

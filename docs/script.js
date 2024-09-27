@@ -1432,6 +1432,7 @@ async function getCode() {
                         clean() {
                         },
                         writeLine(data) {
+                            console.log(data);
                             if (data === "Leaving...") {
                                 document.getElementById("upload-progress").innerHTML = "Done!"
                             }
