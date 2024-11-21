@@ -272,6 +272,7 @@ async function connectToSerial() {
 
     try {
         port = await navigator.serial.requestPort();
+        // console.log(port.getInfo());//for esp32 {usbProductId: 60000, usbVendorId: 4292}
         document.getElementById('serial-connected-indicator').innerHTML = "connecting...";
         document.getElementById('serial-connected-short').innerHTML = 'connecting...';
         serial_connected_indicator_warning_timeout = setTimeout(() => {
@@ -477,7 +478,7 @@ function gotNewData(data, slength) {
     }
 
     var buttonstatus = "";
-    if (!(data["buttons"] === 0)) { // ENABLE_BUTTON_CTRL
+    if (!(data["buttons"] === 0) && !(data["b_m_p"] === "N")) { // ENABLE_BUTTON_CTRL and buttons aren't deactivated by USE_BUTTON_MODE_PIN
         buttonstatus += "buttons: ";
         for (var i = 0; i < Math.floor(Math.log2(data["buttons"])); i++) {
             if (i >= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value)) {
@@ -758,6 +759,125 @@ function drawJoystickCanvas(canvasID, vx, vy) {
         ctx.closePath();
     }
 }
+
+function checkForPinConflicts() {
+    let pinConflictSettings = ["JOY_X_PIN", "JOY_Y_PIN", "LEFT_MOTOR_CONTROLLER_PIN", "RIGHT_MOTOR_CONTROLLER_PIN"]; // these functions can't be turned off
+
+    if (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked) {
+        pinConflictSettings.push("SPEED_KNOB_PIN");
+    } else {
+        var settingElement = document.getElementById('setting---SPEED_KNOB_PIN');
+        if (settingElement != null) {
+            settingElement.style.backgroundColor = "";
+            settingElement.children[5].innerHTML = "";
+        }
+    }
+
+    if (document.getElementById('setting---STEERING_OFF_SWITCH').children[1].firstChild.checked) {
+        pinConflictSettings.push("STEERING_OFF_SWITCH_PIN");
+    } else {
+        var settingElement = document.getElementById('setting---STEERING_OFF_SWITCH_PIN');
+        if (settingElement != null) {
+            settingElement.style.backgroundColor = "";
+            settingElement.children[5].innerHTML = "";
+        }
+    }
+
+    if (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked && document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked) {
+        pinConflictSettings.push("BUTTON_MODE_PIN");
+    } else {
+        var settingElement = document.getElementById('setting---BUTTON_MODE_PIN');
+        if (settingElement != null) {
+            settingElement.style.backgroundColor = "";
+            settingElement.children[5].innerHTML = "";
+        }
+    }
+
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        var active = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) &&
+            DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+        if (active) {
+            pinConflictSettings.push(DBRelated[i].id + "pin");
+        } else {
+            var settingElement = document.getElementById('setting---' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1) + "_BUTTON_PIN");
+            if (settingElement != null) {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
+        }
+    }
+
+    for (var i = 0; i < pinConflictSettings.length; i++) {
+        var settingElement = document.getElementById('setting---' + pinConflictSettings[i]);
+        let isDB = false;
+        if (settingElement == null) {
+            settingElement = document.getElementById('DB' + pinConflictSettings[i]);
+            isDB = true;
+        }
+        if (settingElement != null) {
+            if (isDB) {
+                let parentElement = settingElement.parentElement.parentElement;
+                parentElement.style.backgroundColor = "";
+                parentElement.children[5].innerHTML = "";
+            } else {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
+        }
+    }
+    let elementIsDB = false;
+    let foundAny = false;
+    for (var i = 0; i < pinConflictSettings.length; i++) {
+        var settingElement = document.getElementById('setting---' + pinConflictSettings[i]);
+        if (settingElement == null) {
+            settingElement = document.getElementById('DB' + pinConflictSettings[i]);
+            elementIsDB = true;
+        }
+        if (settingElement != null) {
+            var settingValue;
+            if (elementIsDB) {
+                settingValue = settingElement.value;
+            } else {
+                settingValue = settingElement.children[1].firstChild.value;
+            }
+            for (var j = 0; j < pinConflictSettings.length; j++) {
+                if (i != j) {
+                    let otherSetting = pinConflictSettings[j];
+                    let otherElementIsDB = false;
+                    let otherSettingElement = document.getElementById('setting---' + otherSetting);
+                    if (otherSettingElement == null) {
+                        otherSettingElement = document.getElementById('DB' + otherSetting);
+                        otherElementIsDB = true;
+                    }
+                    if (otherSettingElement != null) {
+                        let otherSettingValue;
+                        if (otherElementIsDB) {
+                            otherSettingValue = otherSettingElement.value;
+                        } else {
+                            otherSettingValue = otherSettingElement.children[1].firstChild.value;
+                        }
+                        if (settingValue === otherSettingValue) {
+                            foundAny = true;
+                            let elementToLabel;
+                            if (elementIsDB) {
+                                elementToLabel = settingElement.parentElement.parentElement;
+                            } else {
+                                elementToLabel = settingElement;
+                            }
+                            elementToLabel.style.backgroundColor = "yellow";
+                            let trimmedString = otherSetting.replace(/setting---/, "").replace(/pin/, "");
+                            elementToLabel.children[5].innerHTML += (" Pin conflict with " + trimmedString) + "<br>";
+                            elementToLabel.hidden = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    document.getElementById("pin-conflicts-message").hidden = !foundAny;
+}
+
 // something was entered into a box, or a setting was changed by a helper button, send data to arduino, and update checkmark indicator
 async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
@@ -818,6 +938,8 @@ async function onSettingChangeFunction(setting) {
     document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
     document.getElementById('setting---' + setting).children[4].hidden = true; //blank
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
+
+    checkForPinConflicts();
 }
 
 async function onWifiSettingChange() {
@@ -851,15 +973,17 @@ async function onSettingChangeFunctionDB(setting) {
 
     await sendStringSerial("DRIVE_BUTTONS:" +
         setting.substring(setting.lastIndexOf("_") + 1) + "_" // button number
-        + document.getElementById('DBSetting---' + setting + 'pin').value + "_"
-        + document.getElementById('DBSetting---' + setting + 'speed').value + "_"
-        + document.getElementById('DBSetting---' + setting + 'turn').value
+        + document.getElementById('DBsetting---' + setting + 'pin').value + "_"
+        + document.getElementById('DBsetting---' + setting + 'speed').value + "_"
+        + document.getElementById('DBsetting---' + setting + 'turn').value
         + ",", true);
 
 
     document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
     document.getElementById('setting---' + setting).children[4].hidden = true; //blank
     document.getElementById('setting---' + setting).children[3].hidden = false; // show error
+
+    checkForPinConflicts();
 }
 async function onSettingChangeFunctionNDB() {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
@@ -875,6 +999,8 @@ async function onSettingChangeFunctionNDB() {
     document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[2].hidden = true; // checkmark still hidden
     document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[4].hidden = true; //blank
     document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[3].hidden = false; // show error
+
+    checkForPinConflicts();
 }
 
 // handle message from the Arduino where it prints current readings and values
@@ -929,9 +1055,9 @@ function gotNewSettings(settings, slength) {
                 entry.classList.add("drive-button");
 
                 setting_helper.innerHTML =
-                    ' pin\xa0\xa0\xa0\xa0\xa0\xa0<input id="DBSetting---' + setting + 'pin" type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting][0] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
-                    + '<br>speed\xa0\xa0<input id="DBSetting---' + setting + 'speed" type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][1] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
-                    + '<br>turn\xa0\xa0\xa0\xa0\xa0<input id="DBSetting---' + setting + 'turn" type="text" style="display: inline-block" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][2] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
+                    ' pin\xa0\xa0\xa0\xa0\xa0\xa0<input id="DBsetting---' + setting + 'pin" type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting][0] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
+                    + '<br>speed\xa0\xa0<input id="DBsetting---' + setting + 'speed" type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][1] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
+                    + '<br>turn\xa0\xa0\xa0\xa0\xa0<input id="DBsetting---' + setting + 'turn" type="text" style="display: inline-block" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting][2] + ' onchange="onSettingChangeFunctionDB(&quot;' + setting + '&quot;)" ></input>'
 
             } else if (setting === "NUM_DRIVE_BUTTONS") {
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
@@ -945,6 +1071,7 @@ function gotNewSettings(settings, slength) {
             entry.innerHTML += '<td class="setting-indicator" hidden>\u2714</td>'; // checkmark
             entry.innerHTML += ' <td class="setting-indicator" hidden onclick="onSettingChangeFunction(&quot;' + setting + '&quot;)">\u21BB</td>'; // error
             entry.innerHTML += ' <td>    </td>'; // blank space to keep the table happy (always something between the input and any helper buttons)
+            entry.innerHTML += ' <td>    </td>'; // placeholder for pin conflict errors
 
             if (Array("CONTROL_RIGHT", "CONTROL_CENTER_X", "CONTROL_LEFT").indexOf(setting) > -1) { //joystick calibration helping
                 setting_helper.innerHTML = '<button onclick="helper(&quot;joyX&quot;,&quot;' + setting + '&quot;)">set to: <span class="liveVal-joyX" style="font-family: monospace">Not receiving data, is print interval slow or off?</span></button>';
@@ -982,7 +1109,7 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
                     setting,
                     Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED"),
-                    Array("slow", "medium", "fast"),
+                    Array("slow", "medium", "fast"), //TODO: change defaults to better values or maybe remove?
                     Array(
                         Array(0.33, .75, 2), //ACCELERATION_FORWARD
                         Array(0.5, 1, 2), //DECELERATION_FORWARD
@@ -1013,6 +1140,8 @@ function gotNewSettings(settings, slength) {
 
 
         document.getElementById("car-telem-container").style.display = "flex";
+
+        checkForPinConflicts();
 
         if (speedAdjustHelp) {
             showSpeedSettings();
@@ -1082,6 +1211,7 @@ function helper(type, data, data2) {
         onSettingChangeFunction(data)
     }
     if (type === "joyPin") {
+        //TODO: CHANGE FOR RPIPICO AND ESP32
         document.getElementById('setting---' + data).children[1].firstChild.value = 14 + parseInt(data2); // helper buttons for Analog inputs
         onSettingChangeFunction(data)
     }
@@ -1271,9 +1401,9 @@ function gotNewResult(result) {
         document.getElementById('setting---' + result["setting"]).children[4].hidden = true; // hide blank
         document.getElementById('setting---' + result["setting"]).children[2].hidden = false; // show checkmark
         if (/DRIVE_BUTTON_(\d+)/.test(result["setting"])) {
-            document.getElementById('DBSetting---' + result["setting"] + 'pin').value = result["value"][0];
-            document.getElementById('DBSetting---' + result["setting"] + 'speed').value = result["value"][1];
-            document.getElementById('DBSetting---' + result["setting"] + 'turn').value = result["value"][2];
+            document.getElementById('DBsetting---' + result["setting"] + 'pin').value = result["value"][0];
+            document.getElementById('DBsetting---' + result["setting"] + 'speed').value = result["value"][1];
+            document.getElementById('DBsetting---' + result["setting"] + 'turn').value = result["value"][2];
         } else {
             document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
         }
@@ -1723,9 +1853,9 @@ function exportSettings() {
 function exportValue(element) {
     if ((/setting---DRIVE_BUTTON_(\d+)/.test(element.id))) {
         return '['
-            + document.getElementById('DBSetting---' + element.id.substring(10) + 'pin').value + ","
-            + document.getElementById('DBSetting---' + element.id.substring(10) + 'speed').value + ","
-            + document.getElementById('DBSetting---' + element.id.substring(10) + 'turn').value
+            + document.getElementById('DBsetting---' + element.id.substring(10) + 'pin').value + ","
+            + document.getElementById('DBsetting---' + element.id.substring(10) + 'speed').value + ","
+            + document.getElementById('DBsetting---' + element.id.substring(10) + 'turn').value
             + ']';
     } else {
         return element.children[1].firstChild.type === "checkbox" ? '"' + element.children[1].firstChild.checked + '"' : element.children[1].firstChild.value;
@@ -1845,9 +1975,9 @@ function restoreSettingsSet(setting, settings) {
         document.getElementById("setting---" + setting).children[1].firstChild.checked = (settings[setting] === "true");
         onSettingChangeFunction(setting);
     } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
-        document.getElementById('DBSetting---' + setting + 'pin').value = settings[setting][0];
-        document.getElementById('DBSetting---' + setting + 'speed').value = settings[setting][1];
-        document.getElementById('DBSetting---' + setting + 'turn').value = settings[setting][2];
+        document.getElementById('DBsetting---' + setting + 'pin').value = settings[setting][0];
+        document.getElementById('DBsetting---' + setting + 'speed').value = settings[setting][1];
+        document.getElementById('DBsetting---' + setting + 'turn').value = settings[setting][2];
         onSettingChangeFunctionDB(setting);
     } else if (setting === "NUM_DRIVE_BUTTONS") {
         document.getElementById("setting---NUM_DRIVE_BUTTONS").children[1].firstChild.value = settings["NUM_DRIVE_BUTTONS"];

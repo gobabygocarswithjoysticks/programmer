@@ -172,6 +172,13 @@
                     </div>
                 </div>
                 <br>
+                <div id="pin-conflicts-message" style="background-color: yellow;" hidden>
+                    Warning! You have assigned more than one function to a pin.
+                    Recheck the settings highlighted in yellow.
+                    <button onclick="document.querySelectorAll('.car-setting-row').forEach(el => el.hidden = true);
+                        checkForPinConflicts();">show only the conflicts</button>
+                    <button onclick="showAllSettings(true)">show all settings</button>
+                </div>
                 <button id="save-settings-button" style="font-size: 24px;" onclick='sendStringSerial("SAVE,",false)'>
                     Save Changes
                 </button>
