@@ -1581,7 +1581,7 @@ async function getCode() {
 
                     const flashOptionsMain = {
                         transport,
-                        baudrate: 921600,
+                        baudrate: 115200,
                         enableTracing: false,
                         debugLogging: false,
                         terminal: espLoaderTerminal
@@ -1607,7 +1607,7 @@ async function getCode() {
                         flashSize: "keep",
                         eraseAll: false,
                         compress: true,
-                        baudrate: 921600,
+                        baudrate: 115200,
                         reportProgress: (fileIndex, written, total) => {
                             espLoaderTerminal.writeLine("PROGRESS:" + fileIndex + "," + written + "," + total);
                             document.getElementById("upload-progress").innerHTML = Math.floor(1 + (fileIndex * 10) + ((fileIndex < 3) ? 9 * (written / total) : 68 * (written / total))) + "%";
