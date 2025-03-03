@@ -1514,7 +1514,7 @@ async function getCode() {
             document.getElementById("esp32-serial-baud").checked = false;
             var fileEnding = "hex";
             var blob = false;
-            if (board === "RPIPICO" || board === "RPIPICOW") {
+            if (board === "RPIPICO" || board === "RPIPICOW"|| board === "RPIPICO2"|| board === "RPIPICO2W") {
                 fileEnding = "uf2";
                 blob = true; // uf2s get messed up when read as text, but work when read as a blob
             }
@@ -1635,7 +1635,7 @@ async function getCode() {
             }
             upload_button.addEventListener("click", esp32UploadListenerFunction);
 
-        } else if (board === "RPIPICO" || board === "RPIPICOW") {
+        } else if (board === "RPIPICO" || board === "RPIPICOW"|| board === "RPIPICO2"|| board === "RPIPICO2W") {
             document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "<mark>When you click the checkbox below, a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.</mark>";
             document.getElementById("upload-info-under-button").innerHTML = 'You have selected to upload to a Raspberry Pi Pico, which requires a different process than the other boards. When you click the "Upload!" button a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.';
             upload_button.removeAttribute("AWU"); // now arduino-web-uploader won't run, the pico code needs to run instead
