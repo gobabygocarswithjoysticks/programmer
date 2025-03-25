@@ -1025,7 +1025,7 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (((version === 10 && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11 && len == 47 + 6) || (version === 12 && len == 49 + 6) || (version === 13 && len == 50 + 6)) && slength === settings["CHECKSUM"]) {
+    if (((version === 10/*old*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*standard*/ && len == 47 + 6) || (version === 13/*with wifi*/ && len == 50 + 6) || (version == 14/*pcb*/ && len == 46 + 6) || (version == 15/*pcb with wifi*/ && len == 49 + 6)) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
@@ -1046,7 +1046,7 @@ function gotNewSettings(settings, slength) {
             setting_helper.setAttribute("overflow-wrap", "anywhere");
 
 
-            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI").indexOf(setting) > -1) { //boolean checkbox
+            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
@@ -1514,7 +1514,7 @@ async function getCode() {
             document.getElementById("esp32-serial-baud").checked = false;
             var fileEnding = "hex";
             var blob = false;
-            if (board === "RPIPICO" || board === "RPIPICOW"|| board === "RPIPICO2"|| board === "RPIPICO2W") {
+            if (board === "RPIPICO" || board === "RPIPICOW" || board === "RPIPICO2" || board === "RPIPICO2W") {
                 fileEnding = "uf2";
                 blob = true; // uf2s get messed up when read as text, but work when read as a blob
             }
@@ -1635,7 +1635,7 @@ async function getCode() {
             }
             upload_button.addEventListener("click", esp32UploadListenerFunction);
 
-        } else if (board === "RPIPICO" || board === "RPIPICOW"|| board === "RPIPICO2"|| board === "RPIPICO2W") {
+        } else if (board === "RPIPICO" || board === "RPIPICOW" || board === "RPIPICO2" || board === "RPIPICO2W") {
             document.getElementById("hcbp-upload-ahead-of-time-text").innerHTML = "<mark>When you click the checkbox below, a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.</mark>";
             document.getElementById("upload-info-under-button").innerHTML = 'You have selected to upload to a Raspberry Pi Pico, which requires a different process than the other boards. When you click the "Upload!" button a file will be downloaded to your computer. You will need to find this file on your computer and use it in the next step.';
             upload_button.removeAttribute("AWU"); // now arduino-web-uploader won't run, the pico code needs to run instead
