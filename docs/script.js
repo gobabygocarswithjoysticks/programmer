@@ -1416,7 +1416,7 @@ function gotNewResult(result) {
         }
 
         if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD" || result["setting"] === "USE_WIFI") {
-            if (document.getElementById('setting---USE_WIFI').children[1].firstChild.value) {
+            if (document.getElementById('setting---USE_WIFI').children[1].firstChild.value===true) {
                 onWifiSettingChange();
             }
             if (result["setting"] === "USE_WIFI" && result["value"] === "false") {
