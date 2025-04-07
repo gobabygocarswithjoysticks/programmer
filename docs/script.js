@@ -807,6 +807,22 @@ function checkForPinConflicts() {
             }
         }
     }
+    // if USE_RC, PUSH RC_SPEED_PIN AND RC_TURN_PIN
+    if(document.getElementById('setting---USE_RC').children[1].firstChild.checked) {
+        pinConflictSettings.push("RC_SPEED_PIN");
+        pinConflictSettings.push("RC_TURN_PIN");
+    } else {
+        var settingElement = document.getElementById('setting---RC_SPEED_PIN');
+        if (settingElement != null) {
+            settingElement.style.backgroundColor = "";
+            settingElement.children[5].innerHTML = "";
+        }
+        settingElement = document.getElementById('setting---RC_TURN_PIN');
+        if (settingElement != null) {
+            settingElement.style.backgroundColor = "";
+            settingElement.children[5].innerHTML = "";
+        }
+    }
 
     for (var i = 0; i < pinConflictSettings.length; i++) {
         var settingElement = document.getElementById('setting---' + pinConflictSettings[i]);
