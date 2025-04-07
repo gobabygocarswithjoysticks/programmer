@@ -1025,7 +1025,7 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (((version === 10/*old*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*standard*/ && len == 47 + 6) || (version === 13/*with wifi*/ && len == 50 + 6) || (version == 14/*pcb*/ && len == 46 + 6) || (version == 15/*pcb with wifi*/ && len == 49 + 6)|| (version == 16/*RC*/ && len == 50 + 6)) && slength === settings["CHECKSUM"]) {
+    if (((version === 10/*old*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*standard*/ && len == 47 + 6) || (version === 13/*with wifi*/ && len == 50 + 6) || (version == 14/*pcb*/ && len == 46 + 6) || (version == 15/*pcb with wifi*/ && len == 49 + 6) || (version == 16/*RC*/ && len == 50 + 6)) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
@@ -1048,6 +1048,9 @@ function gotNewSettings(settings, slength) {
 
             if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "USE_RC").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
+                if (setting === "USE_WIFI" && settings[setting] === true) {
+                    var runOnWifiSettingChange = true;
+                }
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
@@ -1063,7 +1066,6 @@ function gotNewSettings(settings, slength) {
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings["NUM_DRIVE_BUTTONS"] + ' onchange="onSettingChangeFunctionNDB()" ></input></td> ';
             } else if (Array("CAR_WIFI_PASSWORD", "CAR_WIFI_NAME").indexOf(setting) > -1) {
                 entry.innerHTML += '<td><input type="text" maxlength="9" size="9" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;);" ></input></td> ';
-                var runOnWifiSettingChange = true;
             } else {//integer
                 entry.innerHTML += '<td><input type="text" maxlength="5" size="5" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             }
