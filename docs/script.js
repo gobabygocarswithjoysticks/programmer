@@ -1410,7 +1410,7 @@ function gotNewResult(result) {
             document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
         }
 
-        if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD") {
+        if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD" || (result["setting"] === "USE_WIFI" && result["value"] === true)) {
             onWifiSettingChange();
         }
     }
