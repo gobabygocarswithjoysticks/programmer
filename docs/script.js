@@ -1051,6 +1051,11 @@ function gotNewSettings(settings, slength) {
                 if (setting === "USE_WIFI" && settings[setting] === true) {
                     var runOnWifiSettingChange = true;
                 }
+                if (setting === "USE_WIFI" && settings[setting] === false) {
+                    document.getElementById("wifi-info-div").hidden = true;
+                    document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
+                    document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
+                }
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
@@ -1410,9 +1415,15 @@ function gotNewResult(result) {
             document.getElementById('setting---' + result["setting"]).children[1].firstChild.value = result["value"]; // change input to what the Arduino says it received
         }
 
-        console.log(result);
-        if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD" || (result["setting"] === "USE_WIFI" && result["value"] === true)) {
-            onWifiSettingChange();
+        if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD" || result["setting"] === "USE_WIFI") {
+            if (document.getElementById('setting---USE_WIFI').children[1].firstChild.value) {
+                onWifiSettingChange();
+            }
+            if (result["setting"] === "USE_WIFI" && result["value"] === "false") {
+                document.getElementById("wifi-info-div").hidden = true;
+                document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
+                document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
+            }
         }
     }
     if (result["result"] === "movement allowed") {
