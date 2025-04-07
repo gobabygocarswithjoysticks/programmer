@@ -1049,7 +1049,6 @@ function gotNewSettings(settings, slength) {
             if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "USE_RC").indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
                 if (setting === "USE_WIFI" && settings[setting] === true) {
-                    document.getElementById('setting---USE_WIFI').children[1].firstChild.value = true;
                     var runOnWifiSettingChange = true;
                 }
                 if (setting === "USE_WIFI" && settings[setting] === false) {
@@ -1417,7 +1416,7 @@ function gotNewResult(result) {
         }
 
         if (result["setting"] === "CAR_WIFI_NAME" || result["setting"] === "CAR_WIFI_PASSWORD" || result["setting"] === "USE_WIFI") {
-            if (document.getElementById('setting---USE_WIFI').children[1].firstChild.value==="true") {
+            if (document.getElementById('setting---USE_WIFI').children[1].firstChild.checked) {
                 onWifiSettingChange();
             }
             if (result["setting"] === "USE_WIFI" && result["value"] === "false") {
