@@ -809,7 +809,7 @@ function checkForPinConflicts() {
                 }
             }
         }
-        // if USE_RC, PUSH RC_SPEED_PIN AND RC_TURN_PIN
+
         if (document.getElementById('setting---USE_RC') && document.getElementById('setting---USE_RC').children[1].firstChild.checked) {
             pinConflictSettings.push("RC_SPEED_PIN");
             pinConflictSettings.push("RC_TURN_PIN");
