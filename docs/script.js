@@ -763,65 +763,70 @@ function drawJoystickCanvas(canvasID, vx, vy) {
 function checkForPinConflicts() {
     let pinConflictSettings = ["JOY_X_PIN", "JOY_Y_PIN", "LEFT_MOTOR_CONTROLLER_PIN", "RIGHT_MOTOR_CONTROLLER_PIN"]; // these functions can't be turned off
 
-    if (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked) {
-        pinConflictSettings.push("SPEED_KNOB_PIN");
-    } else {
-        var settingElement = document.getElementById('setting---SPEED_KNOB_PIN');
-        if (settingElement != null) {
-            settingElement.style.backgroundColor = "";
-            settingElement.children[5].innerHTML = "";
-        }
-    }
+    try {
 
-    if (document.getElementById('setting---STEERING_OFF_SWITCH').children[1].firstChild.checked) {
-        pinConflictSettings.push("STEERING_OFF_SWITCH_PIN");
-    } else {
-        var settingElement = document.getElementById('setting---STEERING_OFF_SWITCH_PIN');
-        if (settingElement != null) {
-            settingElement.style.backgroundColor = "";
-            settingElement.children[5].innerHTML = "";
-        }
-    }
-
-    if (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked && document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked) {
-        pinConflictSettings.push("BUTTON_MODE_PIN");
-    } else {
-        var settingElement = document.getElementById('setting---BUTTON_MODE_PIN');
-        if (settingElement != null) {
-            settingElement.style.backgroundColor = "";
-            settingElement.children[5].innerHTML = "";
-        }
-    }
-
-    var DBRelated = document.getElementsByClassName("drive-button");
-    for (var i = 0; i < DBRelated.length; i++) {
-        var active = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) &&
-            DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
-        if (active) {
-            pinConflictSettings.push(DBRelated[i].id + "pin");
+        if (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked) {
+            pinConflictSettings.push("SPEED_KNOB_PIN");
         } else {
-            var settingElement = document.getElementById('setting---' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1) + "_BUTTON_PIN");
+            var settingElement = document.getElementById('setting---SPEED_KNOB_PIN');
             if (settingElement != null) {
                 settingElement.style.backgroundColor = "";
                 settingElement.children[5].innerHTML = "";
             }
         }
-    }
-    // if USE_RC, PUSH RC_SPEED_PIN AND RC_TURN_PIN
-    if(document.getElementById('setting---USE_RC').children[1].firstChild.checked) {
-        pinConflictSettings.push("RC_SPEED_PIN");
-        pinConflictSettings.push("RC_TURN_PIN");
-    } else {
-        var settingElement = document.getElementById('setting---RC_SPEED_PIN');
-        if (settingElement != null) {
-            settingElement.style.backgroundColor = "";
-            settingElement.children[5].innerHTML = "";
+
+        if (document.getElementById('setting---STEERING_OFF_SWITCH').children[1].firstChild.checked) {
+            pinConflictSettings.push("STEERING_OFF_SWITCH_PIN");
+        } else {
+            var settingElement = document.getElementById('setting---STEERING_OFF_SWITCH_PIN');
+            if (settingElement != null) {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
         }
-        settingElement = document.getElementById('setting---RC_TURN_PIN');
-        if (settingElement != null) {
-            settingElement.style.backgroundColor = "";
-            settingElement.children[5].innerHTML = "";
+
+        if (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked && document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked) {
+            pinConflictSettings.push("BUTTON_MODE_PIN");
+        } else {
+            var settingElement = document.getElementById('setting---BUTTON_MODE_PIN');
+            if (settingElement != null) {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
         }
+
+        var DBRelated = document.getElementsByClassName("drive-button");
+        for (var i = 0; i < DBRelated.length; i++) {
+            var active = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) &&
+                DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+            if (active) {
+                pinConflictSettings.push(DBRelated[i].id + "pin");
+            } else {
+                var settingElement = document.getElementById('setting---' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1) + "_BUTTON_PIN");
+                if (settingElement != null) {
+                    settingElement.style.backgroundColor = "";
+                    settingElement.children[5].innerHTML = "";
+                }
+            }
+        }
+        // if USE_RC, PUSH RC_SPEED_PIN AND RC_TURN_PIN
+        if (document.getElementById('setting---USE_RC') && document.getElementById('setting---USE_RC').children[1].firstChild.checked) {
+            pinConflictSettings.push("RC_SPEED_PIN");
+            pinConflictSettings.push("RC_TURN_PIN");
+        } else {
+            var settingElement = document.getElementById('setting---RC_SPEED_PIN');
+            if (settingElement != null) {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
+            settingElement = document.getElementById('setting---RC_TURN_PIN');
+            if (settingElement != null) {
+                settingElement.style.backgroundColor = "";
+                settingElement.children[5].innerHTML = "";
+            }
+        }
+    } catch (e) {
+        console.log("error in checkForPinConflicts: " + e);
     }
 
     for (var i = 0; i < pinConflictSettings.length; i++) {
