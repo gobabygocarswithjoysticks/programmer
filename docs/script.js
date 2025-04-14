@@ -22,6 +22,8 @@ var library_config_text = null; // variable holding the text for the currently l
 var eepromAlertedEver = false; // has the user been alerted about EEPROM failure?
 var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
+var url_tail_preset = null;
+
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -116,6 +118,20 @@ document.addEventListener('DOMContentLoaded', async function () {
         speedAdjustHelp = true;
         showSpeedSettings();
     }
+    if (url_tail === "configure") {
+        document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+        showConfigButton();
+    }
+
+    // if url_tail begins with "preset="
+    if (url_tail.startsWith("preset=")) {
+        document.getElementById("hcbs-plug").style.outline = "7px solid magenta";
+        showConfigButton();
+        showEverything = true;
+        url_tail_preset = url_tail.substring(7);
+        console.log(url_tail_preset);
+    }
+
     setTimeout(function () {
         document.getElementById("pointer-arrow").style.color = "Lime";
         setTimeout(function () {
@@ -1931,12 +1947,39 @@ async function loadLibrary() {
             option.text = library_json[i]["filename"];
             document.getElementById("settings-library-selector").add(option);
         }
-        getLibrary();
+        await getLibrary();
+        await loadLibraryPresetURL();
     } catch (e) {
         console.log(e);
         document.getElementById('settings-library-div').innerHTML = "Error loading config library";
     }
 }
+
+async function loadLibraryPresetURL() {
+    console.log(url_tail_preset);
+    if (!url_tail_preset) return; // no preset to load
+    try {
+        // if url_tail_preset matches an entry in the settings-library-selector, select it, call getLibrary, then call restoreWebSettings
+        var gotOne = false;
+        var config_selector = document.getElementById("settings-library-selector");
+        for (var i = 0; i < config_selector.options.length; i++) {
+            console.log(config_selector.options[i]);
+            if (config_selector.options[i].text === url_tail_preset) {
+                config_selector.selectedIndex = i;
+                gotOne = true;
+                console.log(i);
+                break;
+            }
+        }
+        if (gotOne) {
+            restoreWebSettings();
+        }
+    } catch (e) {
+        console.log(e);
+        document.getElementById('settings-library-div').innerHTML = "Error automatically loading library config";
+    }
+}
+
 async function getLibrary() {
     try {
         if (settings_received) {
