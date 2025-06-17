@@ -280,7 +280,7 @@
                     <button id="reboot-arduino-button"
                         onclick='sendStringSerial("REBOOT,",false); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                         arduino, revert to saved settings</button>
-                    <button onclick='showAllSettingsForReal()'>show inactive settings</button>
+                    <button onclick='showAllSettingsForReal()'>show all settings, even inactive ones</button>
                     <div id="settings-advanced-settings-info">no extra info loaded yet</div>
                     <button onclick='document.getElementById("serialMonitorBox").hidden=false'>
                         show serial monitor</button>
@@ -464,7 +464,8 @@
                                 &#x2022; The selector should be changed to say "new nano or uno" if you bought an
                                 official Arduino Nano or Uno board.
                                 <br>
-                                &#x2022; The selector should be changed to say "rpi pico", "rpi pico W", "rpi pico 2", or "rpi pico 2 W" if you
+                                &#x2022; The selector should be changed to say "rpi pico", "rpi pico W", "rpi pico 2",
+                                or "rpi pico 2 W" if you
                                 are using a Raspberry Pi Pico board.
                                 <br>
                                 &#x2022; The selector should be changed to say "ESP32" if you
@@ -895,6 +896,13 @@
                             What Arduino pin is the right motor controller connected to?
                         </td>
                     </tr>
+                    <tr id="help--SWAP_MOTORS">
+                        <td><b>swap motors: </b> </td>
+                        <td>
+                            For the GBG-PCB, check this box to swap the motors left/right. For a standard car, this
+                            setting will be hidden and the motors can be swapped by changing the motor controller pins.
+                        </td>
+                    </tr>
                     <tr id="help--ENABLE_STARTUP_PULSE">
                         <td><b>enable startup pulse: </b> </td>
                         <td>
@@ -940,9 +948,9 @@
                             The car can be controlled with buttons instead of a joystick.
                             <br>
                             When in button mode, some text indicating the state of each button appears. It looks like
-                            "buttons: 0001xx" where 0 means button off (open circuit), 1 means button pressed (connected
-                            to ground), and x means the button
-                            is not used because of the value of "num drive buttons"
+                            "buttons: 0001xx" where 0 means button off (open circuit), 1 means button pressed, and x
+                            means the button is not used because of the value of "num drive buttons." Unless
+                            "buttons active high" is checked, buttons should connect the pins to ground when pressed.
                         </td>
                     </tr>
                     <tr id="help--USE_BUTTON_MODE_PIN">
@@ -955,10 +963,24 @@
                     <tr id="help--BUTTON_MODE_PIN">
                         <td><b>button mode pin: </b> </td>
                         <td>
-                            What pin is the optional button mode switch wired to? Turn on "use button mode switch" to
+                            What pin is the optional button mode switch wired to? Turn on "use button mode pin" to
                             use.
                         </td>
                     </tr>
+                    <tr id="help--BUTTON_MODE_TOGGLE">
+                        <td><b>button mode toggle: </b> </td>
+                        <td>
+                            If checked, activating the button mode pin toggles between joystick mode and button mode.
+                            If unchecked, button mode is on while the button mode pin is activated.
+                        </td>
+                    </tr>
+                    <tr id="help--BUTTONS_ACTIVE_HIGH">
+                        <td><b>buttons active high: </b> </td>
+                        <td>
+                            If checked, the buttons (and the button mode pin) are considered pressed when the pin is
+                            pulled high. If unchecked (the default), the buttons are considered pressed when the pin is
+                            pulled low (connected to ground). The pins all have a pull-up resistor enabled.
+                        </td>
                     <tr id="help--NUM_DRIVE_BUTTONS">
                         <td><b>num drive buttons: </b> </td>
                         <td>
@@ -990,6 +1012,120 @@
                             See STEERING_OFF_SWITCH above.
                         </td>
                     </tr>
+                    <tr id="help--UR">
+                        <td><b>use rc: </b> </td>
+                        <td>
+                            If this option is checked, the car will read servo signals from a remote control receiver so
+                            that a remote control can be used to override the controls on the car.
+                        </td>
+                    </tr>
+                    <tr id="help--RSP">
+                        <td><b>rc speed pin: </b> </td>
+                        <td>
+                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
+                            the Y axis of the remote control joystick. 2000 microseconds is forward, 1000 microseconds
+                            is backward.
+                        </td>
+                    </tr>
+                    <tr id="help--RTP">
+                        <td><b>rc turn pin: </b> </td>
+                        <td>
+                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
+                            the X axis of the remote control joystick. 2000 microseconds is right, 1000 microseconds
+                            is left.
+                        </td>
+                    </tr>
+                    <tr id="help--RCP">
+                        <td><b>rc control pin: </b> </td>
+                        <td>
+                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
+                            a switch on the remote control. Over 1600 microseconds turns on the remote override. Under
+                            1400 microseconds gives control back to the car.
+                        </td>
+                    </tr>
+                    <tr id="help--RPP">
+                        <td><b>rc stop pin: </b> </td>
+                        <td>
+                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
+                            a switch on the remote control. Over 1600 microseconds stops the car. Under 1400
+                            microseconds gives control back to the car.
+                        </td>
+                    </tr>
+                    <tr id="help--NRS">
+                        <td><b>rc inactive until connected:</b></td>
+                        <td>
+                            If this option is checked, the car will be able to move without being connected to the
+                            remote control, from when the car is turned on, until the remote control is turned on. Once
+                            the remote connects, the car will stop if the remote control signal disconnects. If this
+                            option is unchecked, the car will not be able to move when it is first turned on until the
+                            remote control is turned on. If this option is checked, the car can be used without a remote
+                            control, if this option is unchecked the car can only be used with a remote control
+                            connected.
+                        </td>
+                    </tr>
+                    <tr id="help--USS">
+                        <td><b>use stop switch: </b> </td>
+                        <td>
+                            If this option is checked, the car will read a switch that can be used to stop the car.
+                        </td>
+                    </tr>
+                    <tr id="help--SP">
+                        <td><b>stop pin: </b> </td>
+                        <td>
+                            Wire this pin to a switch that can be used to stop the car. Turn on "use stop switch." The
+                            pin has a pull up resistor enabled.
+                        </td>
+                    </tr>
+                    <tr id="help--SPH">
+                        <td><b>stop pin high: </b> </td>
+                        <td>
+                            If this option is checked, the car will stop when the stop pin is pulled high. If this
+                            option is unchecked, the car will stop when the stop pin is pulled low.
+                        </td>
+                    </tr>
+                    <tr id="help--NSU">
+                        <td><b>no stop until start: </b> </td>
+                        <td>
+                            If this option is unchecked, the car will only go if the stop switch is in the go position.
+                            If this option is checked, the car will be able to move even if the stop switch is in the
+                            stop position, until the switch is moved to the go position then back to the stop position.
+                            Set it unchecked if you have a switch wired to the car. Set it checked if the pin is
+                            connected to a receiver for a remote stop switch and you want the car to be able to drive
+                            without the remote connected.
+                        </td>
+                    </tr>
+                    <tr id="help--UOB">
+                        <td><b>use on off buttons: </b> </td>
+                        <td>
+                            If this option is checked, the car will read two buttons that can be used to turn the car
+                            on and off.
+                        </td>
+                    </tr>
+                    <tr id="help--NB">
+                        <td><b>on button pin: </b> </td>
+                        <td>
+                            Wire this pin to a button that can be used to turn the car on. Turn on "use on off buttons."
+                            The pin has a pull up resistor enabled.
+                        </td>
+                    </tr>
+                    <tr id="help--FB">
+                        <td><b>off button pin: </b> </td>
+                        <td>
+                            Wire this pin to a button that can be used to turn the car off. Turn on "use on off
+                            buttons."
+                            The pin has a pull up resistor enabled.
+                        </td>
+                    </tr>
+                    <tr id="help--BAH">
+                        <td><b>on off buttons active high: </b> </td>
+                        <td>
+                            If this option is checked, the car will consider the on button pressed when the pin is
+                            pulled high. If this option is unchecked, the car will consider the on button pressed when
+                            the pin is pulled low. Note that both pins have pull up resistors enabled. Turn on "use on
+                            off buttons."
+                        </td>
+                    </tr>
+
                     <tr id="help--CAR_WIFI_NAME">
                         <td><b>car wifi name: </b> </td>
                         <td>

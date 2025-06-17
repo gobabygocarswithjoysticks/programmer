@@ -24,6 +24,30 @@ var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
 var url_tail_preset = null;
 
+const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH");
+
+const shortToLongMap = {
+    BMT: "BUTTON_MODE_TOGGLE",
+    BSAH: "BUTTONS_ACTIVE_HIGH",
+
+    USS: "USE_STOP_SWITCH",
+    SP: "STOP_PIN",
+    SPH: "STOP_PIN_HIGH",
+    NSU: "NO_STOP_UNTIL_START",
+
+    UOB: "USE_ON_OFF_BUTTONS",
+    NB: "ON_BUTTON",
+    FB: "OFF_BUTTON",
+    BAH: "ON_OFF_BUTTONS_ACTIVE_HIGH",
+
+    UR: "USE_RC",
+    RSP: "RC_SPEED_PIN",
+    RTP: "RC_TURN_PIN",
+    RPP: "RC_STOP_PIN",
+    RCP: "RC_CTRL_PIN",
+    NRS: "RC_INACTIVE_UNTIL_CONNECTED"
+};
+
 document.addEventListener('DOMContentLoaded', async function () {
     // runs on startup
     // check if web serial is enabled
@@ -523,6 +547,8 @@ function gotNewData(data, slength) {
             elements[i].innerHTML = "Button";
         else if (data["b_m_p"] === "N")
             elements[i].innerHTML = "Joystick";
+        else if (data["b_m_p"] === "R")
+            elements[i].innerHTML = "Remote";
     }
     var elements = document.getElementsByClassName("liveVal-button-mode-switch-state");
     for (var i = 0; i < elements.length; i++) {
@@ -776,44 +802,41 @@ function drawJoystickCanvas(canvasID, vx, vy) {
     }
 }
 
+function clearPinConflict(str) {
+    var settingElement = document.getElementById('setting---' + str);
+    if (settingElement != null) {
+        settingElement.style.backgroundColor = "";
+        settingElement.children[5].innerHTML = "";
+    }
+}
+
 function checkForPinConflicts() {
     let pinConflictSettings = ["JOY_X_PIN", "JOY_Y_PIN", "LEFT_MOTOR_CONTROLLER_PIN", "RIGHT_MOTOR_CONTROLLER_PIN"]; // these functions can't be turned off
 
     try {
 
-        if (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked) {
+        if (document.getElementById('setting---USE_SPEED_KNOB') && document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked) {
             pinConflictSettings.push("SPEED_KNOB_PIN");
         } else {
-            var settingElement = document.getElementById('setting---SPEED_KNOB_PIN');
-            if (settingElement != null) {
-                settingElement.style.backgroundColor = "";
-                settingElement.children[5].innerHTML = "";
-            }
+            clearPinConflict("SPEED_KNOB_PIN");
         }
 
-        if (document.getElementById('setting---STEERING_OFF_SWITCH').children[1].firstChild.checked) {
+        if (document.getElementById('setting---STEERING_OFF_SWITCH') && document.getElementById('setting---STEERING_OFF_SWITCH').children[1].firstChild.checked) {
             pinConflictSettings.push("STEERING_OFF_SWITCH_PIN");
         } else {
-            var settingElement = document.getElementById('setting---STEERING_OFF_SWITCH_PIN');
-            if (settingElement != null) {
-                settingElement.style.backgroundColor = "";
-                settingElement.children[5].innerHTML = "";
-            }
+            clearPinConflict("STEERING_OFF_SWITCH_PIN");
         }
 
-        if (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked && document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked) {
+        if (document.getElementById('setting---ENABLE_BUTTON_CTRL') && document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked && document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked) {
             pinConflictSettings.push("BUTTON_MODE_PIN");
+
         } else {
-            var settingElement = document.getElementById('setting---BUTTON_MODE_PIN');
-            if (settingElement != null) {
-                settingElement.style.backgroundColor = "";
-                settingElement.children[5].innerHTML = "";
-            }
+            clearPinConflict("BUTTON_MODE_PIN");
         }
 
         var DBRelated = document.getElementsByClassName("drive-button");
         for (var i = 0; i < DBRelated.length; i++) {
-            var active = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) &&
+            var active = (document.getElementById('setting---ENABLE_BUTTON_CTRL') && document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) &&
                 DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
             if (active) {
                 pinConflictSettings.push(DBRelated[i].id + "pin");
@@ -826,21 +849,32 @@ function checkForPinConflicts() {
             }
         }
 
-        if (document.getElementById('setting---USE_RC') && document.getElementById('setting---USE_RC').children[1].firstChild.checked) {
-            pinConflictSettings.push("RC_SPEED_PIN");
-            pinConflictSettings.push("RC_TURN_PIN");
+        if (document.getElementById('setting---UR') && document.getElementById('setting---UR').children[1].firstChild.checked) {
+            pinConflictSettings.push("RSP");
+            pinConflictSettings.push("RTP");
+            pinConflictSettings.push("RCP");
+            pinConflictSettings.push("RPP");
         } else {
-            var settingElement = document.getElementById('setting---RC_SPEED_PIN');
-            if (settingElement != null) {
-                settingElement.style.backgroundColor = "";
-                settingElement.children[5].innerHTML = "";
-            }
-            settingElement = document.getElementById('setting---RC_TURN_PIN');
-            if (settingElement != null) {
-                settingElement.style.backgroundColor = "";
-                settingElement.children[5].innerHTML = "";
-            }
+            clearPinConflict("RSP");
+            clearPinConflict("RTP");
+            clearPinConflict("RCP");
+            clearPinConflict("RPP");
         }
+
+        if (document.getElementById('setting---USS') && document.getElementById('setting---USS').children[1].firstChild.checked) {
+            pinConflictSettings.push("SP");
+        } else {
+            clearPinConflict("SP");
+        }
+
+        if (document.getElementById('setting---UOB') && document.getElementById('setting---UOB').children[1].firstChild.checked) {
+            pinConflictSettings.push("NB");
+            pinConflictSettings.push("FB");
+        } else {
+            clearPinConflict("NB");
+            clearPinConflict("FB");
+        }
+
     } catch (e) {
         console.log("error in checkForPinConflicts: " + e);
     }
@@ -863,9 +897,9 @@ function checkForPinConflicts() {
             }
         }
     }
-    let elementIsDB = false;
     let foundAny = false;
     for (var i = 0; i < pinConflictSettings.length; i++) {
+        let elementIsDB = false;
         var settingElement = document.getElementById('setting---' + pinConflictSettings[i]);
         if (settingElement == null) {
             settingElement = document.getElementById('DB' + pinConflictSettings[i]);
@@ -903,8 +937,10 @@ function checkForPinConflicts() {
                                 elementToLabel = settingElement;
                             }
                             elementToLabel.style.backgroundColor = "yellow";
-                            let trimmedString = otherSetting.replace(/setting---/, "").replace(/pin/, "");
-                            elementToLabel.children[5].innerHTML += (" Pin conflict with " + trimmedString) + "<br>";
+                            let trimmedString = otherSetting.replace(/setting---/, "");
+                            trimmedString = (shortToLongMap[trimmedString] || trimmedString); // convert short names to long names
+                            trimmedString = trimmedString.replaceAll('_', ' ').toLowerCase();
+                            elementToLabel.children[5].innerHTML += (' Pin conflict with "' + trimmedString) + '"<br>';
                             elementToLabel.hidden = false;
                         }
                     }
@@ -920,57 +956,12 @@ async function onSettingChangeFunction(setting) {
     document.getElementById("save-settings-button-label").innerHTML = "<mark>You have unsaved changes.</mark>";
     document.getElementById("save-settings-button-label-2").innerHTML = "<mark>You have unsaved changes.</mark>  Press the Save Changes button, or your changes will be lost when the car is turned off.";
     if (document.getElementById('setting---' + setting).children[1].firstChild.type === "checkbox") {
-        if (setting === "USE_SPEED_KNOB") {
-            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
-                document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = false;
-                document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = false;
-                document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = false;
-                document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = false;
-            } else {
-                document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = true;
-                document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = true;
-                document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = true;
-                document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
-            }
-        }
-
-        if (setting === "ENABLE_BUTTON_CTRL") {
-            var DBRelated = document.getElementsByClassName("drive-button");
-            for (var i = 0; i < DBRelated.length; i++) {
-                DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
-                    DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
-            }
-            document.getElementById("setting---USE_BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-            document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-            document.getElementById("setting---NUM_DRIVE_BUTTONS").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-        }
-        if (setting === "USE_BUTTON_MODE_PIN") {
-            document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked);
-        }
-        if (setting === "ENABLE_STARTUP_PULSE") {
-            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
-                document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = false;
-                document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = false;
-                document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = false;
-            } else {
-                document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = true;
-                document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = true;
-                document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
-            }
-        }
-
-        if (setting === "STEERING_OFF_SWITCH") {
-            if (document.getElementById('setting---' + setting).children[1].firstChild.checked) {
-                document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = false;
-            } else {
-                document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = true;
-            }
-        }
-
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.checked ? "1" : "0") + ",", true);
     } else {
         await sendStringSerial(setting + ":" + (document.getElementById('setting---' + setting).children[1].firstChild.value) + ",", true);
     }
+
+    showAndHideSettingsDependingOnWhetherTheyAreAvailable();
 
     document.getElementById('setting---' + setting).children[2].hidden = true; // checkmark still hidden
     document.getElementById('setting---' + setting).children[4].hidden = true; //blank
@@ -1062,13 +1053,13 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (((version === 10/*old*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*standard*/ && len == 47 + 6) || (version === 13/*with wifi*/ && len == 50 + 6) || (version == 14/*pcb*/ && len == 46 + 6) || (version == 15/*pcb with wifi*/ && len == 49 + 6) || (version == 16/*RC*/ && len == 50 + 6)) && slength === settings["CHECKSUM"]) {
+    if (((version === 10/*older*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*old standard*/ && len == 47 + 6) || (version == 14/*pcb*/ && len == 62 + 6) || (version == 15/*pcb with wifi*/ && len == 65 + 6) || (version == 18/*standard*/ && len == 63 + 6) || (version === 19/*standard with wifi*/ && len == 66 + 6)) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
         clearInterval(serial_connected_indicator_warning_timeout);
         clearInterval(serial_connected_rerequest_timeout);
-        document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version;
+        document.getElementById("settings-advanced-settings-info").innerHTML = "car reports version = " + version + ", length = " + len;
         var list = document.getElementById("car-settings");
         for (const setting in settings) {
             if (setting === "current settings, version:" || setting == "CHECKSUM") continue; // not a setting, skip it so it doesn't get a row in the settings table
@@ -1076,22 +1067,21 @@ function gotNewSettings(settings, slength) {
             entry.setAttribute("id", "setting---" + setting);
             entry.setAttribute("hidden", "true");
             entry.setAttribute("class", "car-setting-row");
-            entry.innerHTML += '<td><span style="display: inline-block; max-width: 25vw;">' + setting.replaceAll('_', ' ').toLowerCase() + "</span></td>";
+
+            var settingReadableName = (shortToLongMap[setting] || setting); // convert short names to long names
+            settingReadableName = settingReadableName.replaceAll('_', ' ').toLowerCase();
+
+            entry.innerHTML += '<td><span style="display: inline-block; max-width: 25vw;">' + settingReadableName + "</span></td>";
 
             var setting_helper = document.createElement("td");
             setting_helper.style.display = "inline-block";
             setting_helper.setAttribute("overflow-wrap", "anywhere");
 
 
-            if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "USE_RC").indexOf(setting) > -1) { //boolean checkbox
+            if (booleanSettingsArray.indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
                 if (setting === "USE_WIFI" && settings[setting] === true) {
                     var runOnWifiSettingChange = true;
-                }
-                if (setting === "USE_WIFI" && settings[setting] === false) {
-                    document.getElementById("wifi-info-div").hidden = true;
-                    document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
-                    document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
                 }
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
@@ -1161,9 +1151,9 @@ function gotNewSettings(settings, slength) {
                         Array(0.75, 1.5, 3), //DECELERATION_BACKWARD
                         Array(0.5, 1, 2), //ACCELERATION_TURNING
                         Array(0.75, 1.5, 3), //DECELERATION_TURNING
-                        Array(0.25, 0.6, 1), //FASTEST_FORWARD
-                        Array(0.2, 0.5, 0.8), //FASTEST_BACKWARD
-                        Array(0.2, 0.5, 0.8)) //TURN_SPEED
+                        Array(0.25, 0.4, 1), //FASTEST_FORWARD
+                        Array(0.2, 0.4, 0.8), //FASTEST_BACKWARD
+                        Array(0.2, 0.4, 0.8)) //TURN_SPEED
                 );
             }
 
@@ -1179,6 +1169,17 @@ function gotNewSettings(settings, slength) {
         }
 
         if (runOnWifiSettingChange != null) {
+
+            try {
+                if (setting === "USE_WIFI" && settings[setting] === false) {
+                    document.getElementById("wifi-info-div").hidden = true;
+                    document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
+                    document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
+                }
+            } catch (e) {
+                console.log(e);
+            }
+
             onWifiSettingChange();
         }
 
@@ -1196,7 +1197,7 @@ function gotNewSettings(settings, slength) {
 
     } else { // not a valid version and amount of data
         var list = document.getElementById("car-settings");
-        list.innerHTML = "<mark> ERROR: The car sent invalid setting data. If disconnecting and reconnecting a couple times does not work then try reuploading the program to get the latest version. </mark>";
+        list.innerHTML = "<mark> ERROR: The car sent invalid setting data. If disconnecting and reconnecting a couple times does not work then try reuploading the program to get the latest version. (version: " + version + " length: " + len + ")</mark>";
         document.getElementById("settings-advanced-settings-info").innerHTML = JSON.stringify(settings);
 
         console.log("ERROR: The car sent invalid setting data. Maybe try reuploading code? (version: " + version + ", length: " + len + ", checksum-actual: " + slength + ", checksum-reported: " + settings["CHECKSUM"] + ")");
@@ -1235,7 +1236,7 @@ function infoButtonHelper(setting) {
         document.getElementById("help--" + setting).style.backgroundColor = "yellow";
         document.getElementById("help--" + setting).scrollIntoView();
     } catch (e) {
-        console.log(e);
+        console.log(e + "\n" + setting);
     }
 
 }
@@ -1255,7 +1256,7 @@ function helper(type, data, data2) {
         onSettingChangeFunction(data)
     }
     if (type === "joyPin") {
-        //TODO: CHANGE FOR RPIPICO AND ESP32
+        //TODO: CHANGE analog pin helper buttons FOR RPIPICO AND ESP32
         document.getElementById('setting---' + data).children[1].firstChild.value = 14 + parseInt(data2); // helper buttons for Analog inputs
         onSettingChangeFunction(data)
     }
@@ -1384,53 +1385,66 @@ function showAllSettings(scroll) {
     for (var i = 0; i < elements.length; i++) {
         elements[i].hidden = false;
     }
-    try { // hide disabled settings
-        if (document.getElementById('setting---' + "USE_SPEED_KNOB").children[1].firstChild.checked) {
-            document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = false;
-            document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = false;
-            document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = false;
-            document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = false;
-        } else {
-            document.getElementById('setting---' + "SPEED_KNOB_SLOW_VAL").hidden = true;
-            document.getElementById('setting---' + "SPEED_KNOB_FAST_VAL").hidden = true;
-            document.getElementById('setting---' + "SPEED_KNOB_PIN").hidden = true;
-            document.getElementById('setting---' + "SCALE_ACCEL_WITH_SPEED").hidden = true;
-        }
-
-        var DBRelated = document.getElementsByClassName("drive-button");
-        for (var i = 0; i < DBRelated.length; i++) {
-            DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
-                DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
-        }
-        document.getElementById("setting---BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-        document.getElementById("setting---USE_BUTTON_MODE_PIN").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-        document.getElementById("setting---NUM_DRIVE_BUTTONS").hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked);
-
-
-        if (document.getElementById('setting---' + "ENABLE_STARTUP_PULSE").children[1].firstChild.checked) {
-            document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = false;
-            document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = false;
-            document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = false;
-        } else {
-            document.getElementById('setting---' + "LEFT_MOTOR_PULSE").hidden = true;
-            document.getElementById('setting---' + "RIGHT_MOTOR_PULSE").hidden = true;
-            document.getElementById('setting---' + "START_MOTOR_PULSE_TIME").hidden = true;
-        }
-
-
-        if (document.getElementById('setting---' + "STEERING_OFF_SWITCH").children[1].firstChild.checked) {
-            document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = false;
-        } else {
-            document.getElementById('setting---' + "STEERING_OFF_SWITCH_PIN").hidden = true;
-        }
-
-    } catch (e) {
-        // sometimes the checkbox hasn't loaded when this function is called, but showAllSettings is called again when settings are received.
-    }
+    showAndHideSettingsDependingOnWhetherTheyAreAvailable();
 
     if (scroll) {
         document.getElementById("save-settings-button").scrollIntoView();
     }
+}
+
+function setElementHide(elementId, hide) {
+    let el = document.getElementById('setting---' + elementId);
+    if (el) {
+        el.hidden = hide;
+    }
+}
+
+function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
+    var hide = !document.getElementById('setting---USE_SPEED_KNOB') || (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked ? false : true);
+    setElementHide("SPEED_KNOB_SLOW_VAL", hide);
+    setElementHide("SPEED_KNOB_FAST_VAL", hide);
+    setElementHide("SPEED_KNOB_PIN", hide);
+    setElementHide("SCALE_ACCEL_WITH_SPEED", hide);
+
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+            DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+    }
+
+    var hide = !document.getElementById('setting---ENABLE_BUTTON_CTRL') || (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked ? false : true);
+    setElementHide("USE_BUTTON_MODE_PIN", hide);
+    setElementHide("NUM_DRIVE_BUTTONS", hide);
+    setElementHide("BSAH", hide);
+    hide = hide || (!document.getElementById('setting---USE_BUTTON_MODE_PIN') || (document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked ? false : true));
+    setElementHide("BUTTON_MODE_PIN", hide);
+    setElementHide("BMT", hide);
+
+    var hide = !document.getElementById('setting---ENABLE_STARTUP_PULSE') || (document.getElementById('setting---ENABLE_STARTUP_PULSE').children[1].firstChild.checked ? false : true);
+    setElementHide("LEFT_MOTOR_PULSE_PIN", hide);
+    setElementHide("RIGHT_MOTOR_PULSE_PIN", hide);
+    setElementHide("START_MOTOR_PULSE_TIME", hide);
+
+    var hide = !document.getElementById('setting---STEERING_OFF_SWITCH') || (document.getElementById('setting---' + "STEERING_OFF_SWITCH").children[1].firstChild.checked ? false : true);
+    setElementHide("STEERING_OFF_SWITCH_PIN", hide);
+
+    var hide = !document.getElementById('setting---UR') || (document.getElementById('setting---UR').children[1].firstChild.checked ? false : true);
+    setElementHide("RSP", hide);
+    setElementHide("RTP", hide);
+    setElementHide("RCP", hide);
+    setElementHide("RPP", hide);
+    setElementHide("NRS", hide);
+
+    var hide = !document.getElementById('setting---USS') || (document.getElementById('setting---USS').children[1].firstChild.checked ? false : true);
+    setElementHide("SP", hide);
+    setElementHide("SPH", hide);
+    setElementHide("NSU", hide);
+
+    var hide = !document.getElementById('setting---UOB') || (document.getElementById('setting---UOB').children[1].firstChild.checked ? false : true);
+    setElementHide("NB", hide);
+    setElementHide("FB", hide);
+    setElementHide("BAH", hide);
+
 }
 
 // the car replied with a "result" as a response to being told to change a setting
@@ -1640,7 +1654,7 @@ async function getCode() {
 
                     let esploader = new ESPLoader(flashOptionsMain);
 
-                    alert("Hold the IO0 button on the ESP32 until the green progress bar appears. Press OK on this message when you have started to hold the button.")
+                    alert("Hold the IO0/BOOT button on the ESP32 until the green progress bar appears. Press OK on this message when you have started to hold the button.")
 
                     document.getElementById("upload-progress").innerHTML = "0%"
 
@@ -1956,7 +1970,6 @@ async function loadLibrary() {
 }
 
 async function loadLibraryPresetURL() {
-    console.log(url_tail_preset);
     if (!url_tail_preset) return; // no preset to load
     try {
         // if url_tail_preset matches an entry in the settings-library-selector, select it, call getLibrary, then call restoreWebSettings
@@ -2048,21 +2061,25 @@ function restoreSettingsUpdate(settings) {
         }, settingCount * 220);
 }
 function restoreSettingsSet(setting, settings) {
-    if (setting === "gbg settings backup, version") return; // not a setting, skip it
-    if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "USE_RC").indexOf(setting) > -1) { //boolean checkbox
-        document.getElementById("setting---" + setting).children[1].firstChild.checked = (settings[setting] === "true");
-        onSettingChangeFunction(setting);
-    } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
-        document.getElementById('DBsetting---' + setting + 'pin').value = settings[setting][0];
-        document.getElementById('DBsetting---' + setting + 'speed').value = settings[setting][1];
-        document.getElementById('DBsetting---' + setting + 'turn').value = settings[setting][2];
-        onSettingChangeFunctionDB(setting);
-    } else if (setting === "NUM_DRIVE_BUTTONS") {
-        document.getElementById("setting---NUM_DRIVE_BUTTONS").children[1].firstChild.value = settings["NUM_DRIVE_BUTTONS"];
-        onSettingChangeFunctionNDB();
-    } else { // normal float or integer
-        document.getElementById("setting---" + setting).children[1].firstChild.value = settings[setting];
-        onSettingChangeFunction(setting);
+    try {
+        if (setting === "gbg settings backup, version") return; // not a setting, skip it
+        if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "NRS", "USS", "SPH", "NSU", "UOB", "BAH").indexOf(setting) > -1) { //boolean checkbox
+            document.getElementById("setting---" + setting).children[1].firstChild.checked = (settings[setting] === "true");
+            onSettingChangeFunction(setting);
+        } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
+            document.getElementById('DBsetting---' + setting + 'pin').value = settings[setting][0];
+            document.getElementById('DBsetting---' + setting + 'speed').value = settings[setting][1];
+            document.getElementById('DBsetting---' + setting + 'turn').value = settings[setting][2];
+            onSettingChangeFunctionDB(setting);
+        } else if (setting === "NUM_DRIVE_BUTTONS") {
+            document.getElementById("setting---NUM_DRIVE_BUTTONS").children[1].firstChild.value = settings["NUM_DRIVE_BUTTONS"];
+            onSettingChangeFunctionNDB();
+        } else { // normal float or integer
+            document.getElementById("setting---" + setting).children[1].firstChild.value = settings[setting];
+            onSettingChangeFunction(setting);
+        }
+    } catch (e) {
+        console.log("error restoring setting " + setting + ": " + e);
     }
 }
 function showSwapPinsInSettingsHeader() {
