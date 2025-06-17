@@ -1445,6 +1445,10 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("FB", hide);
     setElementHide("BAH", hide);
 
+    //setting---USE_WIFI turns off CAR_WIFI_NAME and CAR_WIFI_PASSWORD
+    var hide = !document.getElementById('setting---USE_WIFI') || (document.getElementById('setting---USE_WIFI').children[1].firstChild.checked ? false : true);
+    setElementHide("CAR_WIFI_NAME", hide);
+    setElementHide("CAR_WIFI_PASSWORD", hide);
 }
 
 // the car replied with a "result" as a response to being told to change a setting
