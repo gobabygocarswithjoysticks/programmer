@@ -1401,7 +1401,7 @@ function setElementHide(elementId, hide) {
 }
 
 function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
-    var hide = !document.getElementById('setting---USE_SPEED_KNOB') || (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---USE_SPEED_KNOB') || document.getElementById('setting---USE_SPEED_KNOB').hidden || (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked ? false : true);
     setElementHide("SPEED_KNOB_SLOW_VAL", hide);
     setElementHide("SPEED_KNOB_FAST_VAL", hide);
     setElementHide("SPEED_KNOB_PIN", hide);
@@ -1410,10 +1410,11 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     var DBRelated = document.getElementsByClassName("drive-button");
     for (var i = 0; i < DBRelated.length; i++) {
         DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+            document.getElementById('setting---ENABLE_BUTTON_CTRL').hidden ||
             DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
     }
 
-    var hide = !document.getElementById('setting---ENABLE_BUTTON_CTRL') || (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---ENABLE_BUTTON_CTRL') || document.getElementById('setting---ENABLE_BUTTON_CTRL').hidden || (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked ? false : true);
     setElementHide("USE_BUTTON_MODE_PIN", hide);
     setElementHide("NUM_DRIVE_BUTTONS", hide);
     setElementHide("BSAH", hide);
@@ -1421,33 +1422,33 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("BUTTON_MODE_PIN", hide);
     setElementHide("BMT", hide);
 
-    var hide = !document.getElementById('setting---ENABLE_STARTUP_PULSE') || (document.getElementById('setting---ENABLE_STARTUP_PULSE').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---ENABLE_STARTUP_PULSE') || document.getElementById('setting---ENABLE_STARTUP_PULSE').hidden || (document.getElementById('setting---ENABLE_STARTUP_PULSE').children[1].firstChild.checked ? false : true);
     setElementHide("LEFT_MOTOR_PULSE_PIN", hide);
     setElementHide("RIGHT_MOTOR_PULSE_PIN", hide);
     setElementHide("START_MOTOR_PULSE_TIME", hide);
 
-    var hide = !document.getElementById('setting---STEERING_OFF_SWITCH') || (document.getElementById('setting---' + "STEERING_OFF_SWITCH").children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---STEERING_OFF_SWITCH') || document.getElementById('setting---STEERING_OFF_SWITCH').hidden || (document.getElementById('setting---' + "STEERING_OFF_SWITCH").children[1].firstChild.checked ? false : true);
     setElementHide("STEERING_OFF_SWITCH_PIN", hide);
 
-    var hide = !document.getElementById('setting---UR') || (document.getElementById('setting---UR').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---UR') || document.getElementById('setting---UR').hidden || (document.getElementById('setting---UR').children[1].firstChild.checked ? false : true);
     setElementHide("RSP", hide);
     setElementHide("RTP", hide);
     setElementHide("RCP", hide);
     setElementHide("RPP", hide);
     setElementHide("NRS", hide);
 
-    var hide = !document.getElementById('setting---USS') || (document.getElementById('setting---USS').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---USS') || document.getElementById('setting---USS').hidden || (document.getElementById('setting---USS').children[1].firstChild.checked ? false : true);
     setElementHide("SP", hide);
     setElementHide("SPH", hide);
     setElementHide("NSU", hide);
 
-    var hide = !document.getElementById('setting---UOB') || (document.getElementById('setting---UOB').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---UOB') || document.getElementById('setting---UOB').hidden || (document.getElementById('setting---UOB').children[1].firstChild.checked ? false : true);
     setElementHide("NB", hide);
     setElementHide("FB", hide);
     setElementHide("BAH", hide);
 
     //setting---USE_WIFI turns off CAR_WIFI_NAME and CAR_WIFI_PASSWORD
-    var hide = !document.getElementById('setting---USE_WIFI') || (document.getElementById('setting---USE_WIFI').children[1].firstChild.checked ? false : true);
+    var hide = !document.getElementById('setting---USE_WIFI') || document.getElementById('setting---USE_WIFI').hidden || (document.getElementById('setting---USE_WIFI').children[1].firstChild.checked ? false : true);
     setElementHide("CAR_WIFI_NAME", hide);
     setElementHide("CAR_WIFI_PASSWORD", hide);
 }
