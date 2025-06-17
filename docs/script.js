@@ -986,6 +986,7 @@ async function onWifiSettingChange() {
         new QRCode(document.getElementById("wifi-network-qr-span", { width: 256, height: 256 }), "WIFI:S:" + wifiName + ";T:WPA;P:" + wifiPassword + ";;");
 
         document.getElementById("wifi-info-div").hidden = false;
+        document.getElementById('setting---USE_WIFI').hidden = false;
         document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = false;
         document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = false;
 
