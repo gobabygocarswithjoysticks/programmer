@@ -1054,7 +1054,15 @@ function gotNewSettings(settings, slength) {
 
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
-    if (((version === 10/*older*/ && len === 45 + 6/*maxNumDriveButtons*/) || (version === 11/*old standard*/ && len == 47 + 6) || (version == 14/*pcb*/ && len == 62 + 6) || (version == 15/*pcb with wifi*/ && len == 65 + 6) || (version == 18/*standard*/ && len == 63 + 6) || (version === 19/*standard with wifi*/ && len == 66 + 6)) && slength === settings["CHECKSUM"]) {
+    if (((version === 10/*older*/ && len === 45 + 6/*maxNumDriveButtons*/)
+        || (version === 11/*old standard*/ && len == 47 + 6)
+        || (version == 14/*old pcb*/ && len == 62 + 6)
+        || (version == 15/*old pcb with wifi*/ && len == 65 + 6)
+        || (version == 30/*standard pcb*/ && len == 62 + 6)
+        || (version == 31/*standard pcb with wifi*/ && len == 65 + 6)
+        || (version == 18/*standard*/ && len == 63 + 6)
+        || (version === 19/*standard with wifi*/ && len == 66 + 6))
+        && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
