@@ -513,6 +513,19 @@ function gotNewData(data, slength) {
     drawMotorSignal(true, "motor-signal-canvas", 60, data, "left");
     drawMotorSignal(false, "motor-signal-canvas", 120, data, "right");
 
+    if (data["batV"]) {
+        document.getElementById("sensor-volt").innerHTML = data["batV"];
+        document.getElementById("pcb-sensor-telem").hidden = false;
+    }
+    if (data["leftI"]) {
+        document.getElementById("sensor-LI").innerHTML = data["leftI"];
+        document.getElementById("pcb-sensor-telem").hidden = false;
+    }
+    if (data["rightI"]) {
+        document.getElementById("sensor-RI").innerHTML = data["rightI"];
+        document.getElementById("pcb-sensor-telem").hidden = false;
+    }
+
     if (follow_the_dot != null) {
         followTheDot();
     }
