@@ -9,6 +9,16 @@ Tested on Google Chrome, Opera, and Edge (the only browsers that currently suppo
 
 For any questions about how to use this website, please post [here](https://github.com/gobabygocarswithjoysticks/programmer/discussions/categories/support) or email gobabygocarswithjoysticks@gmail.com 
 
+## Features
+
+### programmable speed and acceleration limits
+
+### joystick and/or button input
+
+### [remote control](https://github.com/gobabygocarswithjoysticks/car-code/blob/main/rcdocs/remote_control.md)
+
+### also compatible with the [GBG-PCB](https://github.com/gobabygocarswithjoysticks/gbg-pcb)
+
 ## Acknowledgements
 
 - This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas for uploading code to the car.
