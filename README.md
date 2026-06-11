@@ -19,6 +19,15 @@ For any questions about how to use this website, please post [here](https://gith
 
 ### also compatible with the [GBG-PCB](https://github.com/gobabygocarswithjoysticks/gbg-pcb)
 
+### automatic preset loading links
+You can tell the website to load a settings preset into the car as soon as it connects by adding #preset=your-preset to the URL like this:
+https://gobabygocarswithjoysticks.github.io/programmer/#preset=default 
+
+Presets can be contributed to the library here: https://github.com/gobabygocarswithjoysticks/car-config-library
+
+A preset file can be made by downloading the settings from a car and removing the settings that you don't want to include.
+For example, if you only want to include the speed and acceleration limits, you can remove all of the settings except for those, and then by making a preset file for that you can make it easy to make a car drive in the way that you like.
+
 ## Acknowledgements
 
 - This website uses [arduino-web-uploader](https://github.com/dbuezas/arduino-web-uploader) by David Buezas for uploading code to the car.
