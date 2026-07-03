@@ -47,7 +47,7 @@ const shortToLongMap = {
     RCP: "RC_CTRL_PIN",
     NRS: "RC_INACTIVE_UNTIL_CONNECTED",
 
-    RA: "RC_AND",
+    RM: "RC_MODE",
     AB: "ADD_BUTTONS_TO_JOYSTICK"
 };
 
@@ -1321,6 +1321,7 @@ function helper(type, data, data2) {
 }
 // generates row of buttons that change settings to preset values
 function presetButtonGenerator(setting, settings, labels, values) {
+    console.log("presetButtonGenerator called with setting: " + setting);
     if (settings.indexOf(setting) === -1) {
         return ""; // not a settings that gets presets
     }
@@ -1329,6 +1330,7 @@ function presetButtonGenerator(setting, settings, labels, values) {
     for (let i = 0; i < values[index].length; i++) {
         html += '<button onclick = "helper(&quot;presetSettingChange&quot;,&quot;' + setting + '&quot;,' + values[index][i] + ')" > ' + labels[i] + '</button>';
     }
+    console.log("presetButtonGenerator returning html: " + html);
     return html;
 }
 
@@ -1455,10 +1457,10 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("USE_BUTTON_MODE_PIN", hide);
     setElementHide("NUM_DRIVE_BUTTONS", hide);
     setElementHide("BSAH", hide);
+    setElementHide("AB", hide);
     hide = hide || (!document.getElementById('setting---USE_BUTTON_MODE_PIN') || (document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked ? false : true));
     setElementHide("BUTTON_MODE_PIN", hide);
     setElementHide("BMT", hide);
-    setElementHide("AB", hide);
 
     var hide = !document.getElementById('setting---ENABLE_STARTUP_PULSE') || document.getElementById('setting---ENABLE_STARTUP_PULSE').hidden || (document.getElementById('setting---ENABLE_STARTUP_PULSE').children[1].firstChild.checked ? false : true);
     setElementHide("LEFT_MOTOR_PULSE_PIN", hide);
