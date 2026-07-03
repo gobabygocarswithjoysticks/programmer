@@ -1168,7 +1168,6 @@ function gotNewSettings(settings, slength) {
             } else if ("ENABLE_BUTTON_CTRL" === setting) {
                 setting_helper.innerHTML = '<br><br><span class="liveVal-button-status"></span>';
             } else if ("RM" === setting) {
-                console.log("RM setting found, adding preset buttons");
                 setting_helper.innerHTML = presetButtonGenerator(
                     setting,
                     Array("RM"),
@@ -1177,7 +1176,6 @@ function gotNewSettings(settings, slength) {
                         Array(0, 1, 2)
                     )
                 );
-                console.log("RM setting found, added preset buttons");
             } else {
                 // presetButtonGenerator can handle setting not being one of the settings with presets
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
@@ -1211,7 +1209,7 @@ function gotNewSettings(settings, slength) {
         if (runOnWifiSettingChange != null) {
 
             try {
-                if (setting === "USE_WIFI" && settings[setting] === false) {
+                if (settings["USE_WIFI"] === false) {
                     document.getElementById("wifi-info-div").hidden = true;
                     document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
                     document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
@@ -1323,7 +1321,6 @@ function helper(type, data, data2) {
 }
 // generates row of buttons that change settings to preset values
 function presetButtonGenerator(setting, settings, labels, values) {
-    console.log("presetButtonGenerator called with setting: " + setting);
     if (settings.indexOf(setting) === -1) {
         return ""; // not a settings that gets presets
     }
@@ -1332,7 +1329,6 @@ function presetButtonGenerator(setting, settings, labels, values) {
     for (let i = 0; i < values[index].length; i++) {
         html += '<button onclick = "helper(&quot;presetSettingChange&quot;,&quot;' + setting + '&quot;,' + values[index][i] + ')" > ' + labels[i] + '</button>';
     }
-    console.log("presetButtonGenerator returning html: " + html);
     return html;
 }
 
