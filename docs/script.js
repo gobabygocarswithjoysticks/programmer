@@ -1168,6 +1168,7 @@ function gotNewSettings(settings, slength) {
             } else if ("ENABLE_BUTTON_CTRL" === setting) {
                 setting_helper.innerHTML = '<br><br><span class="liveVal-button-status"></span>';
             } else if ("RM" === setting) {
+                console.log("RM setting found, adding preset buttons");
                 setting_helper.innerHTML = presetButtonGenerator(
                     setting,
                     Array("RM"),
@@ -1176,6 +1177,7 @@ function gotNewSettings(settings, slength) {
                         Array(0, 1, 2)
                     )
                 );
+                console.log("RM setting found, added preset buttons");
             } else {
                 // presetButtonGenerator can handle setting not being one of the settings with presets
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)
