@@ -270,6 +270,10 @@
                 <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>show
                     all</button>
                 <br><br>
+                <!-- <div id="graphical-configurator">
+                    graphical configurator
+                </div>
+                <br><br> -->
                 <div id="settings-header">
 
                 </div>
@@ -341,9 +345,12 @@
                     href="https://github.com/espressif/esptool-js">esptool-js</a>
                 by Espressif Systems for uploading code to cars that use ESP32 boards.
                 <br><br>
-                This website was created by <a target="_blank" rel="noopener noreferrer"
-                    href="https://github.com/gobabygocarswithjoysticks">gobabygocarswithjoysticks</a> and Joshua Phelps,
-                and it is released under the MIT License.
+                <b>
+                    This website was created by <a target="_blank" rel="noopener noreferrer"
+                        href="https://github.com/gobabygocarswithjoysticks">gobabygocarswithjoysticks</a> and Joshua
+                    Phelps,
+                    and it is released under the MIT License.
+                </b>
             </footer>
         </div> <!-- // end of main div -->
 
@@ -1003,6 +1010,15 @@
                             pulled high. If unchecked (the default), the buttons are considered pressed when the pin is
                             pulled low (connected to ground). The pins all have a pull-up resistor enabled.
                         </td>
+                    <tr id="help--AB">
+                        <td><b>add buttons to joystick: </b> </td>
+                        <td>
+                            If button input is active and this option is checked, the car will add button inputs to
+                            joystick inputs allowing for both the joystick and the buttons to control the car. If this
+                            option is unchecked, buttons overwrite the joystick input if use button mode is active.
+                        </td>
+                    </tr>
+
                     <tr id="help--NUM_DRIVE_BUTTONS">
                         <td><b>num drive buttons: </b> </td>
                         <td>
@@ -1083,6 +1099,16 @@
                             remote control is turned on. If this option is checked, the car can be used without a remote
                             control, if this option is unchecked the car can only be used with a remote control
                             connected.
+                        </td>
+                    </tr>
+                    <tr id="help--RA">
+                        <td><b>rc and: </b> </td>
+                        <td>
+                            If this option is checked, and the car is connected to a remote control receiver, and if the
+                            RC control channel has not activated remote override, then the remote control signals will
+                            be added to the onboard button and joystick inputs allowing for shared control. If remote
+                            override is activated the remote control signals overwrite the onboard button and joystick
+                            inputs.
                         </td>
                     </tr>
                     <tr id="help--USS">

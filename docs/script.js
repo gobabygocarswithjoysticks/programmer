@@ -45,7 +45,10 @@ const shortToLongMap = {
     RTP: "RC_TURN_PIN",
     RPP: "RC_STOP_PIN",
     RCP: "RC_CTRL_PIN",
-    NRS: "RC_INACTIVE_UNTIL_CONNECTED"
+    NRS: "RC_INACTIVE_UNTIL_CONNECTED",
+
+    RA: "RC_AND",
+    AB: "ADD_BUTTONS_TO_JOYSTICK"
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -1071,11 +1074,15 @@ function gotNewSettings(settings, slength) {
         || (version === 11/*old standard*/ && len == 47 + 6)
         || (version == 14/*old pcb*/ && len == 62 + 6)
         || (version == 15/*old pcb with wifi*/ && len == 65 + 6)
-        || (version == 30/*standard pcb*/ && len == 62 + 6)
-        || (version == 31/*standard pcb with wifi*/ && len == 65 + 6)
-        || (version == 18/*standard*/ && len == 63 + 6)
-        || (version === 19/*standard with wifi*/ && len == 66 + 6))
-        && slength === settings["CHECKSUM"]) {
+        || (version == 30/*1.12.0 pcb*/ && len == 62 + 6)
+        || (version == 31/*1.12.0 pcb with wifi*/ && len == 65 + 6)
+        || (version == 18/*1.12.0*/ && len == 63 + 6)
+        || (version === 19/*1.12.0 with wifi*/ && len == 66 + 6)
+        || (version == 32/*standard pcb*/ && len == 64 + 6)
+        || (version == 33/*standard pcb with wifi*/ && len == 67 + 6)
+        || (version == 20/*standard*/ && len == 65 + 6)
+        || (version === 21/*standard with wifi*/ && len == 68 + 6)
+    ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         loadLibrary(); // get the list of config files from https://github.com/gobabygocarswithjoysticks/car-config-library
@@ -1442,6 +1449,7 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     hide = hide || (!document.getElementById('setting---USE_BUTTON_MODE_PIN') || (document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked ? false : true));
     setElementHide("BUTTON_MODE_PIN", hide);
     setElementHide("BMT", hide);
+    setElementHide("AB", hide);
 
     var hide = !document.getElementById('setting---ENABLE_STARTUP_PULSE') || document.getElementById('setting---ENABLE_STARTUP_PULSE').hidden || (document.getElementById('setting---ENABLE_STARTUP_PULSE').children[1].firstChild.checked ? false : true);
     setElementHide("LEFT_MOTOR_PULSE_PIN", hide);
@@ -2090,7 +2098,7 @@ function restoreSettingsUpdate(settings) {
 function restoreSettingsSet(setting, settings) {
     try {
         if (setting === "gbg settings backup, version") return; // not a setting, skip it
-        if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "NRS", "USS", "SPH", "NSU", "UOB", "BAH").indexOf(setting) > -1) { //boolean checkbox
+        if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "RA", "AB").indexOf(setting) > -1) { //boolean checkbox
             document.getElementById("setting---" + setting).children[1].firstChild.checked = (settings[setting] === "true");
             onSettingChangeFunction(setting);
         } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
