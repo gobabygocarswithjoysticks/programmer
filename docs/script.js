@@ -24,7 +24,7 @@ var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
 var url_tail_preset = null;
 
-const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH");
+const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB");
 
 const shortToLongMap = {
     BMT: "BUTTON_MODE_TOGGLE",
@@ -1465,6 +1465,7 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("RCP", hide);
     setElementHide("RPP", hide);
     setElementHide("NRS", hide);
+    setElementHide("RM", hide);
 
     var hide = !document.getElementById('setting---USS') || document.getElementById('setting---USS').hidden || (document.getElementById('setting---USS').children[1].firstChild.checked ? false : true);
     setElementHide("SP", hide);
@@ -2098,7 +2099,7 @@ function restoreSettingsUpdate(settings) {
 function restoreSettingsSet(setting, settings) {
     try {
         if (setting === "gbg settings backup, version") return; // not a setting, skip it
-        if (Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "RA", "AB").indexOf(setting) > -1) { //boolean checkbox
+        if (booleanSettingsArray.indexOf(setting) > -1) { //boolean checkbox
             document.getElementById("setting---" + setting).children[1].firstChild.checked = (settings[setting] === "true");
             onSettingChangeFunction(setting);
         } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
