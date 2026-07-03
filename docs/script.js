@@ -1167,6 +1167,15 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = '<br><br><span class="liveVal-button-mode-switch-state"></span>';
             } else if ("ENABLE_BUTTON_CTRL" === setting) {
                 setting_helper.innerHTML = '<br><br><span class="liveVal-button-status"></span>';
+            } else if ("RM" === setting) {
+                setting_helper.innerHTML = presetButtonGenerator(
+                    setting,
+                    Array("RM"),
+                    Array("car", "add", "and"),
+                    Array(
+                        Array(0, 1, 2)
+                    )
+                );
             } else {
                 // presetButtonGenerator can handle setting not being one of the settings with presets
                 setting_helper.innerHTML = presetButtonGenerator( //HARDCODED PRESETS (suggested settings to give an idea of the range)

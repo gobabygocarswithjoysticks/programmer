@@ -1101,14 +1101,17 @@
                             connected.
                         </td>
                     </tr>
-                    <tr id="help--RA">
-                        <td><b>rc and: </b> </td>
+                    <tr id="help--RM">
+                        <td><b>rc mode: </b> </td>
                         <td>
-                            If this option is checked, and the car is connected to a remote control receiver, and if the
-                            RC control channel has not activated remote override, then the remote control signals will
-                            be added to the onboard button and joystick inputs allowing for shared control. If remote
-                            override is activated the remote control signals overwrite the onboard button and joystick
-                            inputs.
+                            If use rc is checked, and the car is connected to a remote control receiver, and if the
+                            RC control channel has not activated remote override, then this setting changes how the car
+                            is controlled.
+                            In mode 0 "car" the car has full control. In mode 1 "add" the car and RC input are combined
+                            to share control. In mode 2 "and" the car follows RC inputs if any onboard input is
+                            activated and the car does not move if no onboard input is activated.
+                            If the RC control channel has activated remote override, then the car is always controlled
+                            by the remote control.
                         </td>
                     </tr>
                     <tr id="help--USS">
