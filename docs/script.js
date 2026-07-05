@@ -1171,7 +1171,7 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = presetButtonGenerator(
                     setting,
                     Array("RM"),
-                    Array("car", "add", "and"),
+                    Array("car", "add", "if"),
                     Array(
                         Array(0, 1, 2)
                     )
