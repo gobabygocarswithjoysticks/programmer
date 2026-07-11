@@ -48,7 +48,9 @@ const shortToLongMap = {
     NRS: "RC_INACTIVE_UNTIL_CONNECTED",
 
     RM: "RC_MODE",
-    AB: "ADD_BUTTONS_TO_JOYSTICK"
+    AB: "ADD_BUTTONS_TO_JOYSTICK",
+
+    STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS"
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -1078,10 +1080,10 @@ function gotNewSettings(settings, slength) {
         || (version == 31/*1.12.0 pcb with wifi*/ && len == 65 + 6)
         || (version == 18/*1.12.0*/ && len == 63 + 6)
         || (version === 19/*1.12.0 with wifi*/ && len == 66 + 6)
-        || (version == 32/*standard pcb*/ && len == 64 + 6)
-        || (version == 33/*standard pcb with wifi*/ && len == 67 + 6)
-        || (version == 20/*standard*/ && len == 65 + 6)
-        || (version === 21/*standard with wifi*/ && len == 68 + 6)
+        || (version == 32/*standard pcb*/ && len == 65 + 6)
+        || (version == 33/*standard pcb with wifi*/ && len == 68 + 6)
+        || (version == 20/*standard*/ && len == 66 + 6)
+        || (version === 21/*standard with wifi*/ && len == 69 + 6)
     ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
