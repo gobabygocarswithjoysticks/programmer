@@ -1259,6 +1259,8 @@ function gotNewSettings(settings, slength) {
     } else {
         document.getElementById("configure-car").scrollIntoView();
     }
+
+    updateGraphicalConfigurator();
 }
 
 function infoButtonHelper(setting) {
@@ -1443,6 +1445,49 @@ function setElementHide(elementId, hide) {
     }
 }
 
+function showOnlyThisSetting(elementId) {
+    hideAllSettings();
+    let el = document.getElementById('setting---' + elementId);
+    if (el) {
+        el.hidden = false;
+    }
+}
+
+function showJustButtons() {
+    hideAllSettings();
+    setElementHide("ENABLE_BUTTON_CTRL", false);
+    setElementHide("USE_BUTTON_MODE_PIN", false);
+    setElementHide("NUM_DRIVE_BUTTONS", false);
+    setElementHide("BSAH", false);
+    setElementHide("AB", false);
+    hide = (!document.getElementById('setting---USE_BUTTON_MODE_PIN') || (document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked ? false : true));
+    setElementHide("BUTTON_MODE_PIN", hide);
+    setElementHide("BMT", hide);
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+            document.getElementById('setting---ENABLE_BUTTON_CTRL').hidden ||
+            DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+    }
+}
+
+function hideAllSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].hidden = true;
+    }
+}
+
+function showOnlyTheseSettings(elementIds) {
+    hideAllSettings();
+    for (var i = 0; i < elementIds.length; i++) {
+        let el = document.getElementById('setting---' + elementIds[i]);
+        if (el) {
+            el.hidden = false;
+        }
+    }
+}
+
 function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     var hide = !document.getElementById('setting---USE_SPEED_KNOB') || document.getElementById('setting---USE_SPEED_KNOB').hidden || (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked ? false : true);
     setElementHide("SPEED_KNOB_SLOW_VAL", hide);
@@ -1498,6 +1543,91 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("CAR_WIFI_PASSWORD", hide);
 }
 
+function setGCElementOnOff(elementId, on) {
+    let elem = document.getElementById('gc-' + elementId);
+    if (elem) {
+        if (on) {
+            elem.classList.remove("gc-off");
+            elem.classList.add("gc-on");
+        }
+        else {
+            elem.classList.remove("gc-on");
+            elem.classList.add("gc-off");
+        }
+    }
+}
+
+function setGCLineOnOff(elementId, on) {
+    let elemOn = document.getElementById('gc-' + elementId + '-LINE-on');
+    let elemOff = document.getElementById('gc-' + elementId + '-LINE-off');
+    if (elemOn && elemOff) {
+        elemOn.style.display = on ? "" : "none";
+        elemOff.style.display = on ? "none" : "";
+    }
+}
+
+function updateGraphicalConfigurator() {
+    // if enable_button_input is checked and num buttons is enough, change the gc-Drive_Button to on from off
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        var on = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) && (DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value));
+        setGCElementOnOff('DRIVE_BUTTON_' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1), on);
+
+        var celem = document.getElementById('gc-DRIVE_BUTTON_' + (i + 1) + '_CIRCLE');
+        if (celem) {
+            if (on) {
+                celem.classList.remove("gc-db-circleoff");
+                celem.classList.add("gc-db-circleon");
+            } else {
+                celem.classList.remove("gc-db-circleon");
+                celem.classList.add("gc-db-circleoff");
+            }
+            let speed = 0;
+            let turn = 0;
+            let speedElem = document.getElementById('DBsetting---DRIVE_BUTTON_' + (i + 1) + 'speed');
+            if (speedElem) {
+                speed = parseFloat(speedElem.value);
+            }
+            let turnElem = document.getElementById('DBsetting---DRIVE_BUTTON_' + (i + 1) + 'turn');
+            if (turnElem) {
+                turn = parseFloat(turnElem.value);
+            }
+            //constrain speed and turn to be between -1 and 1
+            speed = Math.max(-1, Math.min(1, speed));
+            turn = Math.max(-1, Math.min(1, turn));
+            celem.setAttribute("cy", 269 - speed * 5);
+            celem.setAttribute("cx", 29 + 20 * i + turn * 5);
+        }
+    }
+    // if enable_button_input is checked, set gc-ENABLE_BUTTON_CTRL to on, else off
+    var enableButtonCtrl = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked;
+    setGCElementOnOff('button-box', enableButtonCtrl);
+    setGCElementOnOff('button-box-label', enableButtonCtrl);
+    setGCElementOnOff('decrement-num-buttons', enableButtonCtrl && (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value > 0));
+    setGCElementOnOff('increment-num-buttons', enableButtonCtrl && (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value < 6));
+
+    setGCLineOnOff("ENABLE_BUTTON_CONTROL", enableButtonCtrl);
+}
+
+function toggleEnableButtonCtrl() {
+    var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+    enableButtonCtrlElem.checked = !enableButtonCtrlElem.checked;
+    onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+    showJustButtons();
+}
+
+function crementNumButtons(increment) {
+    if (!document.getElementById('setting---' + "NUM_DRIVE_BUTTONS")) {
+        return;
+    }
+    var numButtonsElem = document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild;
+    if (numButtonsElem) {
+        var newNum = parseInt(numButtonsElem.value) + increment;
+        numButtonsElem.value = newNum;
+        onSettingChangeFunctionNDB();
+    }
+}
+
 // the car replied with a "result" as a response to being told to change a setting
 function gotNewResult(result) {
     if (result["result"] === "change") {
@@ -1527,6 +1657,7 @@ function gotNewResult(result) {
                 document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
             }
         }
+        updateGraphicalConfigurator();
     }
     if (result["result"] === "movement allowed") {
         clearTimeout(verify["G,"]);
