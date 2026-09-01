@@ -556,13 +556,19 @@ function gotNewData(data, slength) {
     }
 
     var elements = document.getElementsByClassName("liveVal-input-mode");
+    var addButtonToJoystick = false;
+    var addButtonToJoystickElement = document.getElementById("setting---AB");
+    if (addButtonToJoystickElement != null && addButtonToJoystickElement.children[1].firstChild.checked) {
+        addButtonToJoystick = true;
+    }
+    var use
     for (var i = 0; i < elements.length; i++) {
         if (data["b_m_p"] === "B")
             elements[i].innerHTML = "Joystick";
         else if (data["b_m_p"] === "A")
-            elements[i].innerHTML = "Button";
+            elements[i].innerHTML = (addButtonToJoystick ? "Joystick+Button" : "Button");
         else if (data["b_m_p"] === "Y")
-            elements[i].innerHTML = "Button";
+            elements[i].innerHTML = (addButtonToJoystick ? "Joystick+Button" : "Button");
         else if (data["b_m_p"] === "N")
             elements[i].innerHTML = "Joystick";
         else if (data["b_m_p"] === "R")
@@ -575,8 +581,6 @@ function gotNewData(data, slength) {
         else if (data["b_m_p"] === "N")
             elements[i].innerHTML = "OFF";
     }
-
-
 }
 
 function followTheDot() {
@@ -1173,7 +1177,7 @@ function gotNewSettings(settings, slength) {
                 setting_helper.innerHTML = presetButtonGenerator(
                     setting,
                     Array("RM"),
-                    Array("car", "add", "if"),
+                    Array("standard", "shared", "steered"),
                     Array(
                         Array(0, 1, 2)
                     )

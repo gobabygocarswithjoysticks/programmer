@@ -259,16 +259,14 @@
 
                 <br><button onclick='showPinSettings();document.getElementById("pointer-arrow").hidden=true;'>choose
                     pins</button>
-                <br><button
-                    onclick='showJoystickSettings();cancelFollowTheDot(); document.getElementById("pointer-arrow").hidden=true; showSwapPinsInSettingsHeader();'>
-                    calibrate joystick the hard way
-                </button>
                 <button onclick='document.getElementById("pointer-arrow").hidden=true;followTheDot();'>
-                    calibrate joystick the easy way</button>
+                    calibrate joystick
+                </button>
                 <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showSpeedSettings();'>change
                     speed and accel</button>
-                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>show
-                    all</button>
+                <br><button onclick='document.getElementById("pointer-arrow").hidden=true;showAllSettings(true);'>
+                    SHOW ALL
+                </button>
                 <br><br>
                 <!-- <div id="graphical-configurator">
                     graphical configurator
@@ -309,6 +307,7 @@
                         onclick='sendStringSerial("REBOOT,",false); settings_received=false; document.getElementById("save-settings-button-label").innerHTML = ""; document.getElementById("save-settings-button-label-2").innerHTML = "";'>reboot
                         arduino, revert to saved settings</button>
                     <button onclick='showAllSettingsForReal()'>show all settings, even inactive ones</button>
+                    <button onclick="hideAllSettings();">hide all settings</button>
                     <div id="settings-advanced-settings-info">no extra info loaded yet</div>
                     <button onclick='document.getElementById("serialMonitorBox").hidden=false'>
                         show serial monitor</button>
@@ -633,14 +632,10 @@
                                 What settings do you want to change? If you are programming a new car, then make sure to
                                 calibrate the joystick.
                                 <br><button onclick="showPinSettings()">choose pins</button>
-                                <br><button
-                                    onclick='cancelFollowTheDot(); showJoystickSettings(); showSwapPinsInSettingsHeader();'>
-                                    calibrate joystick the hard way
-                                </button>
-                                <br><button onclick="followTheDot()">calibrate joystick the easy way</button>
+                                <br><button onclick="followTheDot()">calibrate joystick</button>
                                 <br><button onclick="showSpeedSettings()">change speed and accel</button>
-                                <br><button onclick="showAllSettings(true)">show all</button>
-                                <br><br><br><br><br>
+                                <br><button onclick="showAllSettings(true)">SHOW ALL</button>
+                                <br><br><br>
                             </div>
                             <button id="save-settings-button-2" style="font-size: 24px;"
                                 onclick='sendStringSerial("SAVE,",false)'>
@@ -1113,11 +1108,11 @@
                             If use rc is checked, and the car is connected to a remote control receiver, and if the
                             RC control channel has not activated remote override, then this setting changes how the car
                             is controlled.
-                            In mode 0 "car" the car has full control. In mode 1 "add" the car and RC input are combined
-                            to share control. In mode 2 "if" the car follows RC inputs if any onboard input is
+                            In mode 0 "standard" the car has full control. In mode 1 "shared" the car and RC input are combined
+                            to share control. In mode 2 "steered" the car follows RC inputs if any onboard input is
                             activated and the car does not move if no onboard input is activated.
-                            If the RC control channel has activated remote override, then the car is always controlled
-                            by the remote control.
+                            If the RC control channel is used to activate remote override, then the car is always controlled
+                            exclusively by the remote control.
                         </td>
                     </tr>
                     <tr id="help--USS">
