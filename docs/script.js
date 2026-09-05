@@ -24,7 +24,7 @@ var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
 var url_tail_preset = null;
 
-const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "IRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB");
+const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB");
 
 const shortToLongMap = {
     BMT: "BUTTON_MODE_TOGGLE",
@@ -46,7 +46,6 @@ const shortToLongMap = {
     RPP: "RC_STOP_PIN",
     RCP: "RC_CTRL_PIN",
     NRS: "RC_INACTIVE_UNTIL_CONNECTED",
-    IRS: "INVERT_RC_STOP_SWITCH",
 
     RM: "RC_MODE",
     AB: "ADD_BUTTONS_TO_JOYSTICK",
@@ -1086,7 +1085,7 @@ function gotNewSettings(settings, slength) {
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
     if (((version === 10/*older*/ && len === 45 + 6/*maxNumDriveButtons*/)
-        || (version === 11/*old standard*/ && len == 47 + 6)
+        || (version === 11/*old*/ && len == 47 + 6)
         || (version === 14/*old pcb*/ && len == 62 + 6)
         || (version === 15/*old pcb with wifi*/ && len == 65 + 6)
         || (version === 30/*1.12.0 pcb*/ && len == 62 + 6)
@@ -1097,10 +1096,6 @@ function gotNewSettings(settings, slength) {
         || (version === 33/*1.13.0 pcb with wifi*/ && len == 68 + 6)
         || (version === 20/*1.13.0*/ && len == 66 + 6)
         || (version === 21/*1.13.0 with wifi*/ && len == 69 + 6)
-        || (version === 34/*standard pcb*/ && len == 66 + 6)
-        || (version === 35/*standard pcb with wifi*/ && len == 69 + 6)
-        || (version === 22/*standard*/ && len == 67 + 6)
-        || (version === 23/*standard with wifi*/ && len == 70 + 6)
     ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
