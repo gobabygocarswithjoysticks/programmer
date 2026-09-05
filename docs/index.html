@@ -1078,15 +1078,15 @@
                         <td><b>rc control pin: </b> </td>
                         <td>
                             Wire this pin to the signal pin of the remote control receiver that outputs a signal from
-                            a switch on the remote control. Over 1600 microseconds turns on the remote override. Under
-                            1400 microseconds gives control back to the car.
+                            a switch on the remote control. Over 1700 microseconds turns on the remote override. Under
+                            1300 microseconds gives control back to the car.
                         </td>
                     </tr>
                     <tr id="help--RPP">
                         <td><b>rc stop pin: </b> </td>
                         <td>
                             Wire this pin to the signal pin of the remote control receiver that outputs a signal from
-                            a switch on the remote control. Over 1600 microseconds stops the car. Under 1400
+                            a switch on the remote control. Over 1700 microseconds stops the car. Under 1300
                             microseconds gives control back to the car.
                         </td>
                     </tr>
@@ -1102,16 +1102,25 @@
                             connected.
                         </td>
                     </tr>
+                    <tr id="help--IRS">
+                        <td><b>invert rc switches:</b></td>
+                        <td>
+                            If this option is checked, the thresholds for the control switch and the stop switch are
+                            reversed, so that the switches have to be flipped the opposite directions to activate them.
+                        </td>
+                    </tr>
                     <tr id="help--RM">
                         <td><b>rc mode: </b> </td>
                         <td>
                             If use rc is checked, and the car is connected to a remote control receiver, and if the
                             RC control channel has not activated remote override, then this setting changes how the car
                             is controlled.
-                            In mode 0 "standard" the car has full control. In mode 1 "shared" the car and RC input are combined
+                            In mode 0 "standard" the car has full control. In mode 1 "shared" the car and RC input are
+                            combined
                             to share control. In mode 2 "steered" the car follows RC inputs if any onboard input is
                             activated and the car does not move if no onboard input is activated.
-                            If the RC control channel is used to activate remote override, then the car is always controlled
+                            If the RC control channel is used to activate remote override, then the car is always
+                            controlled
                             exclusively by the remote control.
                         </td>
                     </tr>
