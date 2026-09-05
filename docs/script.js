@@ -50,7 +50,9 @@ const shortToLongMap = {
     RM: "RC_MODE",
     AB: "ADD_BUTTONS_TO_JOYSTICK",
 
-    STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS"
+    STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS",
+
+    ENABLE_BUTTON_CTRL: "USE_BUTTON_CONTROL",
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -1968,7 +1970,7 @@ function cben(id) {
 function exportSettings() {
     var elements = document.getElementsByClassName("car-setting-row");
     if (elements.length === 0) return; // settings not loaded
-    var resultString = '{"gbg settings backup, version": 10,\n';
+    var resultString = '{"gbg settings backup, version": "' + document.getElementById("settings-advanced-settings-info").innerHTML + '",\n';
     for (var i = 0; i < elements.length; i++) {
         resultString += '"' + elements[i].id.substring(10) + '":' + exportValue(elements[i]) + (i < elements.length - 1 ? ",\n" : "\n}\n");
     }
@@ -2096,7 +2098,7 @@ function restoreSettingsProcessFile(text) {
     try {
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         set = JSON.parse(text);
-        if (set != null && set["gbg settings backup, version"] === 10) {
+        if (set != null) {
             restoreSettingsUpdate(set);
         } else {
             document.getElementById('restore-settings-msg-div').innerHTML = "file invalid. try opening it, you may be able to copy settings manually.";
