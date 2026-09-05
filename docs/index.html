@@ -178,22 +178,42 @@
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
                     </div>
-                    <div id="pcb-sensor-telem" style="text-align: left" hidden>
-                        <br>
-                        battery voltage:
-                        <span id="sensor-volt">
-                            voltage loading
+                    <div>
+                        <span id="pcb-sensor-telem" style="text-align: left" hidden>
+                            <br>
+                            battery voltage:
+                            <span id="sensor-volt">
+                                voltage loading
+                            </span>
+                            <br>
+                            left current:
+                            <span id="sensor-LI">
+                                left I loading
+                            </span>
+                            <br>
+                            right current:
+                            <span id="sensor-RI">
+                                right I loading
+                            </span>
                         </span>
                         <br>
-                        left current:
-                        <span id="sensor-LI">
-                            left I loading
+                        <br>
+                        <span id="stop-telem-stop-switch" style="text-align: left" hidden>
+                            Stopped by Stop Switch
                         </span>
                         <br>
-                        right current:
-                        <span id="sensor-RI">
-                            right I loading
+                        <span id="stop-telem-stop-button" style="text-align: left" hidden>
+                            Stopped by Start Stop Buttons
                         </span>
+                        <br>
+                        <span id="stop-telem-rc" style="text-align: left" hidden>
+                            Stopped by Remote Control
+                        </span>
+                        <br>
+                        <span id="stop-telem-wifi" style="text-align: left" hidden>
+                            Stopped by WiFi
+                        </span>
+                        <br>
                     </div>
                 </div>
                 <br>
@@ -1103,10 +1123,10 @@
                         </td>
                     </tr>
                     <tr id="help--IRS">
-                        <td><b>invert rc switches:</b></td>
+                        <td><b>invert rc stop switch:</b></td>
                         <td>
-                            If this option is checked, the thresholds for the control switch and the stop switch are
-                            reversed, so that the switches have to be flipped the opposite directions to activate them.
+                            If this option is checked, the thresholds for the stop switch are reversed, so that the
+                            switch has to be flipped the opposite direction to stop the car.
                         </td>
                     </tr>
                     <tr id="help--RM">

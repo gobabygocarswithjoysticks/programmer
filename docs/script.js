@@ -46,7 +46,7 @@ const shortToLongMap = {
     RPP: "RC_STOP_PIN",
     RCP: "RC_CTRL_PIN",
     NRS: "RC_INACTIVE_UNTIL_CONNECTED",
-    IRS: "INVERT_RC_SWITCHES",
+    IRS: "INVERT_RC_STOP_SWITCH",
 
     RM: "RC_MODE",
     AB: "ADD_BUTTONS_TO_JOYSTICK",
@@ -530,6 +530,14 @@ function gotNewData(data, slength) {
     if (data["rightI"] != undefined) {
         document.getElementById("sensor-RI").innerHTML = data["rightI"];
         document.getElementById("pcb-sensor-telem").hidden = false;
+    }
+
+    if (data["stopBits"] !== undefined) {
+        const stopBits = data["stopBits"];
+        document.getElementById("stop-telem-stop-switch").hidden = !(stopBits & (1 << 0));
+        document.getElementById("stop-telem-stop-button").hidden = !(stopBits & (1 << 1));
+        document.getElementById("stop-telem-rc").hidden = !(stopBits & (1 << 2));
+        document.getElementById("stop-telem-wifi").hidden = !(stopBits & (1 << 3));
     }
 
     if (follow_the_dot != null) {
