@@ -178,22 +178,42 @@
                             <div>Error displaying canvas! Try a different browser?</div>
                         </canvas>
                     </div>
-                    <div id="pcb-sensor-telem" style="text-align: left" hidden>
-                        <br>
-                        battery voltage:
-                        <span id="sensor-volt">
-                            voltage loading
+                    <div>
+                        <span id="pcb-sensor-telem" style="text-align: left" hidden>
+                            <br>
+                            battery voltage:
+                            <span id="sensor-volt">
+                                voltage loading
+                            </span>
+                            <br>
+                            left current:
+                            <span id="sensor-LI">
+                                left I loading
+                            </span>
+                            <br>
+                            right current:
+                            <span id="sensor-RI">
+                                right I loading
+                            </span>
                         </span>
                         <br>
-                        left current:
-                        <span id="sensor-LI">
-                            left I loading
+                        <br>
+                        <span id="stop-telem-stop-switch" style="text-align: left" hidden>
+                            Stopped by Stop Switch
                         </span>
                         <br>
-                        right current:
-                        <span id="sensor-RI">
-                            right I loading
+                        <span id="stop-telem-stop-button" style="text-align: left" hidden>
+                            Stopped by Start Stop Buttons
                         </span>
+                        <br>
+                        <span id="stop-telem-rc" style="text-align: left" hidden>
+                            Stopped by Remote Control
+                        </span>
+                        <br>
+                        <span id="stop-telem-wifi" style="text-align: left" hidden>
+                            Stopped by WiFi
+                        </span>
+                        <br>
                     </div>
                 </div>
                 <br>
@@ -1081,7 +1101,7 @@
                         </td>
                     </tr>
                     <tr id="help--ENABLE_BUTTON_CTRL">
-                        <td><b>enable button ctrl: </b> </td>
+                        <td><b>use button control: </b> </td>
                         <td>
                             The car can be controlled with buttons instead of a joystick.
                             <br>
@@ -1132,7 +1152,7 @@
                         <td><b>num drive buttons: </b> </td>
                         <td>
                             How many optional buttons are wired to the car? Up to six buttons are supported. Turn on
-                            "enable button ctrl" to use.
+                            "use button control" to use.
                         </td>
                     </tr>
                     <tr id="help--Drive Button">
@@ -1166,14 +1186,6 @@
                             that a remote control can be used to override the controls on the car.
                         </td>
                     </tr>
-                    <tr id="help--RSP">
-                        <td><b>rc speed pin: </b> </td>
-                        <td>
-                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
-                            the Y axis of the remote control joystick. 2000 microseconds is forward, 1000 microseconds
-                            is backward. There is a deadzone from 1450 to 1550 microseconds.
-                        </td>
-                    </tr>
                     <tr id="help--RTP">
                         <td><b>rc turn pin: </b> </td>
                         <td>
@@ -1182,19 +1194,27 @@
                             is left. There is a deadzone from 1450 to 1550 microseconds.
                         </td>
                     </tr>
+                    <tr id="help--RSP">
+                        <td><b>rc speed pin: </b> </td>
+                        <td>
+                            Wire this pin to the signal pin of the remote control receiver that outputs a signal from
+                            the Y axis of the remote control joystick. 2000 microseconds is forward, 1000 microseconds
+                            is backward. There is a deadzone from 1450 to 1550 microseconds.
+                        </td>
+                    </tr>
                     <tr id="help--RCP">
                         <td><b>rc control pin: </b> </td>
                         <td>
                             Wire this pin to the signal pin of the remote control receiver that outputs a signal from
-                            a switch on the remote control. Over 1600 microseconds turns on the remote override. Under
-                            1400 microseconds gives control back to the car.
+                            a switch on the remote control. Over 1700 microseconds turns on the remote override. Under
+                            1300 microseconds gives control back to the car.
                         </td>
                     </tr>
                     <tr id="help--RPP">
                         <td><b>rc stop pin: </b> </td>
                         <td>
                             Wire this pin to the signal pin of the remote control receiver that outputs a signal from
-                            a switch on the remote control. Over 1600 microseconds stops the car. Under 1400
+                            a switch on the remote control. Over 1700 microseconds stops the car. Under 1300
                             microseconds gives control back to the car.
                         </td>
                     </tr>

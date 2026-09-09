@@ -51,7 +51,9 @@ const shortToLongMap = {
     RM: "RC_MODE",
     AB: "ADD_BUTTONS_TO_JOYSTICK",
 
-    STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS"
+    STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS",
+
+    ENABLE_BUTTON_CTRL: "USE_BUTTON_CONTROL",
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -530,6 +532,14 @@ function gotNewData(data, slength) {
     if (data["rightI"] != undefined) {
         document.getElementById("sensor-RI").innerHTML = data["rightI"];
         document.getElementById("pcb-sensor-telem").hidden = false;
+    }
+
+    if (data["stopBits"] !== undefined) {
+        const stopBits = data["stopBits"];
+        document.getElementById("stop-telem-stop-switch").hidden = !(stopBits & (1 << 0));
+        document.getElementById("stop-telem-stop-button").hidden = !(stopBits & (1 << 1));
+        document.getElementById("stop-telem-rc").hidden = !(stopBits & (1 << 2));
+        document.getElementById("stop-telem-wifi").hidden = !(stopBits & (1 << 3));
     }
 
     if (follow_the_dot != null) {
@@ -1117,17 +1127,17 @@ function gotNewSettings(settings, slength) {
     var version = settings["current settings, version:"];
     var len = Object.keys(settings).length;
     if (((version === 10/*older*/ && len === 45 + 6/*maxNumDriveButtons*/)
-        || (version === 11/*old standard*/ && len == 47 + 6)
-        || (version == 14/*old pcb*/ && len == 62 + 6)
-        || (version == 15/*old pcb with wifi*/ && len == 65 + 6)
-        || (version == 30/*1.12.0 pcb*/ && len == 62 + 6)
-        || (version == 31/*1.12.0 pcb with wifi*/ && len == 65 + 6)
-        || (version == 18/*1.12.0*/ && len == 63 + 6)
+        || (version === 11/*old*/ && len == 47 + 6)
+        || (version === 14/*old pcb*/ && len == 62 + 6)
+        || (version === 15/*old pcb with wifi*/ && len == 65 + 6)
+        || (version === 30/*1.12.0 pcb*/ && len == 62 + 6)
+        || (version === 31/*1.12.0 pcb with wifi*/ && len == 65 + 6)
+        || (version === 18/*1.12.0*/ && len == 63 + 6)
         || (version === 19/*1.12.0 with wifi*/ && len == 66 + 6)
-        || (version == 32/*standard pcb*/ && len == 65 + 6)
-        || (version == 33/*standard pcb with wifi*/ && len == 68 + 6)
-        || (version == 20/*standard*/ && len == 66 + 6)
-        || (version === 21/*standard with wifi*/ && len == 69 + 6)
+        || (version === 32/*1.13.0 pcb*/ && len == 65 + 6)
+        || (version === 33/*1.13.0 pcb with wifi*/ && len == 68 + 6)
+        || (version === 20/*1.13.0*/ && len == 66 + 6)
+        || (version === 21/*1.13.0 with wifi*/ && len == 69 + 6)
     ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
@@ -2201,7 +2211,7 @@ function cben(id) {
 function exportSettings() {
     var elements = document.getElementsByClassName("car-setting-row");
     if (elements.length === 0) return; // settings not loaded
-    var resultString = '{"gbg settings backup, version": 10,\n';
+    var resultString = '{"gbg settings backup, version": "' + document.getElementById("settings-advanced-settings-info").innerHTML + '",\n';
     for (var i = 0; i < elements.length; i++) {
         resultString += '"' + elements[i].id.substring(10) + '":' + exportValue(elements[i]) + (i < elements.length - 1 ? ",\n" : "\n}\n");
     }
@@ -2329,7 +2339,7 @@ function restoreSettingsProcessFile(text) {
     try {
         document.getElementById('restore-settings-msg-div').innerHTML = "";
         set = JSON.parse(text);
-        if (set != null && set["gbg settings backup, version"] === 10) {
+        if (set != null) {
             restoreSettingsUpdate(set);
         } else {
             document.getElementById('restore-settings-msg-div').innerHTML = "file invalid. try opening it, you may be able to copy settings manually.";
