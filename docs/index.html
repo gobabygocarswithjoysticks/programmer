@@ -287,18 +287,6 @@
                                     stroke: magenta;
                                 }
 
-                                .gc-box-off {
-                                    fill: white;
-                                    stroke: grey;
-                                    stroke-width: 2;
-                                }
-
-                                .gc-box-on {
-                                    fill: white;
-                                    stroke: black;
-                                    stroke-width: 2;
-                                }
-
                                 .gc-off {
                                     fill: white;
                                     stroke: grey;
@@ -306,23 +294,22 @@
                                 }
 
                                 .gc-on {
-                                    fill: rgb(190, 236, 195);
+                                    fill: white;
                                     stroke: black;
                                     stroke-width: 2;
                                 }
+
+                                .gc-active {
+                                    fill: rgb(190, 236, 195) !important;
+                                }
+
 
                                 .gc-on:hover {
                                     stroke: magenta !important;
                                 }
 
-                                .gc-line-off {
-                                    stroke: grey;
-                                    stroke-width: 1;
-                                }
-
-                                .gc-line-on {
-                                    stroke: green;
-                                    stroke-width: 2;
+                                .gc-off:hover {
+                                    stroke: magenta !important;
                                 }
 
                                 .gc-db-circleon {
@@ -337,11 +324,19 @@
                                 }
                             </style>
                             <g>
+                                <text class="gc-on" pointer-events="none" x="25" y="20">
+                                    Car's Controls
+                                </text>
+                                <rect id="gc-joystick-box" class="gc-off" width="142" height="85" x="8" y="45"
+                                    onclick="gcToggleJoystick();" />
+                                <text id="gc-joystick-box-label" class="gc-off" pointer-events="none" x="55" y="90">
+                                    joystick
+                                </text>
                                 <rect class="gc-area" width="150" height="160" x="5" y="135"
                                     onclick="showJustButtons();" />
-                                <rect id="gc-button-box" class="gc-box-off" style="fill:none !important" width="142"
-                                    height="90" x="8" y="200" />
-                                <text id="gc-button-box-label" class="gc-box-off" pointer-events="none" x="55" y="235">
+                                <rect id="gc-button-box" class="gc-off" width="142" height="90" x="8" y="200"
+                                    onclick="gcToggleButtonCtrl();" />
+                                <text id="gc-button-box-label" class="gc-off" pointer-events="none" x="55" y="235">
                                     buttons
                                 </text>
                                 <rect id="gc-DRIVE_BUTTON_1" class="gc-off" width="18" height="18" x="20" y="260"
@@ -363,18 +358,6 @@
                                 <circle id="gc-DRIVE_BUTTON_4_CIRCLE" class="gc-db-circleoff" cx="89" cy="269" r="3" />
                                 <circle id="gc-DRIVE_BUTTON_5_CIRCLE" class="gc-db-circleoff" cx="109" cy="269" r="3" />
                                 <circle id="gc-DRIVE_BUTTON_6_CIRCLE" class="gc-db-circleoff" cx="129" cy="269" r="3" />
-                                <g>
-                                    <rect id="gc-ENABLE_BUTTON_CTRL" class="gc-on" width="30" height="40" x="20" y="150"
-                                        onclick='toggleEnableButtonCtrl();' />
-                                    <g id="gc-ENABLE_BUTTON_CONTROL-LINE-on" class="gc-line-on">
-                                        <line x1="35" y1="180" x2="35" y2="200" />
-                                        <line x1="35" y1="180" x2="35" y2="160" />
-                                    </g>
-                                    <g id="gc-ENABLE_BUTTON_CONTROL-LINE-off" class="gc-line-off">
-                                        <line x1="35" y1="180" x2="35" y2="200" />
-                                        <line x1="35" y1="160" x2="45" y2="175" />
-                                    </g>
-                                </g>
 
                                 <g id="gc-decrement-num-buttons" class="gc-off"
                                     onclick='crementNumButtons(-1);showJustButtons();'>
@@ -390,6 +373,8 @@
                                         +
                                     </text>
                                 </g>
+
+
                             </g>
                         </svg>
                     </div>
@@ -452,7 +437,7 @@
             <footer style="text-align:center">
                 <strong>
                     The source code for this website is on Github <a target="_blank" rel="noopener noreferrer"
-                        href="https://github.com/gobabygocarswithjoysticks/programmer">here</a>.
+                        href="https://github.com/gobabygocarswithjoysticks/programmer">HERE</a>.
                 </strong>
                 <br><br>
                 This website uses <a target="_blank" rel="noopener noreferrer"
@@ -1231,10 +1216,12 @@
                             If use rc is checked, and the car is connected to a remote control receiver, and if the
                             RC control channel has not activated remote override, then this setting changes how the car
                             is controlled.
-                            In mode 0 "standard" the car has full control. In mode 1 "shared" the car and RC input are combined
+                            In mode 0 "standard" the car has full control. In mode 1 "shared" the car and RC input are
+                            combined
                             to share control. In mode 2 "steered" the car follows RC inputs if any onboard input is
                             activated and the car does not move if no onboard input is activated.
-                            If the RC control channel is used to activate remote override, then the car is always controlled
+                            If the RC control channel is used to activate remote override, then the car is always
+                            controlled
                             exclusively by the remote control.
                         </td>
                     </tr>
@@ -1329,11 +1316,10 @@
                     <tr id="help--Joystick Input">
                         <td><b><span class="liveVal-input-mode">Joystick</span> Input: </b> </td>
                         <td>
-                            This box displays the position that the car thinks the joystick is in. Make sure that it
-                            matches the joystick on the car and if it doesn't, calibrate the joystick.
+                            This box displays the input the car is getting. Use it to check that your controls are set
+                            up correctly.
                             <br>
-                            If "enable button ctrl" is on, then this box will be displaying the input caused by the
-                            buttons instead, and the title will change to say "Button Input."
+                            This box changes its title if the input changes between a joystick, button or remote.
                         </td>
                     </tr>
                     <tr id="help--Scaled Speed Target">
