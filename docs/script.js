@@ -1098,6 +1098,10 @@ function gotNewSettings(settings, slength) {
         || (version === 33/*1.13.0 pcb with wifi*/ && len == 68 + 6)
         || (version === 20/*1.13.0*/ && len == 66 + 6)
         || (version === 21/*1.13.0 with wifi*/ && len == 69 + 6)
+        || (version === 34/*1.14.0 pcb*/ && len == 68 + 6)
+        || (version === 35/*1.14.0 pcb with wifi*/ && len == 71 + 6)
+        || (version === 22/*1.14.0*/ && len == 69 + 6)
+        || (version === 23/*1.14.0 with wifi*/ && len == 72 + 6)
     ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
