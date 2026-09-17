@@ -24,7 +24,7 @@ var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
 var url_tail_preset = null;
 
-const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB");
+const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB", "UFS");
 
 const shortToLongMap = {
     BMT: "BUTTON_MODE_TOGGLE",
@@ -53,6 +53,9 @@ const shortToLongMap = {
     STWMB: "SCALE_TURNING_WHEN_MOVING_BACKWARDS",
 
     ENABLE_BUTTON_CTRL: "USE_BUTTON_CONTROL",
+
+    USE_RC_FORCE_STANDARD_MODE_PIN: "UFS",
+    RC_FORCE_STANDARD_MODE_PIN: "FS"
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -886,11 +889,15 @@ function checkForPinConflicts() {
             pinConflictSettings.push("RTP");
             pinConflictSettings.push("RCP");
             pinConflictSettings.push("RPP");
+            if(document.getElementById('setting---UFS') && document.getElementById('setting---UFS').children[1].firstChild.checked){
+                pinConflictSettings.push("FS");
+            }
         } else {
             clearPinConflict("RSP");
             clearPinConflict("RTP");
             clearPinConflict("RCP");
             clearPinConflict("RPP");
+            clearPinConflict("FS");
         }
 
         if (document.getElementById('setting---USS') && document.getElementById('setting---USS').children[1].firstChild.checked) {
@@ -1495,6 +1502,9 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("RPP", hide);
     setElementHide("NRS", hide);
     setElementHide("RM", hide);
+    setElementHide("UFS", hide);
+    hide = hide || (!document.getElementById('setting---UFS') || (document.getElementById('setting---UFS').children[1].firstChild.checked ? false : true));
+    setElementHide("FS", hide);
 
     var hide = !document.getElementById('setting---USS') || document.getElementById('setting---USS').hidden || (document.getElementById('setting---USS').children[1].firstChild.checked ? false : true);
     setElementHide("SP", hide);
