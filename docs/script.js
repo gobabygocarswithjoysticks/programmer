@@ -55,7 +55,9 @@ const shortToLongMap = {
     ENABLE_BUTTON_CTRL: "USE_BUTTON_CONTROL",
 
     USE_RC_FORCE_STANDARD_MODE_PIN: "UFS",
-    RC_FORCE_STANDARD_MODE_PIN: "FS"
+    RC_FORCE_STANDARD_MODE_PIN: "FS",
+
+    INACTIVITY_TIMEOUT: "IAT",
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
