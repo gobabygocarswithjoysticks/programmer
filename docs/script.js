@@ -13,6 +13,7 @@ var showEverything = false; //if the "show all the options at once button is pre
 var speedAdjustHelp = false; //help make adjusting the speed as easy as possible
 var help_info_highlight_id = null; // used to highlight the most recently requested setting info row
 var follow_the_dot = null; // used to sequence joystick calibration by "follow the dot"
+var follow_the_dot_previous_enable_button = false; // used to restore enable state when calibrating
 var ftd_data = {}; // used to store data used for joystick calibration by "follow the dot"
 var joy_calib_deadzone = 3; //joystick signal noise should be below this
 var joy_calib_moved_enough = 40; // far enough from center to be an edge
@@ -576,19 +577,30 @@ function gotNewData(data, slength) {
     if (addButtonToJoystickElement != null && addButtonToJoystickElement.children[1].firstChild.checked) {
         addButtonToJoystick = true;
     }
-    var use
-    for (var i = 0; i < elements.length; i++) {
-        if (data["b_m_p"] === "B")
-            elements[i].innerHTML = "Joystick";
-        else if (data["b_m_p"] === "A")
-            elements[i].innerHTML = (addButtonToJoystick ? "Joystick+Button" : "Button");
-        else if (data["b_m_p"] === "Y")
-            elements[i].innerHTML = (addButtonToJoystick ? "Joystick+Button" : "Button");
-        else if (data["b_m_p"] === "N")
-            elements[i].innerHTML = "Joystick";
-        else if (data["b_m_p"] === "R")
-            elements[i].innerHTML = "Remote";
+    var inputName = "";
+    if (data["b_m_p"] === "B")
+        inputName = "Joystick";
+    else if (data["b_m_p"] === "A")
+        inputName = (addButtonToJoystick ? "Joystick+Button" : "Button");
+    else if (data["b_m_p"] === "Y")
+        inputName = (addButtonToJoystick ? "Joystick+Button" : "Button");
+    else if (data["b_m_p"] === "N")
+        inputName = "Joystick";
+
+    if (data["b_m_p"] === "R") {
+        inputName = "Remote";
+    } else {
+        var rcMode = document.getElementById('setting---' + "RM") && document.getElementById('setting---' + "RM").children[1].firstChild.value
+        if (rcMode != 0) {
+            inputName += "+Remote";
+        }
     }
+
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].innerHTML = inputName;
+    }
+    liveUpdateGraphicalConfigurator(inputName, buttonstatus);
+
     var elements = document.getElementsByClassName("liveVal-button-mode-switch-state");
     for (var i = 0; i < elements.length; i++) {
         if (data["b_m_p"] === "Y")
@@ -612,6 +624,14 @@ function followTheDot() {
         document.getElementById('settings-header').innerHTML = '<button onclick="cancelFollowTheDot();">cancel calibration</button><br> Please do not touch the joystick yet. Joystick calibration will start in 5 seconds.';
         document.getElementById('settings-header').style.border = "4px solid magenta";
         document.getElementById('settings-header').scrollIntoView();
+
+        follow_the_dot = 1;
+    } else if (follow_the_dot === 1) {
+        var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+        follow_the_dot_previous_enable_button = enableButtonCtrlElem.checked;
+        console.log(follow_the_dot_previous_enable_button);
+        enableButtonCtrlElem.checked = false;
+        onSettingChangeFunction("ENABLE_BUTTON_CTRL");
         follow_the_dot = 2;
     } else if (follow_the_dot === 2) {
         ftd_data["cx"] = live_data["joyXVal"];
@@ -630,6 +650,11 @@ function followTheDot() {
                 return; // normal procedure, continue
             } else { // x moved significantly also
                 follow_the_dot = null;
+                try {
+                    var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+                    enableButtonCtrlElem.checked = follow_the_dot_previous_enable_button;
+                    onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+                } catch (e) { }
                 document.getElementById("settings-header").innerHTML = 'Calibration canceled because movement was detected on both axes. Please check the joystick pin settings and then restart the joystick calibration, and carefully move the joystick on only one axis at a time. <br> <button onclick="followTheDot();">restart</button><br>';
                 var elements = document.getElementsByClassName("car-setting-row");
                 for (var i = 0; i < elements.length; i++) {
@@ -656,6 +681,12 @@ function followTheDot() {
             }
 
             follow_the_dot = null;
+            try {
+                var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+                enableButtonCtrlElem.checked = follow_the_dot_previous_enable_button;
+                onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+            } catch (e) { }
+
         }
     } else if (follow_the_dot === 4) {
         if (Math.abs(live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(last_live_data["joyYVal"] - ftd_data["cy"]) > joy_calib_moved_enough && Math.abs(live_data["joyYVal"] - last_live_data["joyYVal"]) < joy_calib_deadzone
@@ -706,17 +737,26 @@ function followTheDot() {
         document.getElementById("settings-header").innerHTML = "calibration done!";
 
         follow_the_dot = null;
+        try {
+            var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+            enableButtonCtrlElem.checked = follow_the_dot_previous_enable_button;
+            onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+        } catch (e) { }
+
         showJoystickSettings();
     }
-
-
-
 
 }
 
 function cancelFollowTheDot() {
 
     follow_the_dot = null;
+    try {
+        var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+        enableButtonCtrlElem.checked = follow_the_dot_previous_enable_button;
+        onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+    } catch (e) { }
+
     document.getElementById("settings-header").style.border = "";
     document.getElementById("settings-header").innerHTML = "";
 }
@@ -1282,6 +1322,8 @@ function gotNewSettings(settings, slength) {
     } else {
         document.getElementById("configure-car").scrollIntoView();
     }
+
+    updateGraphicalConfigurator();
 }
 
 function infoButtonHelper(setting) {
@@ -1466,6 +1508,49 @@ function setElementHide(elementId, hide) {
     }
 }
 
+function showOnlyThisSetting(elementId) {
+    hideAllSettings();
+    let el = document.getElementById('setting---' + elementId);
+    if (el) {
+        el.hidden = false;
+    }
+}
+
+function showJustButtons() {
+    hideAllSettings();
+    setElementHide("ENABLE_BUTTON_CTRL", false);
+    setElementHide("USE_BUTTON_MODE_PIN", false);
+    setElementHide("NUM_DRIVE_BUTTONS", false);
+    setElementHide("BSAH", false);
+    setElementHide("AB", false);
+    hide = (!document.getElementById('setting---USE_BUTTON_MODE_PIN') || (document.getElementById('setting---USE_BUTTON_MODE_PIN').children[1].firstChild.checked ? false : true));
+    setElementHide("BUTTON_MODE_PIN", hide);
+    setElementHide("BMT", hide);
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        DBRelated[i].hidden = !(document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) ||
+            document.getElementById('setting---ENABLE_BUTTON_CTRL').hidden ||
+            DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ > (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value);
+    }
+}
+
+function hideAllSettings() {
+    var elements = document.getElementsByClassName("car-setting-row");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].hidden = true;
+    }
+}
+
+function showOnlyTheseSettings(elementIds) {
+    hideAllSettings();
+    for (var i = 0; i < elementIds.length; i++) {
+        let el = document.getElementById('setting---' + elementIds[i]);
+        if (el) {
+            el.hidden = false;
+        }
+    }
+}
+
 function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     var hide = !document.getElementById('setting---USE_SPEED_KNOB') || document.getElementById('setting---USE_SPEED_KNOB').hidden || (document.getElementById('setting---USE_SPEED_KNOB').children[1].firstChild.checked ? false : true);
     setElementHide("SPEED_KNOB_SLOW_VAL", hide);
@@ -1524,6 +1609,161 @@ function showAndHideSettingsDependingOnWhetherTheyAreAvailable() {
     setElementHide("CAR_WIFI_PASSWORD", hide);
 }
 
+function setGCElementOnOff(elementId, on) {
+    let elem = document.getElementById('gc-' + elementId);
+    if (elem) {
+        if (on) {
+            elem.classList.remove("gc-off");
+            elem.classList.add("gc-on");
+        }
+        else {
+            elem.classList.remove("gc-on");
+            elem.classList.add("gc-off");
+        }
+    }
+}
+
+function setGCActive(elementId, on) {
+    let elem = document.getElementById('gc-' + elementId);
+    if (elem) {
+        if (on) {
+            elem.classList.add("gc-active");
+        }
+        else {
+            elem.classList.remove("gc-active");
+        }
+    }
+}
+
+function isChecked(setting) {
+    return document.getElementById('setting---' + setting) && document.getElementById('setting---' + setting).children[1].firstChild.checked;
+}
+
+function liveUpdateGraphicalConfigurator(inputName, buttonstatus) {
+    setGCActive('joystick-box', inputName.includes("Joystick"));
+    var buttonsActive = inputName.includes("Button");
+    setGCActive('button-box', buttonsActive);
+
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        var thisButtonActive = buttonsActive && buttonstatus.slice(9).charAt(i) === "1"; // 9 is the length of "buttons: "
+        setGCActive('DRIVE_BUTTON_' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1), thisButtonActive);
+    }
+}
+
+function updateGraphicalConfigurator() {
+    // if enable_button_input is checked and num buttons is enough, change the gc-Drive_Button to on from off
+    var DBRelated = document.getElementsByClassName("drive-button");
+    for (var i = 0; i < DBRelated.length; i++) {
+        var on = (document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild.checked) && (DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1)/*button number*/ <= (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value));
+        setGCElementOnOff('DRIVE_BUTTON_' + DBRelated[i].id.substring(DBRelated[i].id.lastIndexOf("_") + 1), on);
+
+        var celem = document.getElementById('gc-DRIVE_BUTTON_' + (i + 1) + '_CIRCLE');
+        if (celem) {
+            if (on) {
+                celem.classList.remove("gc-db-circleoff");
+                celem.classList.add("gc-db-circleon");
+            } else {
+                celem.classList.remove("gc-db-circleon");
+                celem.classList.add("gc-db-circleoff");
+            }
+            let speed = 0;
+            let turn = 0;
+            let speedElem = document.getElementById('DBsetting---DRIVE_BUTTON_' + (i + 1) + 'speed');
+            if (speedElem) {
+                speed = parseFloat(speedElem.value);
+            }
+            let turnElem = document.getElementById('DBsetting---DRIVE_BUTTON_' + (i + 1) + 'turn');
+            if (turnElem) {
+                turn = parseFloat(turnElem.value);
+            }
+            //constrain speed and turn to be between -1 and 1
+            speed = Math.max(-1, Math.min(1, speed));
+            turn = Math.max(-1, Math.min(1, turn));
+            celem.setAttribute("cy", 269 - speed * 5);
+            celem.setAttribute("cx", 29 + 20 * i + turn * 5);
+        }
+    }
+    // if enable_button_input is checked, set gc-ENABLE_BUTTON_CTRL to on, else off
+    var enableButtonCtrl = isChecked('ENABLE_BUTTON_CTRL');
+    setGCElementOnOff('button-box', enableButtonCtrl);
+    setGCElementOnOff('button-box-label', enableButtonCtrl);
+    setGCElementOnOff('decrement-num-buttons', enableButtonCtrl && (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value > 0));
+    setGCElementOnOff('increment-num-buttons', enableButtonCtrl && (document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild.value < 6));
+
+    var addJoystickAndButton = isChecked('AB');
+    var useButtonModePin = isChecked('USE_BUTTON_MODE_PIN');
+    var useJoystickCtrl = useButtonModePin || addJoystickAndButton || !enableButtonCtrl;
+    setGCElementOnOff('joystick-box', useJoystickCtrl);
+    setGCElementOnOff('joystick-box-label', useJoystickCtrl);
+}
+
+function gcToggleJoystick() {
+    var addJoystickAndButton = isChecked('AB');
+    var enableButton = isChecked('ENABLE_BUTTON_CTRL');
+    var addElem = document.getElementById('setting---AB').children[1].firstChild;
+    if (enableButton && addJoystickAndButton) {
+        if (addElem) {
+            setTimeout(function () {
+                addElem.checked = false;
+                onSettingChangeFunction('AB');
+            }, 200);
+        }
+        var butElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+        if (butElem) {
+            butElem.checked = false;
+            onSettingChangeFunction('ENABLE_BUTTON_CTRL');
+        }
+    }
+    if (enableButton && !addJoystickAndButton) {
+        var addElem = document.getElementById('setting---AB').children[1].firstChild;
+        if (addElem) {
+            addElem.checked = true;
+            onSettingChangeFunction('AB');
+        }
+    }
+
+}
+function gcToggleButtonCtrl() {
+    var addJoystickAndButton = isChecked('AB');
+    var enableButton = isChecked('ENABLE_BUTTON_CTRL');
+    var addElem = document.getElementById('setting---AB').children[1].firstChild;
+    if (!enableButton) {
+        var butElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
+        if (butElem) {
+            setTimeout(function () {
+                butElem.checked = true;
+                onSettingChangeFunction('ENABLE_BUTTON_CTRL');
+            }, 200);
+        }
+        if (addElem) {
+            addElem.checked = true;
+            onSettingChangeFunction('AB');
+        }
+    }
+    if (enableButton && addJoystickAndButton) {
+        var addElem = document.getElementById('setting---AB').children[1].firstChild;
+        if (addElem) {
+            addElem.checked = false;
+            onSettingChangeFunction('AB');
+        }
+    }
+
+}
+
+
+function crementNumButtons(increment) {
+    if (!document.getElementById('setting---' + "NUM_DRIVE_BUTTONS")) {
+        return;
+    }
+    var numButtonsElem = document.getElementById('setting---' + "NUM_DRIVE_BUTTONS").children[1].firstChild;
+    if (numButtonsElem) {
+        var newNum = parseInt(numButtonsElem.value) + increment;
+        numButtonsElem.value = newNum;
+        onSettingChangeFunctionNDB();
+    }
+}
+
 // the car replied with a "result" as a response to being told to change a setting
 function gotNewResult(result) {
     if (result["result"] === "change") {
@@ -1553,6 +1793,7 @@ function gotNewResult(result) {
                 document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
             }
         }
+        updateGraphicalConfigurator();
     }
     if (result["result"] === "movement allowed") {
         clearTimeout(verify["G,"]);
