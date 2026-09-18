@@ -54,8 +54,8 @@ const shortToLongMap = {
 
     ENABLE_BUTTON_CTRL: "USE_BUTTON_CONTROL",
 
-    USE_RC_FORCE_STANDARD_MODE_PIN: "UFS",
-    RC_FORCE_STANDARD_MODE_PIN: "FS",
+    UFS: "USE_RC_FORCE_STANDARD_MODE_PIN",
+    FS: "RC_FORCE_STANDARD_MODE_PIN",
 
     INACTIVITY_TIMEOUT: "IAT",
 };
@@ -891,7 +891,7 @@ function checkForPinConflicts() {
             pinConflictSettings.push("RTP");
             pinConflictSettings.push("RCP");
             pinConflictSettings.push("RPP");
-            if(document.getElementById('setting---UFS') && document.getElementById('setting---UFS').children[1].firstChild.checked){
+            if (document.getElementById('setting---UFS') && document.getElementById('setting---UFS').children[1].firstChild.checked) {
                 pinConflictSettings.push("FS");
             }
         } else {
