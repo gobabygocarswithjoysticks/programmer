@@ -57,7 +57,7 @@ const shortToLongMap = {
     UFS: "USE_RC_FORCE_STANDARD_MODE_PIN",
     FS: "RC_FORCE_STANDARD_MODE_PIN",
 
-    INACTIVITY_TIMEOUT: "IAT",
+    IAT: "INACTIVITY_TIMEOUT",
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
