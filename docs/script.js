@@ -311,6 +311,15 @@ async function rerequestSettings() {
     }
 }
 
+async function picoBootloader() {
+    try {
+        var porta = await navigator.serial.requestPort();
+        await porta.open({ baudRate: 1200 });
+        await porta.close();
+    } catch (e) {
+    }
+}
+
 // connect to serial connection (makes a popup asking what port to use)
 async function connectToSerial() {
     if (serialConnectionRunning) return;
@@ -597,9 +606,11 @@ function gotNewData(data, slength) {
     }
 
     for (var i = 0; i < elements.length; i++) {
-        elements[i].innerHTML = inputName;
+        elements[i].innerHTML = inputName; // liveVal-input-mode spans
     }
-    liveUpdateGraphicalConfigurator(inputName, buttonstatus);
+
+    var rcStandardOverride = (stopBits & (1 << 4)) !== 0;
+    liveUpdateGraphicalConfigurator(inputName, buttonstatus, rcStandardOverride);
 
     var elements = document.getElementsByClassName("liveVal-button-mode-switch-state");
     for (var i = 0; i < elements.length; i++) {
@@ -1639,7 +1650,7 @@ function isChecked(setting) {
     return document.getElementById('setting---' + setting) && document.getElementById('setting---' + setting).children[1].firstChild.checked;
 }
 
-function liveUpdateGraphicalConfigurator(inputName, buttonstatus) {
+function liveUpdateGraphicalConfigurator(inputName, buttonstatus, rcStandardOverride) {
     setGCActive('joystick-box', inputName.includes("Joystick"));
     var buttonsActive = inputName.includes("Button");
     setGCActive('button-box', buttonsActive);
@@ -2038,10 +2049,35 @@ async function getCode() {
                 }
                 document.getElementById("upload-button").disabled = true;
 
+                const picoInstructions = ' \
+<ol>  \
+    <li> If the Pico automatically showed up like a thumbdrive on your computer when you plugged it in (common for new Picos) skip to step 4. </li> \
+    <li> \
+        Put the Pico into programming mode by pressing <button onclick="picoBootloader();">this button</button> and \
+        choosing the serial port for the Pico. \
+    <li> After a few seconds, the Pico should show up as a drive called "RPI-RP2" or "RP2350" on your computer. </li> \
+    <details> \
+        <summary> \
+            If you do not see the drive appear, use these alternate steps. \
+        </summary> \
+        <ol> \
+            <li>Unplug the USB cable from your computer and make sure the car is powered off.</li> \
+            <li>Hold down the "BOOTSEL" button on the Pico and plug the Pico back into your computer without letting \
+                go of the button.</li> \
+            <li> The Pico should show up as a drive called "RPI-RP2" or "RP2350" on your computer. </li> \
+            <li> You can now stop holding the "BOOTSEL" button. </li> \
+        </ol> \
+    </details> \
+    </li> \
+    <li> Drag and drop the file that was just downloaded onto the Pico. </li> \
+    <li>Wait for the Pico to restart (the drive should disappear).</li> \
+    <li> You have uploaded the program. Now continue with customizing the settings. </li> \
+</ol>    \
+';
 
-                document.getElementById("upload-info-under-button").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer and make sure the car is powered off.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the Pico back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" or "RP2350" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
+                document.getElementById("upload-info-under-button").innerHTML = picoInstructions;
+                document.getElementById("uploading-step-4").innerHTML = picoInstructions;
 
-                document.getElementById("uploading-step-4").innerHTML = 'You have now downloaded the file containing the program for the Raspberry Pi Pico! To upload it, follow these steps: <ol><li>Unplug the USB cable from your computer and make sure the car is powered off.</li><li>Hold down the "BOOTSEL" button on the Pico and plug the Pico back into your computer without letting go of the button.</li><li> The Pico should show up as a drive called "RPI-RP2" or "RP2350" on your computer. </li><li> You can now stop holding the "BOOTSEL" button. </li><li> Drag and drop the file you just downloaded onto the Pico. </li><li>Wait for the Pico to restart (the drive should disappear).</li><li> You have uploaded the program. Now continue with customizing the settings. </li></ol>';
                 downloadFile(code, program + ".ino.uf2");
                 cbdone("hcbp-uploading", "hcbp-upload-done");
                 document.getElementById("upload-button").style.outline = "0px";
