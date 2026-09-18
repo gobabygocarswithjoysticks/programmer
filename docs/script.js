@@ -596,12 +596,16 @@ function gotNewData(data, slength) {
     else if (data["b_m_p"] === "N")
         inputName = "Joystick";
 
+    var rcStandardOverride = data["stopBits"] !== undefined && (data["stopBits"] & (1 << 4)) !== 0;
+
     if (data["b_m_p"] === "R") {
         inputName = "Remote";
     } else {
-        var rcMode = document.getElementById('setting---' + "RM") && document.getElementById('setting---' + "RM").children[1].firstChild.value
-        if (rcMode != 0) {
-            inputName += "+Remote";
+        if (isChecked("UR")) {
+            var rcMode = document.getElementById('setting---' + "RM") && document.getElementById('setting---' + "RM").children[1].firstChild.value
+            if (rcMode != 0 && rcStandardOverride == false) {
+                inputName += "+Remote";
+            }
         }
     }
 
@@ -609,7 +613,6 @@ function gotNewData(data, slength) {
         elements[i].innerHTML = inputName; // liveVal-input-mode spans
     }
 
-    var rcStandardOverride = (stopBits & (1 << 4)) !== 0;
     liveUpdateGraphicalConfigurator(inputName, buttonstatus, rcStandardOverride);
 
     var elements = document.getElementsByClassName("liveVal-button-mode-switch-state");
