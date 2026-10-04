@@ -1,6 +1,14 @@
 var configurations_info = null; // the configuration file pulled from https://github.com/gobabygocarswithjoysticks/car-code/blob/main/hex/configurations-info.txt which has info about what programs are available to upload
 var options = null; // configurations_info, but just the lines with program info
 var port = null; // serial port for connection to car
+var blePort = {
+    device: null,
+    server: null,
+    gbgService: null,
+    serialTx: null,   // browser -> device
+    serialRx: null    // device -> browser
+};
+var bluetooth = false;
 var reader = null; // reads from the serial port
 var serial_connected_indicator_warning_timeout; // the result of a setInterval() used to display a warning message if the car is taking a long time to send a valid message
 var serial_connected_rerequest_timeout; // the result of a setInterval() that will request "SETTINGS" if settings are not received. (rpi picos don't reboot on serial connection so they don't send the needed settings)
@@ -244,6 +252,13 @@ function showEverythingButton() {
 // disconnects the serial connection
 async function closeSerial() {
     try {
+        blePort.server.disconnect();
+        blePort.device = null;
+        blePort.server = null;
+        blePort.gbgService = null;
+        blePort.serialRx = null;
+        blePort.serialTx = null;
+
         await reader.cancel();
     } catch (e) {
         serialConnectionRunning = false;
@@ -256,13 +271,30 @@ async function closeSerial() {
     document.getElementById("connect-to-car").style.backgroundColor = "white";
 
 }
+
+async function writeSerial(string) {
+    if (!bluetooth) {
+        const writerE = port.writable.getWriter();
+        try {
+            var enc = new TextEncoder(); // always utf-8
+            writerE.write(enc.encode(string));
+        } catch (e) {
+            console.log(e);
+        } finally {
+            writerE.releaseLock();
+        }
+    } else {
+        const bytes = new TextEncoder().encode(string);
+        blePort.serialTx.writeValue(bytes);
+    }
+}
+
 // sends the given string over serial, if connected and if nothing else is in the process of being sent. 
 async function sendStringSerial(string, verifyData) {
     if (!serialConnectionRunning) { return; }
     if (sendStringSerialLock) { return; }
-    if (port == null) { return; }
+    if (port == null && blePort.device == null) { return; }
     sendStringSerialLock = true;
-    const writer = port.writable.getWriter();
     try {
         if (verifyData) { // resend if not confirmed
             var name = string.split(":")[0];
@@ -273,39 +305,25 @@ async function sendStringSerial(string, verifyData) {
             verify[name] = setTimeout(() => {
                 console.log("serial resend triggered: ", string);
                 try {
-                    const writerE = port.writable.getWriter();
-                    try {
-                        writerE.write(enc.encode(string));
-                    } catch (e) {
-                        console.log(e);
-                    } finally {
-                        writerE.releaseLock();
-                    }
+                    writeSerial(string);
                 } catch (e) {
                     console.log(e);
                 }
             }, 110, string);
         }
-        var enc = new TextEncoder(); // always utf-8
-        await writer.write(enc.encode(string));
+        writeSerial(string);
     } catch (e) {
         console.log(e);
     } finally {
-        writer.releaseLock();
+        if (!bluetooth && writer != null) {
+            writer.releaseLock();
+        }
     }
     sendStringSerialLock = false;
 }
 async function rerequestSettings() {
     try {
-        const writer1 = port.writable.getWriter();
-        try {
-            var enc = new TextEncoder(); // always utf-8
-            await writer1.write(enc.encode("SETTINGS,"));
-        } catch (e) {
-            console.log(e);
-        } finally {
-            writer1.releaseLock();
-        }
+        writeSerial("SETTINGS,");
     } catch (e) {
         console.log(e);
     }
@@ -320,6 +338,25 @@ async function picoBootloader() {
     }
 }
 
+function waitForBLEData(characteristic) {
+    return new Promise((resolve) => {
+        const handler = (event) => {
+            characteristic.removeEventListener(
+                "characteristicvaluechanged",
+                handler
+            );
+
+            resolve(event.target.value);
+        };
+
+        characteristic.addEventListener(
+            "characteristicvaluechanged",
+            handler
+        );
+    });
+}
+
+
 // connect to serial connection (makes a popup asking what port to use)
 async function connectToSerial() {
     if (serialConnectionRunning) return;
@@ -331,10 +368,33 @@ async function connectToSerial() {
     document.getElementById("serial-connect-button").hidden = true;
     document.getElementById("serial-disconnect-button").hidden = false;
 
+    bluetooth = document.getElementById("bluetooth-checkbox").checked;
 
     try {
-        port = await navigator.serial.requestPort();
-        // console.log(port.getInfo());//for esp32 {usbProductId: 60000, usbVendorId: 4292}
+        const GBG_SERVICE =
+            "25210001-ad15-4c78-9ef6-cba8e277fd8d";
+
+        const GBG_RX =
+            "25210002-ad15-4c78-9ef6-cba8e277fd8d";
+
+        const GBG_TX =
+            "25210003-ad15-4c78-9ef6-cba8e277fd8d";
+        if (bluetooth) {
+
+            // Ask the user to choose a BLE device implementing NUS.
+            blePort.device = await navigator.bluetooth.requestDevice({
+                filters: [
+                    { services: [GBG_SERVICE] }
+                ]
+            });
+
+            // Connect to GATT.
+            blePort.server = await blePort.device.gatt.connect();
+
+        } else { //serial
+            port = await navigator.serial.requestPort();
+            // console.log(port.getInfo());//for esp32 {usbProductId: 60000, usbVendorId: 4292}
+        }
         document.getElementById('serial-connected-indicator').innerHTML = "connecting...";
         document.getElementById('serial-connected-short').innerHTML = 'connecting...';
         serial_connected_indicator_warning_timeout = setTimeout(() => {
@@ -347,13 +407,24 @@ async function connectToSerial() {
             document.getElementById('serial-con-msg-time-conbut').style.border = "3px solid Blue";
             document.getElementById("serial-connected-indicator").scrollIntoView({ block: "end" });
         }, 3250);
-        if (document.getElementById("esp32-serial-baud").checked) {
-            await port.open({ baudRate: 115200 });
+        if (bluetooth) {
+            blePort.gbgService = await blePort.server.getPrimaryService(GBG_SERVICE);
+            // browserTX -> deviceRX
+            blePort.serialTx = await blePort.gbgService.getCharacteristic(GBG_RX);
+            // deviceTX -> browserRX
+            blePort.serialRx = await blePort.gbgService.getCharacteristic(GBG_TX);
+
+            await blePort.serialRx.startNotifications();
         } else {
-            await port.open({ baudRate: 250000 });
+            if (document.getElementById("esp32-serial-baud").checked) {
+                await port.open({ baudRate: 115200 });
+            } else {
+                await port.open({ baudRate: 250000 });
+            }
         }
-        serial_connected_rerequest_timeout = setTimeout(rerequestSettings, 2500);
+        serial_connected_rerequest_timeout = setTimeout(rerequestSettings, 1500);
     } catch (e) { // port selection canceled
+        console.log(e)
         serialConnectionRunning = false;
         clearInterval(serial_connected_indicator_warning_timeout);
         clearInterval(serial_connected_rerequest_timeout);
@@ -373,19 +444,32 @@ async function connectToSerial() {
         return;
     }
 
-    const textDecoder = new TextDecoderStream();
-    const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-    reader = textDecoder.readable.getReader();
+    let readableStreamClosed;
+    if (!bluetooth) {
+        const textDecoder = new TextDecoderStream();
+        readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        reader = textDecoder.readable.getReader();
+    }
+
+    const decoder = new TextDecoder();
 
     let string = "";
     settings_received = false;
 
     try {
         while (true) { // this (async) function loops for as long as it is connected in order to continuously get data from the car
-            const { value, done } = await reader.read(); // https://web.dev/serial/
-            if (done) {
-                reader.releaseLock();
-                break;
+            let value;
+            if (bluetooth) {
+                const valueBuffer = await waitForBLEData(blePort.serialRx);
+                const bytes = new Uint8Array(valueBuffer.buffer);
+                value = decoder.decode(bytes);
+                console.log(bytes);
+            } else {
+                ({ value, done } = await reader.read()); // https://web.dev/serial/
+                if (done) {
+                    reader.releaseLock();
+                    break;
+                }
             }
             // value is a string with the characters that were just read from the serial port (usually a fragment of a full message)
             string += value;
@@ -428,7 +512,9 @@ async function connectToSerial() {
         // this happens if the arduino is unplugged from the computer
         console.log(e);
         serialConnectionRunning = false;
-        reader.releaseLock();
+        if (!bluetooth) {
+            reader.releaseLock();
+        }
         document.getElementById('serial-connected-indicator').innerHTML = "DISCONNECTED! you can connect again using the button to the left if you want.";
         document.getElementById('serial-connected-short').innerHTML = 'Disconnected!';
 
@@ -442,9 +528,17 @@ async function connectToSerial() {
 
     }
 
-    await readableStreamClosed.catch(() => { /* Ignore the error */ });
-
-    await port.close();
+    if (bluetooth) {
+        blePort.server.disconnect();
+        blePort.device = null;
+        blePort.server = null;
+        blePort.gbgService = null;
+        blePort.serialRx = null;
+        blePort.serialTx = null;
+    } else {
+        await readableStreamClosed.catch(() => { /* Ignore the error */ });
+        await port.close();
+    }
     serialConnectionRunning = false;
 }
 // data is the data just received from the Arduino, in JSON form. Handle all the types of messages here:
@@ -2384,11 +2478,11 @@ function restoreWebSettings() {
 
 function restoreSettingsGotFile(fileList) {
     if (fileList.length != 1) return;
-    var reader = new FileReader();
-    reader.onload = () => {
-        restoreSettingsProcessFile(reader.result);
+    var readerf = new FileReader();
+    readerf.onload = () => {
+        restoreSettingsProcessFile(readerf.result);
     }
-    reader.readAsText(fileList[0]); // converts to text which then goes to the callback above
+    readerf.readAsText(fileList[0]); // converts to text which then goes to the callback above
 }
 function restoreSettingsProcessFile(text) {
     try {
