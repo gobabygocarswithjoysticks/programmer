@@ -763,13 +763,23 @@ function followTheDot() {
 }
 
 function cancelFollowTheDot() {
+    const wasFollowingTheDot = follow_the_dot !== null;
 
     follow_the_dot = null;
-    try {
-        var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
-        enableButtonCtrlElem.checked = follow_the_dot_previous_enable_button;
-        onSettingChangeFunction("ENABLE_BUTTON_CTRL");
-    } catch (e) { }
+
+    if (wasFollowingTheDot) {
+        // restore the enableButtonControl value
+        try {
+            var enableButtonCtrlElem =
+                document.getElementById('setting---ENABLE_BUTTON_CTRL')
+                    .children[1].firstChild;
+
+            enableButtonCtrlElem.checked =
+                follow_the_dot_previous_enable_button;
+
+            onSettingChangeFunction("ENABLE_BUTTON_CTRL");
+        } catch (e) { }
+    }
 
     document.getElementById("settings-header").style.border = "";
     document.getElementById("settings-header").innerHTML = "";
