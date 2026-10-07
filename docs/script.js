@@ -643,7 +643,6 @@ function followTheDot() {
     } else if (follow_the_dot === 1) {
         var enableButtonCtrlElem = document.getElementById('setting---ENABLE_BUTTON_CTRL').children[1].firstChild;
         follow_the_dot_previous_enable_button = enableButtonCtrlElem.checked;
-        console.log(follow_the_dot_previous_enable_button);
         enableButtonCtrlElem.checked = false;
         onSettingChangeFunction("ENABLE_BUTTON_CTRL");
         follow_the_dot = 2;
@@ -747,6 +746,8 @@ function followTheDot() {
     } else if (follow_the_dot === 12) {
         document.getElementById('setting---' + "CONTROL_DOWN").children[1].firstChild.value = ftd_data["b"];
         onSettingChangeFunction("CONTROL_DOWN");
+        follow_the_dot = 13;
+    } else if (follow_the_dot === 13) {
 
         document.getElementById("settings-header").innerHTML = "calibration done!";
 
