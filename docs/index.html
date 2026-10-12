@@ -116,8 +116,10 @@
                 <button id="serial-disconnect-button"
                     onclick='document.getElementById("serial-disconnect-button").style.border=""; closeSerial();'>disconnect
                 </button>
-                <label for="esp32-serial-baud" style='margin-left:25px; font-size: small;'> esp32</label>
+                <label for="esp32-serial-baud" style='margin-left:25px; font-size: small;'> esp32:</label>
                 <input type="checkbox" id="esp32-serial-baud">
+                <label for="bluetooth-checkbox" style='margin-left:10px; font-size: small;'> bluetooth:</label>
+                <input type="checkbox" id="bluetooth-checkbox">
                 <div id="serial-connected-short"></div>
                 <hr>
             </div>
@@ -1094,7 +1096,8 @@
                     <tr id="help--IAT">
                         <td><b>inactivity timeout </b> </td>
                         <td>
-                            How many minutes before the car will start beeping if left on and not used.
+                            How many minutes before the car will start beeping if left on and not used. Set to zero to
+                            deactivate the timeout.
                         </td>
                     </tr>
                     <tr id="help--JOY_CALIB_COUNT">
