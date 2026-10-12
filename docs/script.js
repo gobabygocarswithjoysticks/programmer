@@ -1302,9 +1302,6 @@ function gotNewSettings(settings, slength) {
 
             if (booleanSettingsArray.indexOf(setting) > -1) { //boolean checkbox
                 entry.innerHTML += "<td>" + "<input type=checkbox" + (settings[setting] === true ? " checked" : "") + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)"></input></td> ';
-                if (setting === "USE_WIFI" && settings[setting] === true) {
-                    var runOnWifiSettingChange = true;
-                }
             } else if (Array("ACCELERATION_FORWARD", "DECELERATION_FORWARD", "ACCELERATION_BACKWARD", "DECELERATION_BACKWARD", "ACCELERATION_TURNING", "DECELERATION_TURNING", "FASTEST_FORWARD", "FASTEST_BACKWARD", "TURN_SPEED", "SCALE_TURNING_WHEN_MOVING").indexOf(setting) > -1) { //float
                 entry.innerHTML += '<td><input type="text" maxlength="6" size="6" inputmode="numeric" value=' + settings[setting] + ' onchange="onSettingChangeFunction(&quot;' + setting + '&quot;)" ></input></td> ';
             } else if (/DRIVE_BUTTON_(\d+)/.test(setting)) {
@@ -1398,22 +1395,6 @@ function gotNewSettings(settings, slength) {
             entry.appendChild(helpChild);
             list.appendChild(entry);
         }
-
-        if (runOnWifiSettingChange != null) {
-
-            try {
-                if (settings["USE_WIFI"] === false) {
-                    document.getElementById("wifi-info-div").hidden = true;
-                    document.getElementById('setting---' + "CAR_WIFI_NAME").hidden = true;
-                    document.getElementById('setting---' + "CAR_WIFI_PASSWORD").hidden = true;
-                }
-            } catch (e) {
-                console.log(e);
-            }
-
-            onWifiSettingChange();
-        }
-
 
         document.getElementById("car-telem-container").style.display = "flex";
 
