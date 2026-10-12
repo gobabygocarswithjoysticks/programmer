@@ -1271,10 +1271,10 @@ function gotNewSettings(settings, slength) {
         || (version === 22/*1.14.0*/ && len == 69 + 6)
         || (version === 23/*1.14.0 with wifi*/ && len == 72 + 6)
         || (version === 36/*1.15.0 pcb*/ && len == 68 + 6)
-        || (version === 37/*1.15.0 pcb with w&b*/ && len == 71 + 6)
+        || (version === 37/*1.15.0 pcb with w&b*/ && len == 74 + 6)
         || (version === 22/*1.15.0*/ && len == 69 + 6)
         || (version === 23/*1.15.0 with w*/ && len == 72 + 6)
-        || (version === 24/*1.15.0 with w&b*/ && len == 72 + 6)
+        || (version === 24/*1.15.0 with w&b*/ && len == 75 + 6)
     ) && slength === settings["CHECKSUM"]) {
         settings_received = true;
         document.getElementById('restore-settings-msg-div').innerHTML = "";
