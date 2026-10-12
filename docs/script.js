@@ -33,7 +33,7 @@ var picoUploadListenerFunction = null;
 var esp32UploadListenerFunction = null;
 var url_tail_preset = null;
 
-const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB", "UFS");
+const booleanSettingsArray = Array("SCALE_ACCEL_WITH_SPEED", "REVERSE_TURN_IN_REVERSE", "USE_SPEED_KNOB", "ENABLE_STARTUP_PULSE", "ENABLE_BUTTON_CTRL", "USE_BUTTON_MODE_PIN", "STEERING_OFF_SWITCH", "USE_WIFI", "USE_BLE", "SWAP_MOTORS", "UR", "BMT", "NRS", "USS", "SPH", "NSU", "UOB", "BAH", "BSAH", "AB", "UFS");
 
 const shortToLongMap = {
     BMT: "BUTTON_MODE_TOGGLE",
